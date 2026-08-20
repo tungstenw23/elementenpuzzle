@@ -18,10 +18,13 @@ button{cursor:pointer}
 .shell{max-width:980px;margin:auto;padding:24px 16px 60px}
 .hero{background:linear-gradient(135deg,#123b50,#176b87);color:white;border-radius:26px;padding:26px;box-shadow:var(--shadow);position:relative;overflow:hidden}
 .hero:after{content:"";position:absolute;width:250px;height:250px;border-radius:50%;background:rgba(255,255,255,.07);right:-70px;top:-100px}
-.brand{display:flex;gap:14px;align-items:center;position:relative;z-index:1}
-.logo{width:62px;height:62px;border-radius:18px;background:white;color:#176b87;display:grid;place-items:center;font-family:ui-monospace,monospace;font-size:26px;font-weight:900;box-shadow:0 8px 24px rgba(0,0,0,.15)}
-.hero h1{margin:0;font-size:clamp(28px,5vw,46px);letter-spacing:.02em}
-.hero p{margin:8px 0 0;opacity:.9;max-width:720px;line-height:1.45}
+.brand{position:relative;z-index:2;max-width:720px}
+.hero-copy{position:relative;z-index:2}
+.element-cloud{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+.floating-element{position:absolute;left:var(--x);top:var(--y);width:54px;height:54px;border:1px solid rgba(255,255,255,.26);border-radius:15px;background:rgba(255,255,255,.12);backdrop-filter:blur(2px);display:grid;place-items:center;font-family:ui-monospace,monospace;font-size:22px;font-weight:900;color:rgba(255,255,255,.9);box-shadow:0 8px 24px rgba(0,0,0,.10);opacity:0;transform:translate3d(0,18px,0) rotate(var(--r));animation:floatElement var(--dur) ease-in-out var(--delay) infinite}
+@keyframes floatElement{0%{opacity:0;transform:translate3d(0,18px,0) rotate(var(--r)) scale(.84)}18%{opacity:.74}50%{opacity:.92;transform:translate3d(var(--dx),-15px,0) rotate(calc(var(--r) + 5deg)) scale(1)}82%{opacity:.66}100%{opacity:0;transform:translate3d(calc(var(--dx) * -0.45),-38px,0) rotate(calc(var(--r) - 6deg)) scale(.88)}}
+.hero h1{margin:0;font-size:clamp(28px,5vw,46px);letter-spacing:.02em;text-shadow:0 2px 12px rgba(0,0,0,.16)}
+.hero p{margin:8px 0 0;opacity:.94;max-width:720px;line-height:1.45;text-shadow:0 1px 8px rgba(0,0,0,.14)}
 .card{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:22px;margin-top:18px;box-shadow:var(--shadow)}
 .hidden{display:none!important}
 .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
@@ -71,15 +74,15 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(23,107,135,.12)
 .leaderboard td:nth-child(1),.leaderboard td:nth-child(3),.leaderboard td:nth-child(4){font-variant-numeric:tabular-nums}
 .medal{font-size:18px}
 .footer{text-align:center;color:#6c7982;font-size:12px;margin-top:22px}
-@media(max-width:720px){.auth-grid{grid-template-columns:1fr}.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}.info-grid{grid-template-columns:1fr}}
+@media(max-width:720px){.auth-grid{grid-template-columns:1fr}.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}.info-grid{grid-template-columns:1fr}.hero{padding:24px 20px 82px}.floating-element{width:46px;height:46px;font-size:19px}.brand{max-width:100%}}
 </style>
 </head>
 <body>
 <div class="shell">
   <section class="hero">
+    <div id="elementCloud" class="element-cloud" aria-hidden="true"></div>
     <div class="brand">
-      <div class="logo">Es</div>
-      <div>
+      <div class="hero-copy">
         <h1>Elementenpuzzle</h1>
         <p>Jeden Tag dasselbe Rätsel für alle: Finde ein deutsches Wort aus Elementsymbolen. Entscheidend ist deine Zeit.</p>
       </div>
@@ -231,6 +234,41 @@ const ELEMENTS = [
 ["Mc","Moscovium",115,7,"MET","?"],["Lv","Livermorium",116,6,"MET","?"],
 ["Ts","Tenness",117,6,"HAL","?"],["Og","Oganesson",118,4,"EDG","?"]];
 const BY_SYMBOL = Object.fromEntries(ELEMENTS.map(e => [e[0], e]));
+
+function initElementCloud(){
+  const cloud = document.getElementById("elementCloud");
+  if(!cloud) return;
+  const mobile = window.matchMedia("(max-width:720px)").matches;
+  const count = mobile ? 9 : 14;
+  const used = new Set();
+  const pickSymbol = () => {
+    let sym;
+    do { sym = ELEMENTS[Math.floor(Math.random()*ELEMENTS.length)][0]; } while(used.has(sym) && used.size < ELEMENTS.length);
+    used.add(sym);
+    if(used.size > count * 2) used.clear();
+    return sym;
+  };
+  for(let i=0;i<count;i++){
+    const tile=document.createElement("span");
+    tile.className="floating-element";
+    tile.textContent=pickSymbol();
+    const rightSide = i < Math.ceil(count*0.7);
+    const x = rightSide ? 58 + Math.random()*37 : 5 + Math.random()*49;
+    const y = 8 + Math.random()*78;
+    tile.style.setProperty("--x", x.toFixed(1)+"%");
+    tile.style.setProperty("--y", y.toFixed(1)+"%");
+    tile.style.setProperty("--dx", (-24 + Math.random()*48).toFixed(0)+"px");
+    tile.style.setProperty("--r", (-12 + Math.random()*24).toFixed(1)+"deg");
+    tile.style.setProperty("--dur", (7.5 + Math.random()*5.5).toFixed(1)+"s");
+    tile.style.setProperty("--delay", (-Math.random()*10).toFixed(1)+"s");
+    tile.addEventListener("animationiteration",()=>{
+      tile.textContent=ELEMENTS[Math.floor(Math.random()*ELEMENTS.length)][0];
+      tile.style.setProperty("--dx", (-24 + Math.random()*48).toFixed(0)+"px");
+    });
+    cloud.appendChild(tile);
+  }
+}
+
 const INFO = {
 H:"1766 von Henry Cavendish entdeckt \u00b7 Raketentreibstoff, Ammoniaksynthese",
 He:"1868 im Sonnenspektrum entdeckt (Janssen/Lockyer) \u00b7 Ballons, Kuehlmittel fuer MRT",
@@ -552,6 +590,8 @@ async function loadLeaderboard(){
   </table>`;
 }
 function escapeHtml(v){ return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+
+initElementCloud();
 
 supabaseClient.auth.onAuthStateChange((_event,newSession)=>{
   session=newSession;
