@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Elementenpuzzle – Das tägliche Elementsymbol-Rätsel</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg:#eef3f7; --paper:#ffffff; --ink:#15212b; --muted:#64727f; --line:#d9e2e8;
+  --accent:#176b87; --accent2:#e4a11b; --good:#217a4a; --bad:#b9473f;
+  --shadow:0 14px 36px rgba(27,54,74,.12);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#dce9f0 0,#f4f7f9 34%,#eef3f7 100%);color:var(--ink);min-height:100vh}
+button,input{font:inherit}
+button{cursor:pointer}
+.shell{max-width:980px;margin:auto;padding:24px 16px 60px}
+.hero{background:linear-gradient(135deg,#123b50,#176b87);color:white;border-radius:26px;padding:26px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;width:250px;height:250px;border-radius:50%;background:rgba(255,255,255,.07);right:-70px;top:-100px}
+.brand{display:flex;gap:14px;align-items:center;position:relative;z-index:1}
+.logo{width:62px;height:62px;border-radius:18px;background:white;color:#176b87;display:grid;place-items:center;font-family:ui-monospace,monospace;font-size:26px;font-weight:900;box-shadow:0 8px 24px rgba(0,0,0,.15)}
+.hero h1{margin:0;font-size:clamp(28px,5vw,46px);letter-spacing:.02em}
+.hero p{margin:8px 0 0;opacity:.9;max-width:720px;line-height:1.45}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:22px;margin-top:18px;box-shadow:var(--shadow)}
+.hidden{display:none!important}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.space{justify-content:space-between}
+.small{font-size:13px;color:var(--muted)}
+.auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.auth-grid h2,.card h2{margin:0 0 14px}
+label{display:block;font-weight:700;font-size:13px;margin:10px 0 5px}
+input{width:100%;border:1px solid #bfcbd3;border-radius:12px;padding:12px 13px;background:#fbfdfe;color:var(--ink);outline:none}
+input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(23,107,135,.12)}
+.primary,.secondary,.danger{border:0;border-radius:13px;padding:11px 16px;font-weight:800}
+.primary{background:var(--accent);color:#fff}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.secondary{background:#e9f1f5;color:#17465a}
+.danger{background:#f8e7e5;color:#913a34}
+.notice{border-radius:14px;padding:11px 13px;margin-top:12px;background:#eef7fb;color:#225268;font-size:14px}
+.notice.bad{background:#faecea;color:#8b342e}
+.notice.good{background:#e9f7ef;color:#206c43}
+.topbar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.timer{font-family:ui-monospace,monospace;font-variant-numeric:tabular-nums;font-size:clamp(34px,7vw,62px);font-weight:900;letter-spacing:.03em;color:#113a4e;text-align:center;margin:10px 0 2px}
+.rule{text-align:center;color:var(--muted);margin-bottom:18px}
+.count-pill{display:inline-flex;align-items:center;gap:7px;border-radius:999px;background:#fff3d8;color:#754e00;padding:8px 12px;font-weight:800}
+.tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:18px 0}
+.element-tile{border:1px solid #c6d2d9;background:#fbfdfe;border-radius:16px;padding:13px 5px;min-height:78px;transition:.12s transform,.12s box-shadow,.12s border-color}
+.element-tile:hover{transform:translateY(-2px);border-color:#6f9caf;box-shadow:0 8px 16px rgba(25,79,100,.10)}
+.element-tile .sym{font-family:ui-monospace,monospace;font-size:25px;font-weight:900;color:#14566f}
+.element-tile .ename{font-size:10px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.selection{min-height:82px;border:2px dashed #bfd0d8;background:#f8fbfc;border-radius:18px;padding:12px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;justify-content:center;min-width:52px;height:48px;padding:0 12px;border-radius:12px;background:#183f52;color:white;font-family:ui-monospace,monospace;font-size:21px;font-weight:900}
+.preview{text-align:center;font-size:24px;font-weight:900;letter-spacing:.05em;margin:10px 0 2px;min-height:30px}
+.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+.shake{animation:shake .28s linear}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.result-hero{text-align:center;padding:6px 0 4px}
+.word{font-size:clamp(35px,7vw,64px);font-weight:950;letter-spacing:.04em;color:#164f67;margin:0}
+.breakdown{font-family:ui-monospace,monospace;font-size:22px;margin-top:8px}
+.rank-big{font-size:24px;font-weight:900;color:var(--good);margin-top:8px}
+.info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+.info-card{border:1px solid var(--line);border-radius:17px;padding:15px;background:#fbfdfe}
+.info-head{display:flex;align-items:center;gap:11px;margin-bottom:9px}
+.info-symbol{width:50px;height:50px;border-radius:13px;background:#176b87;color:white;display:grid;place-items:center;font-family:ui-monospace,monospace;font-size:22px;font-weight:900}
+.info-card h3{margin:0;font-size:18px}
+.info-card p{margin:7px 0;color:#455661;line-height:1.42;font-size:14px}
+.leaderboard{width:100%;border-collapse:collapse;margin-top:8px}
+.leaderboard th,.leaderboard td{text-align:left;padding:10px 9px;border-bottom:1px solid #e6ecef;font-size:14px}
+.leaderboard th{color:#5b6c78;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.leaderboard td:nth-child(1),.leaderboard td:nth-child(3),.leaderboard td:nth-child(4){font-variant-numeric:tabular-nums}
+.medal{font-size:18px}
+.footer{text-align:center;color:#6c7982;font-size:12px;margin-top:22px}
+@media(max-width:720px){.auth-grid{grid-template-columns:1fr}.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}.info-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <section class="hero">
+    <div class="brand">
+      <div class="logo">Es</div>
+      <div>
+        <h1>Elementenpuzzle</h1>
+        <p>Jeden Tag dasselbe Rätsel für alle: Finde ein deutsches Wort aus Elementsymbolen. Entscheidend ist deine Zeit.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="authCard" class="card">
+    <div class="auth-grid">
+      <div>
+        <h2>Anmelden</h2>
+        <label>E-Mail</label><input id="loginEmail" type="email" autocomplete="email">
+        <label>Passwort</label><input id="loginPass" type="password" autocomplete="current-password">
+        <button class="primary" style="margin-top:12px" onclick="login()">Anmelden</button>
+      </div>
+      <div>
+        <h2>Neues Konto</h2>
+        <label>Spielername für die Rangliste</label><input id="signupName" maxlength="24" autocomplete="nickname">
+        <label>E-Mail</label><input id="signupEmail" type="email" autocomplete="email">
+        <label>Passwort</label><input id="signupPass" type="password" minlength="6" autocomplete="new-password">
+        <button class="secondary" style="margin-top:12px" onclick="signup()">Registrieren</button>
+      </div>
+    </div>
+    <div id="authMsg" class="notice hidden"></div>
+  </section>
+
+  <section id="lobbyCard" class="card hidden">
+    <div class="topbar">
+      <div>
+        <div class="small">Angemeldet als</div>
+        <strong id="userLabel">–</strong>
+      </div>
+      <button class="secondary" onclick="logout()">Abmelden</button>
+    </div>
+    <div style="text-align:center;padding:16px 0 4px">
+      <h2 style="font-size:30px;margin-bottom:6px">Tagesrätsel <span id="todayLabel"></span></h2>
+      <p class="small" style="max-width:620px;margin:0 auto 16px">Nach dem Start werden die 15 Elementsymbole sichtbar und die serverseitige Zeitmessung beginnt. Ein Neuladen setzt die Uhr nicht zurück.</p>
+      <button id="startBtn" class="primary" style="font-size:18px;padding:14px 22px" onclick="startPuzzle()">Tagesrätsel starten</button>
+    </div>
+  </section>
+
+  <section id="gameCard" class="card hidden">
+    <div class="topbar">
+      <span class="count-pill">🧩 Gesucht: <b id="elementCount">–</b> Elementsymbole</span>
+      <span class="small">15 Elemente zur Auswahl</span>
+    </div>
+    <div id="timer" class="timer">00:00.000</div>
+    <div class="rule">Es gibt keinen weiteren Hinweis. Falsche Versuche kosten keine Punkte – aber die Uhr läuft weiter.</div>
+
+    <div id="tiles" class="tiles"></div>
+
+    <div id="selectionBox" class="selection"><span class="small">Klicke die Elementsymbole in der richtigen Reihenfolge an.</span></div>
+    <div id="preview" class="preview"></div>
+
+    <div class="actions">
+      <button class="secondary" onclick="undoSymbol()">↶ Letztes zurück</button>
+      <button class="secondary" onclick="clearSelection()">Leeren</button>
+      <button id="submitBtn" class="primary" onclick="submitGuess()" disabled>Wort prüfen</button>
+    </div>
+    <div id="gameMsg" class="notice hidden"></div>
+  </section>
+
+  <section id="resultCard" class="card hidden">
+    <div class="result-hero">
+      <div class="small">Gelöst!</div>
+      <h2 id="solvedWord" class="word">–</h2>
+      <div id="solvedBreakdown" class="breakdown"></div>
+      <div id="finalTime" class="timer" style="font-size:36px"></div>
+      <div id="rankBig" class="rank-big"></div>
+    </div>
+    <h2 style="margin-top:24px">Chemie nebenbei</h2>
+    <p class="small">Zu den Elementen, aus denen das heutige Wort besteht:</p>
+    <div id="infoGrid" class="info-grid"></div>
+  </section>
+
+  <section id="leaderCard" class="card hidden">
+    <div class="row space"><h2 style="margin:0">Heutige Rangliste</h2><button class="secondary" onclick="loadLeaderboard()">Aktualisieren</button></div>
+    <div id="leaderWrap"></div>
+  </section>
+
+  <div class="footer">Elementenpuzzle · separates Spiel neben Wortstoff · Tageswechsel nach deutscher Zeit</div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://tcobolbwkmvlfjinelsu.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_DYpVDxbcOgYst7wkYL2sbQ_B1GWS735";
+const APP_URL = location.protocol === "http:" || location.protocol === "https:" ? location.href.split("#")[0].split("?")[0] : undefined;
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: {persistSession:true, autoRefreshToken:true, detectSessionInUrl:true}
+});
+
+const ELEMENTS = [
+["H","Wasserstoff",1,2,"NME","g"],["He","Helium",2,4,"EDG","g"],
+["Li","Lithium",3,3,"ALK","f"],["Be","Beryllium",4,4,"EAK","f"],
+["B","Bor",5,2,"HME","f"],["C","Kohlenstoff",6,1,"NME","f"],
+["N","Stickstoff",7,1,"NME","g"],["O","Sauerstoff",8,1,"NME","g"],
+["F","Fluor",9,3,"HAL","g"],["Ne","Neon",10,3,"EDG","g"],
+["Na","Natrium",11,3,"ALK","f"],["Mg","Magnesium",12,9,"EAK","f"],
+["Al","Aluminium",13,3,"MET","f"],["Si","Silicium",14,3,"HME","f"],
+["P","Phosphor",15,2,"NME","f"],["S","Schwefel",16,1,"NME","f"],
+["Cl","Chlor",17,4,"HAL","g"],["Ar","Argon",18,3,"EDG","g"],
+["K","Kalium",19,2,"ALK","f"],["Ca","Calcium",20,3,"EAK","f"],
+["Sc","Scandium",21,4,"UEB","f"],["Ti","Titan",22,2,"UEB","f"],
+["V","Vanadium",23,3,"UEB","f"],["Cr","Chrom",24,4,"UEB","f"],
+["Mn","Mangan",25,6,"UEB","f"],["Fe","Eisen",26,5,"UEB","f"],
+["Co","Cobalt",27,3,"UEB","f"],["Ni","Nickel",28,3,"UEB","f"],
+["Cu","Kupfer",29,4,"UEB","f"],["Zn","Zink",30,9,"UEB","f"],
+["Ga","Gallium",31,4,"MET","f"],["Ge","Germanium",32,4,"HME","f"],
+["As","Arsen",33,3,"HME","f"],["Se","Selen",34,3,"NME","f"],
+["Br","Brom",35,4,"HAL","fl"],["Kr","Krypton",36,6,"EDG","g"],
+["Rb","Rubidium",37,5,"ALK","f"],["Sr","Strontium",38,7,"EAK","f"],
+["Y","Yttrium",39,2,"UEB","f"],["Zr","Zirconium",40,9,"UEB","f"],
+["Nb","Niob",41,6,"UEB","f"],["Mo","Molybdaen",42,4,"UEB","f"],
+["Tc","Technetium",43,5,"UEB","f"],["Ru","Ruthenium",44,4,"UEB","f"],
+["Rh","Rhodium",45,6,"UEB","f"],["Pd","Palladium",46,7,"UEB","f"],
+["Ag","Silber",47,4,"UEB","f"],["Cd","Cadmium",48,7,"UEB","f"],
+["In","Indium",49,3,"MET","f"],["Sn","Zinn",50,5,"MET","f"],
+["Sb","Antimon",51,6,"HME","f"],["Te","Tellur",52,3,"HME","f"],
+["I","Iod",53,1,"HAL","f"],["Xe","Xenon",54,6,"EDG","g"],
+["Cs","Caesium",55,6,"ALK","f"],["Ba","Barium",56,4,"EAK","f"],
+["La","Lanthan",57,3,"LAN","f"],["Ce","Cer",58,3,"LAN","f"],
+["Pr","Praseodym",59,4,"LAN","f"],["Nd","Neodym",60,3,"LAN","f"],
+["Pm","Promethium",61,8,"LAN","f"],["Sm","Samarium",62,4,"LAN","f"],
+["Eu","Europium",63,5,"LAN","f"],["Gd","Gadolinium",64,7,"LAN","f"],
+["Tb","Terbium",65,6,"LAN","f"],["Dy","Dysprosium",66,5,"LAN","f"],
+["Ho","Holmium",67,3,"LAN","f"],["Er","Erbium",68,2,"LAN","f"],
+["Tm","Thulium",69,7,"LAN","f"],["Yb","Ytterbium",70,6,"LAN","f"],
+["Lu","Lutetium",71,4,"LAN","f"],["Hf","Hafnium",72,7,"UEB","f"],
+["Ta","Tantal",73,3,"UEB","f"],["W","Wolfram",74,3,"UEB","f"],
+["Re","Rhenium",75,3,"UEB","f"],["Os","Osmium",76,4,"UEB","f"],
+["Ir","Iridium",77,4,"UEB","f"],["Pt","Platin",78,5,"UEB","f"],
+["Au","Gold",79,4,"UEB","f"],["Hg","Quecksilber",80,8,"UEB","fl"],
+["Tl","Thallium",81,5,"MET","f"],["Pb","Blei",82,8,"MET","f"],
+["Bi","Bismut",83,4,"MET","f"],["Po","Polonium",84,4,"MET","f"],
+["At","Astat",85,3,"HAL","f"],["Rn","Radon",86,4,"EDG","g"],
+["Fr","Francium",87,5,"ALK","f"],["Ra","Radium",88,3,"EAK","f"],
+["Ac","Actinium",89,4,"ACT","f"],["Th","Thorium",90,3,"ACT","f"],
+["Pa","Protactinium",91,4,"ACT","f"],["U","Uran",92,2,"ACT","f"],
+["Np","Neptunium",93,6,"ACT","f"],["Pu","Plutonium",94,5,"ACT","f"],
+["Am","Americium",95,4,"ACT","f"],["Cm","Curium",96,9,"ACT","f"],
+["Bk","Berkelium",97,9,"ACT","f"],["Cf","Californium",98,8,"ACT","f"],
+["Es","Einsteinium",99,3,"ACT","f"],["Fm","Fermium",100,9,"ACT","?"],
+["Md","Mendelevium",101,8,"ACT","?"],["No","Nobelium",102,4,"ACT","?"],
+["Lr","Lawrencium",103,8,"ACT","?"],["Rf","Rutherfordium",104,6,"UEB","?"],
+["Db","Dubnium",105,7,"UEB","?"],["Sg","Seaborgium",106,9,"UEB","?"],
+["Bh","Bohrium",107,8,"UEB","?"],["Hs","Hassium",108,6,"UEB","?"],
+["Mt","Meitnerium",109,7,"UEB","?"],["Ds","Darmstadtium",110,6,"UEB","?"],
+["Rg","Roentgenium",111,5,"UEB","?"],["Cn","Copernicium",112,8,"UEB","?"],
+["Nh","Nihonium",113,7,"MET","?"],["Fl","Flerovium",114,5,"MET","?"],
+["Mc","Moscovium",115,7,"MET","?"],["Lv","Livermorium",116,6,"MET","?"],
+["Ts","Tenness",117,6,"HAL","?"],["Og","Oganesson",118,4,"EDG","?"]];
+const BY_SYMBOL = Object.fromEntries(ELEMENTS.map(e => [e[0], e]));
+const INFO = {
+H:"1766 von Henry Cavendish entdeckt \u00b7 Raketentreibstoff, Ammoniaksynthese",
+He:"1868 im Sonnenspektrum entdeckt (Janssen/Lockyer) \u00b7 Ballons, Kuehlmittel fuer MRT",
+Li:"1817 von Johan Arfwedson entdeckt \u00b7 Akkus fuer Handys und E-Autos",
+Be:"1798 von Louis Vauquelin entdeckt \u00b7 leichte Legierungen, Roentgenfenster",
+B:"1808 von Gay-Lussac, Th\u00e9nard und Davy isoliert \u00b7 Borosilikatglas, Halbleiter",
+C:"seit der Antike bekannt \u00b7 Grundlage allen Lebens; Stahl, Graphit, Diamant",
+N:"1772 von Daniel Rutherford entdeckt \u00b7 Duenger, Schutzgas, Tiefkuehlung",
+O:"1774 von Priestley und Scheele entdeckt \u00b7 Atmung, Verbrennung, Medizin",
+F:"1886 von Henri Moissan isoliert \u00b7 Zahnpasta (Fluorid), Teflon",
+Ne:"1898 von Ramsay und Travers entdeckt \u00b7 rote Leuchtreklame",
+Na:"1807 von Humphry Davy isoliert \u00b7 Kochsalz, gelbe Strassenlampen",
+Mg:"1808 von Humphry Davy isoliert \u00b7 Leichtbau, Blitzlicht, Chlorophyll",
+Al:"1825 von Hans Christian \u00d8rsted dargestellt \u00b7 Flugzeugbau, Verpackungen",
+Si:"1824 von J\u00f6ns Berzelius isoliert \u00b7 Computerchips, Solarzellen",
+P:"1669 von Hennig Brand entdeckt (aus Urin!) \u00b7 Duenger, Streichhoelzer",
+S:"seit der Antike bekannt \u00b7 Schwefelsaeure, Gummi-Vulkanisation",
+Cl:"1774 von Carl Wilhelm Scheele entdeckt \u00b7 Desinfektion, PVC",
+Ar:"1894 von Rayleigh und Ramsay entdeckt \u00b7 Schutzgas beim Schweissen",
+K:"1807 von Humphry Davy isoliert \u00b7 Duenger, Nervenfunktion",
+Ca:"1808 von Humphry Davy isoliert \u00b7 Knochen und Zaehne, Zement",
+Sc:"1879 von Lars Nilson entdeckt \u00b7 leichte Legierungen fuer Sportgeraete",
+Ti:"1791 von William Gregor entdeckt \u00b7 Flugzeuge, Implantate, weisse Farbe",
+V:"1801/1830 entdeckt (del R\u00edo, Sefstr\u00f6m) \u00b7 Werkzeugstahl",
+Cr:"1797 von Louis Vauquelin entdeckt \u00b7 Verchromung, Edelstahl",
+Mn:"1774 von Johan Gahn isoliert \u00b7 Stahlhaertung",
+Fe:"seit der Antike bekannt \u00b7 Stahl; Haemoglobin im Blut",
+Co:"1735 von Georg Brandt entdeckt \u00b7 blaue Farben, starke Magnete",
+Ni:"1751 von Axel Cronstedt entdeckt \u00b7 Muenzen, Edelstahl, Akkus",
+Cu:"seit der Antike bekannt \u00b7 Stromkabel, Muenzen, Bronze",
+Zn:"1746 von Andreas Marggraf rein dargestellt \u00b7 Verzinkung als Rostschutz",
+Ga:"1875 von Lecoq de Boisbaudran entdeckt \u00b7 LEDs, Halbleiter; schmilzt in der Hand",
+Ge:"1886 von Clemens Winkler entdeckt \u00b7 Glasfaseroptik, Halbleiter",
+As:"um 1250 von Albertus Magnus beschrieben \u00b7 Halbleiter (frueher beruechtigtes Gift)",
+Se:"1817 von J\u00f6ns Berzelius entdeckt \u00b7 Kopierer, Solarzellen",
+Br:"1826 von Antoine Balard entdeckt \u00b7 Flammschutzmittel",
+Kr:"1898 von Ramsay und Travers entdeckt \u00b7 Blitzlampen",
+Rb:"1861 von Bunsen und Kirchhoff entdeckt (Spektralanalyse) \u00b7 Atomuhren",
+Sr:"1790 erkannt, 1808 von Davy isoliert \u00b7 rotes Feuerwerk",
+Y:"1794 von Johan Gadolin entdeckt \u00b7 LEDs, Laser",
+Zr:"1789 von Martin Klaproth entdeckt \u00b7 Huellen von Brennstaeben, Zirkonia-Schmuck",
+Nb:"1801 von Charles Hatchett entdeckt \u00b7 Supraleiter, Spezialstahl",
+Mo:"1778 von Carl Wilhelm Scheele erkannt \u00b7 Werkzeugstahl, Enzyme",
+Tc:"1937 von Perrier und Segr\u00e8 erzeugt \u2013 erstes kuenstliches Element! \u00b7 Nuklearmedizin",
+Ru:"1844 von Karl Claus entdeckt \u00b7 Elektronik, Katalysatoren",
+Rh:"1803 von William Wollaston entdeckt \u00b7 Autokatalysatoren",
+Pd:"1803 von William Wollaston entdeckt \u00b7 Katalysatoren, Zahnersatz",
+Ag:"seit der Antike bekannt \u00b7 Schmuck, Elektronik, frueher Fotografie",
+Cd:"1817 von Friedrich Stromeyer entdeckt \u00b7 frueher Akkus und Pigmente (giftig)",
+In:"1863 von Reich und Richter entdeckt \u00b7 Touchscreens (Indiumzinnoxid)",
+Sn:"seit der Antike bekannt \u00b7 Bronze, Loetzinn, Konservendosen",
+Sb:"seit der Antike bekannt \u00b7 Flammschutz, Legierungen",
+Te:"1782 von M\u00fcller von Reichenstein entdeckt \u00b7 Legierungen, Solarzellen",
+I:"1811 von Bernard Courtois entdeckt \u00b7 Desinfektion, Schilddruesenhormone",
+Xe:"1898 von Ramsay und Travers entdeckt \u00b7 Autoscheinwerfer, Narkosemittel",
+Cs:"1860 von Bunsen und Kirchhoff entdeckt \u00b7 Atomuhren \u2013 definiert die Sekunde!",
+Ba:"1808 von Humphry Davy isoliert \u00b7 Roentgen-Kontrastmittel, gruenes Feuerwerk",
+La:"1839 von Carl Mosander entdeckt \u00b7 Kameralinsen, Akkus",
+Ce:"1803 entdeckt (Berzelius/Klaproth) \u00b7 Feuerzeug-Zuendsteine",
+Pr:"1885 von Auer von Welsbach entdeckt \u00b7 Magnete, gelbes Glas",
+Nd:"1885 von Auer von Welsbach entdeckt \u00b7 Supermagnete in Kopfhoerern und Windraedern",
+Pm:"1945 in Oak Ridge nachgewiesen \u00b7 radioaktive Leuchtfarben",
+Sm:"1879 von Lecoq de Boisbaudran entdeckt \u00b7 hitzefeste Magnete",
+Eu:"1901 von Eug\u00e8ne Demar\u00e7ay entdeckt \u00b7 rote Leuchtstoffe \u2013 auch in Euro-Scheinen!",
+Gd:"1880 von de Marignac entdeckt \u00b7 MRT-Kontrastmittel",
+Tb:"1843 von Carl Mosander entdeckt \u00b7 gruene Leuchtstoffe",
+Dy:"1886 von Lecoq de Boisbaudran entdeckt \u00b7 Hochleistungsmagnete",
+Ho:"1878 entdeckt (Soret/Delafontaine) \u00b7 Laser",
+Er:"1843 von Carl Mosander entdeckt \u00b7 Verstaerker in Glasfaserkabeln",
+Tm:"1879 von Per Teodor Cleve entdeckt \u00b7 tragbare Roentgengeraete",
+Yb:"1878 von de Marignac entdeckt \u00b7 Atomuhren, Laser",
+Lu:"1907 entdeckt (Urbain / Auer von Welsbach) \u00b7 PET-Scanner in der Medizin",
+Hf:"1923 von Coster und Hevesy entdeckt \u00b7 Steuerstaebe in Kernreaktoren",
+Ta:"1802 von Anders Ekeberg entdeckt \u00b7 Kondensatoren in jedem Handy",
+W:"1783 von den Bruedern Elhuyar isoliert \u00b7 Gluehwendeln, haerteste Werkzeuge",
+Re:"1925 entdeckt (Noddack, Tacke, Berg) \u00b7 Turbinenschaufeln",
+Os:"1803 von Smithson Tennant entdeckt \u00b7 dichtestes Element; Fuellfederspitzen",
+Ir:"1803 von Smithson Tennant entdeckt \u00b7 Zuendkerzen; Beleg fuer den Dino-Asteroiden",
+Pt:"1748 von Antonio de Ulloa beschrieben \u00b7 Katalysatoren, Schmuck",
+Au:"seit der Antike bekannt \u00b7 Schmuck, Elektronik, Waehrungsreserven",
+Hg:"seit der Antike bekannt \u00b7 frueher Thermometer; einziges fluessiges Metall",
+Tl:"1861 von William Crookes entdeckt \u00b7 Infrarot-Optik (sehr giftig)",
+Pb:"seit der Antike bekannt \u00b7 Autobatterien, Strahlenschutz",
+Bi:"1753 von Claude Geoffroy unterschieden \u00b7 Magenmedizin, schmelzbare Legierungen",
+Po:"1898 von Marie und Pierre Curie entdeckt \u2013 nach Polen benannt \u00b7 stark radioaktiv",
+At:"1940 an der Universitaet Berkeley erzeugt \u00b7 seltenstes natuerliches Element",
+Rn:"1900 von Friedrich Dorn entdeckt \u00b7 radioaktives Gas aus dem Erdboden",
+Fr:"1939 von Marguerite Perey entdeckt \u00b7 extrem selten, nur Forschung",
+Ra:"1898 von Marie und Pierre Curie entdeckt \u00b7 frueher Leuchtziffern (gefaehrlich!)",
+Ac:"1899 von Andr\u00e9 Debierne entdeckt \u00b7 Forschung, Krebstherapie-Studien",
+Th:"1829 von J\u00f6ns Berzelius entdeckt \u00b7 Gasgluehstruempfe, moeglicher Kernbrennstoff",
+Pa:"1917 von Hahn und Meitner entdeckt \u00b7 Forschung",
+U:"1789 von Martin Klaproth entdeckt \u00b7 Brennstoff fuer Kernkraftwerke",
+Np:"1940 erzeugt (McMillan/Abelson) \u00b7 erstes Transuran",
+Pu:"1940 von Seaborg und Team erzeugt \u00b7 Reaktoren, Batterien fuer Raumsonden",
+Am:"1944 von Seaborg und Team erzeugt \u00b7 steckt in vielen Rauchmeldern!",
+Cm:"1944 erzeugt \u2013 nach Marie und Pierre Curie benannt \u00b7 Energiequelle fuer Raumsonden",
+Bk:"1949 in Berkeley erzeugt \u00b7 nur Forschung",
+Cf:"1950 in Berkeley erzeugt \u00b7 Neutronenquellen fuer Materialpruefung",
+Es:"1952 im Fallout der ersten Wasserstoffbombe entdeckt \u00b7 nur Forschung",
+Fm:"1952 ebenfalls im H-Bomben-Fallout entdeckt \u00b7 nur Forschung",
+Md:"1955 erzeugt \u2013 nach Mendelejew benannt \u00b7 nur Forschung",
+No:"1958 erzeugt \u2013 nach Alfred Nobel benannt \u00b7 nur Forschung",
+Lr:"1961 erzeugt \u2013 nach Ernest Lawrence benannt \u00b7 nur Forschung",
+Rf:"um 1969 erzeugt (Dubna/Berkeley) \u00b7 nur Forschung",
+Db:"um 1970 erzeugt \u2013 nach dem Forschungsort Dubna benannt \u00b7 nur Forschung",
+Sg:"1974 erzeugt \u2013 nach Glenn Seaborg benannt, noch zu dessen Lebzeiten \u00b7 nur Forschung",
+Bh:"1981 an der GSI Darmstadt erzeugt \u2013 nach Niels Bohr benannt \u00b7 nur Forschung",
+Hs:"1984 an der GSI Darmstadt erzeugt \u2013 nach Hessen benannt \u00b7 nur Forschung",
+Mt:"1982 an der GSI Darmstadt erzeugt \u2013 nach Lise Meitner benannt \u00b7 nur Forschung",
+Ds:"1994 an der GSI Darmstadt erzeugt \u2013 nach Darmstadt benannt \u00b7 nur Forschung",
+Rg:"1994 an der GSI Darmstadt erzeugt \u2013 nach R\u00f6ntgen benannt \u00b7 nur Forschung",
+Cn:"1996 an der GSI Darmstadt erzeugt \u2013 nach Kopernikus benannt \u00b7 nur Forschung",
+Nh:"2004 am RIKEN in Japan erzeugt \u2013 nach Nihon (Japan) benannt \u00b7 nur Forschung",
+Fl:"1998 in Dubna erzeugt \u2013 nach Georgi Fljorow benannt \u00b7 nur Forschung",
+Mc:"2003 in Dubna erzeugt \u2013 nach Moskau benannt \u00b7 nur Forschung",
+Lv:"2000 in Dubna erzeugt \u2013 nach dem Livermore-Labor benannt \u00b7 nur Forschung",
+Ts:"2010 erzeugt (Dubna/Oak Ridge) \u2013 nach Tennessee benannt \u00b7 nur Forschung",
+Og:"2002 in Dubna erzeugt \u2013 nach Juri Oganessian benannt, der noch lebt! \u00b7 nur Forschung",
+};
+const COMPOUNDS = {"H":"Wichtige Verbindungen: Wasser H₂O, Chlorwasserstoff HCl und Ammoniak NH₃.","He":"Helium ist sehr reaktionsträge; unter normalen Bedingungen gibt es keine praktisch wichtigen stabilen Heliumverbindungen.","Li":"Wichtig sind Lithiumcarbonat Li₂CO₃ sowie Kathodenmaterialien wie Lithiumeisenphosphat LiFePO₄.","Be":"Berylliumoxid BeO und Berylliumchlorid BeCl₂ sind wichtige Verbindungen; Berylliumverbindungen sind giftig.","B":"Borsäure H₃BO₃, Borate und Boroxid B₂O₃ sind technisch wichtig.","C":"Kohlenstoffdioxid CO₂, Kohlenstoffmonoxid CO, Methan CH₄ und Carbonate gehören zu den wichtigsten Kohlenstoffverbindungen.","N":"Ammoniak NH₃, Salpetersäure HNO₃ und Nitrate sind zentral für Dünger und chemische Industrie.","O":"Wasser H₂O, Metalloxide und Ozon O₃ sind besonders wichtige Sauerstoffverbindungen bzw. -formen.","F":"Fluorwasserstoff HF und Fluoride wie NaF sind wichtig; Fluor steckt außerdem in Fluorpolymeren wie PTFE.","Ne":"Neon ist ein Edelgas und bildet unter normalen Bedingungen keine praktisch wichtigen stabilen Verbindungen.","Na":"Natriumchlorid NaCl, Natriumhydroxid NaOH und Natriumcarbonat Na₂CO₃ sind sehr wichtige Alltags- und Industriechemikalien.","Mg":"Magnesiumoxid MgO, Magnesiumhydroxid Mg(OH)₂ und Magnesiumsulfat MgSO₄ sind wichtige Verbindungen.","Al":"Aluminiumoxid Al₂O₃, Aluminiumhydroxid Al(OH)₃ und Aluminiumchlorid AlCl₃ sind wichtig.","Si":"Siliciumdioxid SiO₂, Silicate und Silicone gehören zu den wichtigsten Siliciumverbindungen.","P":"Phosphorsäure H₃PO₄, Phosphate und Phosphoroxide sind für Dünger, Lebensmittel und Technik wichtig.","S":"Schwefelsäure H₂SO₄, Schwefeldioxid SO₂ und Sulfate gehören zu den wichtigsten Schwefelverbindungen.","Cl":"Natriumchlorid NaCl, Salzsäure HCl und Hypochlorite sind wichtige Chlorverbindungen.","Ar":"Argon ist sehr reaktionsträge; praktisch wichtige Argonverbindungen gibt es unter normalen Bedingungen kaum.","K":"Kaliumchlorid KCl, Kaliumhydroxid KOH und Kaliumnitrat KNO₃ sind wichtige Verbindungen.","Ca":"Calciumcarbonat CaCO₃, Calciumoxid CaO und Calciumsulfat CaSO₄ sind besonders wichtig.","Sc":"Scandiumoxid Sc₂O₃ und Scandiumfluorid ScF₃ werden in Spezialanwendungen eingesetzt.","Ti":"Titandioxid TiO₂ ist ein wichtiges Weißpigment; Titantetrachlorid TiCl₄ dient zur Titanherstellung.","V":"Vanadiumpentoxid V₂O₅ und Vanadate sind wichtige Katalysator- und Werkstoffverbindungen.","Cr":"Chrom(III)-oxid Cr₂O₃ ist ein Pigment; Chromate/Dichromate enthalten Cr(VI) und sind giftig.","Mn":"Mangandioxid MnO₂ und Kaliumpermanganat KMnO₄ sind wichtige Oxidationsmittel bzw. Batteriematerialien.","Fe":"Eisenoxide Fe₂O₃ und Fe₃O₄ sowie Eisensulfate gehören zu den wichtigsten Eisenverbindungen.","Co":"Cobaltoxide, Cobaltchlorid CoCl₂ und Lithiumcobaltoxid LiCoO₂ sind technisch wichtig.","Ni":"Nickeloxid NiO und Nickelsulfat NiSO₄ werden technisch genutzt; Nickelcarbonyl Ni(CO)₄ ist hochgiftig.","Cu":"Kupfersulfat CuSO₄, Kupfer(II)-oxid CuO und Kupfer(I)-oxid Cu₂O sind wichtige Kupferverbindungen.","Zn":"Zinkoxid ZnO, Zinksulfid ZnS und Zinkchlorid ZnCl₂ sind technisch wichtig.","Ga":"Galliumarsenid GaAs und Galliumnitrid GaN sind wichtige Halbleiter für LEDs und Hochfrequenztechnik.","Ge":"Germaniumdioxid GeO₂ und Germaniumtetrachlorid GeCl₄ spielen unter anderem in Glasfasertechnik eine Rolle.","As":"Arsen(III)-oxid As₂O₃ und Galliumarsenid GaAs sind bekannte Arsenverbindungen; viele Arsenverbindungen sind giftig.","Se":"Selendioxid SeO₂ sowie Selenite und Selenate sind wichtige Selenverbindungen.","Br":"Bromwasserstoff HBr, Bromide und Silberbromid AgBr sind wichtige Bromverbindungen.","Kr":"Krypton ist sehr reaktionsträge; Kryptondifluorid KrF₂ ist eine der wenigen bekannten stabilen Kryptonverbindungen.","Rb":"Rubidiumchlorid RbCl und Rubidiumcarbonat Rb₂CO₃ sind typische Rubidiumverbindungen.","Sr":"Strontiumcarbonat SrCO₃ und Strontiumnitrat Sr(NO₃)₂ werden unter anderem für Keramik und rote Flammenfarben genutzt.","Y":"Yttriumoxid Y₂O₃ und YAG (Y₃Al₅O₁₂) sind wichtig für Leuchtstoffe und Laser.","Zr":"Zirconiumdioxid ZrO₂ ist ein wichtiger Hochleistungskeramikstoff; ZrCl₄ dient als Ausgangsstoff.","Nb":"Niobpentoxid Nb₂O₅ und Niobcarbid NbC sind wichtige technische Verbindungen.","Mo":"Molybdändisulfid MoS₂ ist ein Schmierstoff; Molybdäntrioxid MoO₃ und Molybdate sind technisch wichtig.","Tc":"Pertechnetat TcO₄⁻, besonders mit Tc-99m, ist für die Nuklearmedizin wichtig.","Ru":"Rutheniumdioxid RuO₂ und Rutheniumchlorid RuCl₃ werden in Elektroden und Katalyse eingesetzt.","Rh":"Rhodiumchlorid RhCl₃ und Rhodium-Komplexe sind wichtige Katalysatoren.","Pd":"Palladiumchlorid PdCl₂ und Palladium-Komplexe sind bedeutende Katalysatoren.","Ag":"Silbernitrat AgNO₃, Silberchlorid AgCl und Silberbromid AgBr sind wichtige Silberverbindungen.","Cd":"Cadmiumsulfid CdS und Cadmiumtellurid CdTe sind Halbleitermaterialien; Cadmiumverbindungen sind giftig.","In":"Indiumoxid In₂O₃ und Indiumzinnoxid (ITO) sind für transparente leitfähige Schichten wichtig.","Sn":"Zinn(IV)-oxid SnO₂ sowie Zinn(II)- und Zinn(IV)-chlorid sind technisch wichtige Verbindungen.","Sb":"Antimon(III)-oxid Sb₂O₃ und Antimonsulfid Sb₂S₃ sind wichtige Antimonverbindungen.","Te":"Cadmiumtellurid CdTe wird in Solarzellen verwendet; Tellurdioxid TeO₂ ist ein wichtiges Tellurmaterial.","I":"Kaliumiodid KI, Iodate und iodierte organische Verbindungen sind für Ernährung, Medizin und Analytik wichtig.","Xe":"Xenondifluorid XeF₂ und Xenontetrafluorid XeF₄ zeigen, dass selbst Edelgase Verbindungen bilden können.","Cs":"Caesiumchlorid CsCl, Caesiumiodid CsI und Caesiumformiat werden technisch genutzt.","Ba":"Bariumsulfat BaSO₄ wird als Röntgenkontrastmittel eingesetzt; Bariumcarbonat und Bariumnitrat sind technisch wichtig.","La":"Lanthanoxid La₂O₃ und Lanthanverbindungen werden in Optik, Katalyse und Spezialwerkstoffen eingesetzt.","Ce":"Ceroxid CeO₂ ist wichtig für Katalysatoren und Poliermittel; Cer(IV)-salze sind starke Oxidationsmittel.","Pr":"Praseodymoxide wie Pr₆O₁₁ und Praseodymchlorid PrCl₃ werden in Spezialgläsern und Keramik eingesetzt.","Nd":"Neodymoxid Nd₂O₃ und die Magnetphase Nd₂Fe₁₄B sind für starke Permanentmagnete wichtig.","Pm":"Promethiumverbindungen wie PmCl₃ sind nur in kleinsten Mengen für Forschung und Spezialanwendungen relevant.","Sm":"Samariumoxid Sm₂O₃ und Samarium-Cobalt-Magnetwerkstoffe wie SmCo₅ sind technisch wichtig.","Eu":"Europiumoxid Eu₂O₃ und Europium-dotierte Leuchtstoffe erzeugen intensive rote und blaue Lumineszenz.","Gd":"Gadoliniumoxid Gd₂O₃ und Gadolinium-Komplexe werden unter anderem in Magnetresonanztechnik verwendet.","Tb":"Terbiumoxide, besonders Tb₄O₇, und terbiumhaltige Leuchtstoffe sind technisch wichtig.","Dy":"Dysprosiumoxid Dy₂O₃ und dysprosiumhaltige Magnetwerkstoffe verbessern Hochtemperaturmagnete.","Ho":"Holmiumoxid Ho₂O₃ und holmiumdotierte Lasermaterialien werden in Speziallasern eingesetzt.","Er":"Erbiumoxid Er₂O₃ und erbiumdotierte Glasfasern sind für optische Verstärker in Telekommunikation wichtig.","Tm":"Thuliumoxid Tm₂O₃ und thuliumdotierte Lasermaterialien werden für Speziallaser genutzt.","Yb":"Ytterbiumoxid Yb₂O₃ und ytterbiumdotierte Fasern sind für leistungsstarke Faserlaser wichtig.","Lu":"Lutetiumoxid Lu₂O₃ und Lutetium-Aluminium-Granat werden in Detektoren und Spezialoptik eingesetzt.","Hf":"Hafniumdioxid HfO₂ ist ein wichtiges High-k-Dielektrikum in modernen Chips; HfCl₄ ist ein Ausgangsstoff.","Ta":"Tantalpentoxid Ta₂O₅ ist für Kondensatoren und Optik wichtig; Tantalcarbid TaC ist sehr hart.","W":"Wolframcarbid WC ist ein extrem harter Werkstoff; Wolframtrioxid WO₃ wird in Elektrochromie und Katalyse genutzt.","Re":"Rhenium(VII)-oxid Re₂O₇ und Perrhenate sind wichtige Rheniumverbindungen in Forschung und Katalyse.","Os":"Osmiumtetroxid OsO₄ ist eine wichtige, aber sehr giftige Verbindung für Mikroskopie und organische Chemie.","Ir":"Iridiumdioxid IrO₂ und Iridiumchloride werden in Elektrochemie und Katalyse verwendet.","Pt":"Chloroplatinsäure H₂PtCl₆ und Cisplatin Pt(NH₃)₂Cl₂ sind wichtige Platinverbindungen.","Au":"Tetrachlorogoldsäure HAuCl₄ ist ein wichtiger Ausgangsstoff für Goldbeschichtungen und Nanogold.","Hg":"Quecksilbersulfid HgS und Quecksilberchloride sind bekannte Verbindungen; viele Quecksilberverbindungen sind hochgiftig.","Tl":"Thalliumchlorid TlCl und Thalliumoxide sind bekannt; Thalliumverbindungen sind sehr giftig.","Pb":"Blei(II)-oxid PbO, Bleidioxid PbO₂ und Bleisulfat PbSO₄ sind besonders für Bleiakkus wichtig.","Bi":"Bismutoxid Bi₂O₃ und Bismutoxychlorid BiOCl werden in Keramik, Medizin und Kosmetik eingesetzt.","Po":"Poloniumdioxid PoO₂ ist bekannt; wegen der starken Radioaktivität haben Poloniumverbindungen praktisch keine Alltagsanwendung.","At":"Astat bildet in Spuren Astatide und weitere Verbindungen; wegen der extrem kleinen Mengen ist dies vor allem Forschungschemie.","Rn":"Radon ist ein radioaktives Edelgas; praktisch wichtige stabile Radonverbindungen gibt es nicht.","Fr":"Francium existiert nur in winzigen Mengen und sehr kurzlebig; praktisch wichtige Verbindungen gibt es nicht.","Ra":"Radiumchlorid RaCl₂ und Radiumsulfat RaSO₄ sind bekannte Verbindungen; Radium ist stark radioaktiv.","Ac":"Actiniumchlorid AcCl₃ und Actiniumfluorid AcF₃ sind Forschungsverbindungen; Ac-225 ist medizinisch interessant.","Th":"Thoriumdioxid ThO₂ und Thoriumsalze wurden technisch untersucht; Thorium spielt vor allem in Kernforschung eine Rolle.","Pa":"Protactiniumoxide und -fluoride sind bekannt, aber wegen Seltenheit und Radioaktivität nur Forschungsstoffe.","U":"Urandioxid UO₂ ist Reaktorbrennstoff; Uranhexafluorid UF₆ dient zur Urananreicherung.","Np":"Neptuniumdioxid NpO₂ und Neptunyl-Verbindungen sind vor allem für Kernchemie und Forschung relevant.","Pu":"Plutoniumdioxid PuO₂ ist ein wichtiger Kernbrennstoff und wird auch in Radioisotopen-Energiequellen eingesetzt.","Am":"Americiumdioxid AmO₂ und Americiumsalze sind bekannt; Am-241 wird in manchen Rauchmeldern genutzt.","Cm":"Curiumoxide und Curiumchlorid CmCl₃ sind vor allem Forschungs- und Radioisotopenmaterialien.","Bk":"Berkeliumchlorid BkCl₃ und Berkeliumoxide wurden in winzigen Mengen untersucht.","Cf":"Californiumoxide und -halogenide sind Forschungsverbindungen; Cf-252 ist eine starke Neutronenquelle.","Es":"Einsteiniumchlorid EsCl₃ und weitere Einsteiniumverbindungen können nur in extrem kleinen Mengen untersucht werden.","Fm":"Fermiumverbindungen wurden nur atomar bzw. in Spuren untersucht; es gibt keine praktische Alltagsanwendung.","Md":"Mendelevium bildet in Spuren vor allem zwei- und dreiwertige Ionen; praktische Verbindungen gibt es nicht.","No":"Nobelium zeigt überwiegend die Oxidationsstufe +2; Verbindungen werden nur in extrem kleinen Mengen untersucht.","Lr":"Lawrenciumchemie ist auf einzelne Atome beschränkt; Halogenid- und Lösungskomplexe werden erforscht.","Rf":"Rutherfordium bildet flüchtige Halogenide wie RfCl₄; untersucht wird es nur atomweise.","Db":"Dubniumverbindungen wie Halogenide und Oxyhalogenide werden nur in wenigen Atomen untersucht.","Sg":"Seaborgium bildet in Tracerexperimenten sauerstoff- und halogenhaltige Spezies; praktische Verbindungen gibt es nicht.","Bh":"Bohriumchemie wurde nur mit wenigen Atomen untersucht; vermutet und untersucht werden vor allem Oxyhalogenide.","Hs":"Hassiumtetroxid HsO₄ wurde experimentell nachgewiesen und ähnelt Osmiumtetroxid.","Mt":"Meitnerium wurde nur atomweise untersucht; makroskopische Verbindungen sind nicht verfügbar.","Ds":"Darmstadtium ist extrem kurzlebig; praktisch nutzbare Verbindungen sind nicht bekannt.","Rg":"Roentgenium ist extrem kurzlebig; seine Chemie wird nur anhand einzelner Atome erforscht.","Cn":"Copernicium ist extrem kurzlebig; Oberflächen- und Gasphasenexperimente untersuchen seine chemischen Eigenschaften.","Nh":"Nihonium wurde nur in wenigen Atomen erzeugt; praktisch wichtige Verbindungen sind nicht bekannt.","Fl":"Flerovium wurde nur atomweise untersucht; makroskopische Verbindungen sind nicht verfügbar.","Mc":"Moscovium ist extrem kurzlebig; seine Verbindungen sind bislang nur Gegenstand theoretischer und atomarer Forschung.","Lv":"Livermorium ist extrem kurzlebig; praktisch nutzbare Verbindungen sind nicht bekannt.","Ts":"Tenness ist extrem kurzlebig; seine Halogenchemie kann bislang nur an wenigen Atomen untersucht werden.","Og":"Oganesson ist extrem kurzlebig; stabile, praktisch nutzbare Verbindungen sind nicht bekannt."};
+
+let session = null;
+let puzzle = null;
+let selected = [];
+let timerHandle = null;
+
+function $(id){ return document.getElementById(id); }
+function show(id,on=true){ $(id).classList.toggle("hidden",!on); }
+function msg(id,text,type=""){
+  const el=$(id); el.textContent=text; el.className="notice"+(type ? " "+type : ""); show(id,true);
+}
+function clearMsg(id){ show(id,false); }
+function fmtTime(ms){
+  if(ms==null) return "–";
+  ms=Math.max(0,Number(ms));
+  const min=Math.floor(ms/60000), sec=Math.floor((ms%60000)/1000), milli=Math.floor(ms%1000);
+  return String(min).padStart(2,"0")+":"+String(sec).padStart(2,"0")+"."+String(milli).padStart(3,"0");
+}
+function fmtDate(s){
+  if(!s) return "";
+  const [y,m,d]=s.split("-");
+  return `${d}.${m}.${y}`;
+}
+function usernameFromSession(){
+  return session?.user?.user_metadata?.username || session?.user?.email || "Spieler";
+}
+
+async function signup(){
+  clearMsg("authMsg");
+  const username=$("signupName").value.trim();
+  const email=$("signupEmail").value.trim();
+  const password=$("signupPass").value;
+  if(username.length<2) return msg("authMsg","Bitte einen Spielernamen mit mindestens 2 Zeichen eingeben.","bad");
+  if(!email || password.length<6) return msg("authMsg","Bitte E-Mail und ein Passwort mit mindestens 6 Zeichen eingeben.","bad");
+  const options={data:{username}};
+  if(APP_URL) options.emailRedirectTo=APP_URL;
+  const {error}=await supabaseClient.auth.signUp({email,password,options});
+  if(error) return msg("authMsg",error.message,"bad");
+  msg("authMsg","Registrierung gespeichert. Falls E-Mail-Bestätigung aktiv ist, bitte den Link in der Bestätigungsmail öffnen.","good");
+}
+
+async function login(){
+  clearMsg("authMsg");
+  const email=$("loginEmail").value.trim();
+  const password=$("loginPass").value;
+  const {error}=await supabaseClient.auth.signInWithPassword({email,password});
+  if(error) return msg("authMsg",error.message,"bad");
+}
+
+async function logout(){
+  stopTimer();
+  await supabaseClient.auth.signOut();
+  session=null; puzzle=null; selected=[];
+  renderAuth();
+}
+
+function renderAuth(){
+  const logged=!!session;
+  show("authCard",!logged);
+  show("lobbyCard",logged);
+  show("gameCard",false);
+  show("resultCard",false);
+  show("leaderCard",logged);
+  if(logged){
+    $("userLabel").textContent=usernameFromSession();
+    loadStatus();
+    loadLeaderboard();
+  }
+}
+
+async function loadStatus(){
+  const {data,error}=await supabaseClient.rpc("elementenpuzzle_status");
+  if(error) return msg("authMsg","Datenbank noch nicht eingerichtet oder Status konnte nicht geladen werden: "+error.message,"bad");
+  const st=Array.isArray(data)?data[0]:data;
+  if(!st) return;
+  $("todayLabel").textContent=fmtDate(st.puzzle_date);
+  if(!st.started){
+    show("lobbyCard",true); show("gameCard",false); show("resultCard",false);
+    $("startBtn").disabled=false;
+  } else {
+    puzzle=st;
+    show("lobbyCard",false);
+    if(st.solved) renderSolved(st);
+    else renderGame(st);
+  }
+}
+
+async function startPuzzle(){
+  $("startBtn").disabled=true;
+  const {data,error}=await supabaseClient.rpc("elementenpuzzle_start");
+  if(error){
+    $("startBtn").disabled=false;
+    return alert("Start fehlgeschlagen: "+error.message);
+  }
+  puzzle=Array.isArray(data)?data[0]:data;
+  show("lobbyCard",false);
+  if(puzzle.solved) renderSolved(puzzle); else renderGame(puzzle);
+}
+
+function renderGame(st){
+  show("gameCard",true); show("resultCard",false); show("leaderCard",true);
+  $("elementCount").textContent=st.element_count;
+  selected=[];
+  renderTiles(st.choices||[]);
+  renderSelection();
+  startTimer(st.started_at);
+}
+
+function renderTiles(choices){
+  $("tiles").innerHTML=choices.map(sym=>{
+    const e=BY_SYMBOL[sym]||[sym,sym];
+    return `<button class="element-tile" onclick="chooseSymbol('${sym}')"><div class="sym">${sym}</div><div class="ename">${e[1]}</div></button>`;
+  }).join("");
+}
+
+function chooseSymbol(sym){
+  if(!puzzle || selected.length>=Number(puzzle.element_count)) return;
+  selected.push(sym); renderSelection();
+}
+function undoSymbol(){ selected.pop(); renderSelection(); }
+function clearSelection(){ selected=[]; renderSelection(); }
+function renderSelection(){
+  const box=$("selectionBox");
+  if(!selected.length) box.innerHTML='<span class="small">Klicke die Elementsymbole in der richtigen Reihenfolge an.</span>';
+  else box.innerHTML=selected.map(s=>`<span class="chip">${s}</span>`).join("");
+  $("preview").textContent=selected.map(s=>s).join("");
+  $("submitBtn").disabled=!puzzle || selected.length!==Number(puzzle.element_count);
+}
+
+async function submitGuess(){
+  if(!puzzle || selected.length!==Number(puzzle.element_count)) return;
+  $("submitBtn").disabled=true;
+  clearMsg("gameMsg");
+  const guess=selected.slice();
+  const {data,error}=await supabaseClient.rpc("elementenpuzzle_submit",{p_symbols:guess});
+  if(error){
+    $("submitBtn").disabled=false;
+    return msg("gameMsg",error.message,"bad");
+  }
+  const r=Array.isArray(data)?data[0]:data;
+  if(r.correct){
+    puzzle={...puzzle,...r,solved:true};
+    renderSolved(puzzle);
+    loadLeaderboard();
+  } else {
+    msg("gameMsg",`Noch nicht richtig. Versuch ${r.guesses} – die Uhr läuft weiter.`, "bad");
+    $("selectionBox").classList.remove("shake"); void $("selectionBox").offsetWidth; $("selectionBox").classList.add("shake");
+    selected=[]; renderSelection();
+  }
+}
+
+function startTimer(startIso){
+  stopTimer();
+  const start=new Date(startIso).getTime();
+  const tick=()=>{ $("timer").textContent=fmtTime(Date.now()-start); };
+  tick(); timerHandle=setInterval(tick,31);
+}
+function stopTimer(){ if(timerHandle) clearInterval(timerHandle); timerHandle=null; }
+
+function renderSolved(st){
+  stopTimer();
+  show("gameCard",false); show("lobbyCard",false); show("resultCard",true); show("leaderCard",true);
+  const word=st.solved_word||"";
+  const syms=st.solved_symbols||[];
+  $("solvedWord").textContent=word;
+  $("solvedBreakdown").textContent=syms.join(" · ");
+  $("finalTime").textContent=fmtTime(st.elapsed_ms);
+  $("rankBig").textContent=st.rank ? `🏁 Platz ${st.rank} in der heutigen Rangliste` : "🏁 Ergebnis gespeichert";
+  renderInfo(syms);
+}
+
+function renderInfo(syms){
+  const unique=[...new Set(syms)];
+  $("infoGrid").innerHTML=unique.map(sym=>{
+    const e=BY_SYMBOL[sym]||[sym,sym,"?"];
+    const base=INFO[sym]||"Für dieses Element liegt noch keine Kurzinfo vor.";
+    const parts=base.split("·");
+    const discovery=parts.length>1?parts[0].trim():"";
+    const use=parts.length>1?parts.slice(1).join("·").trim():base;
+    return `<article class="info-card">
+      <div class="info-head"><div class="info-symbol">${sym}</div><div><h3>${e[1]}</h3><div class="small">Ordnungszahl ${e[2]}</div></div></div>
+      <p><b>Verwendung:</b> ${use}</p>
+      <p><b>Wichtige Verbindungen:</b> ${COMPOUNDS[sym]||"Vor allem Forschung; keine verbreitete Alltagsverbindung."}</p>
+      ${discovery?`<p class="small">${discovery}</p>`:""}
+    </article>`;
+  }).join("");
+}
+
+async function loadLeaderboard(){
+  if(!session) return;
+  const {data,error}=await supabaseClient.rpc("elementenpuzzle_leaderboard");
+  if(error) return $("leaderWrap").innerHTML=`<div class="notice bad">${error.message}</div>`;
+  if(!data?.length) return $("leaderWrap").innerHTML='<div class="notice">Heute hat noch niemand das Rätsel gelöst.</div>';
+  const medal=r=>r===1?"🥇":r===2?"🥈":r===3?"🥉":r;
+  $("leaderWrap").innerHTML=`<table class="leaderboard">
+    <thead><tr><th>Rang</th><th>Spieler</th><th>Zeit</th><th>Versuche</th></tr></thead>
+    <tbody>${data.map(x=>`<tr><td class="medal">${medal(Number(x.rank))}</td><td>${escapeHtml(x.username)}</td><td>${fmtTime(x.elapsed_ms)}</td><td>${x.guesses}</td></tr>`).join("")}</tbody>
+  </table>`;
+}
+function escapeHtml(v){ return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+
+supabaseClient.auth.onAuthStateChange((_event,newSession)=>{
+  session=newSession;
+  renderAuth();
+});
+(async()=>{
+  const {data}=await supabaseClient.auth.getSession();
+  session=data.session;
+  renderAuth();
+})();
+</script>
+</body>
+</html>
