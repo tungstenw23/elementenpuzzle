@@ -59,6 +59,13 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(23,107,135,.12)
 .element-tile:hover{transform:translateY(-2px);border-color:#6f9caf;box-shadow:0 8px 16px rgba(25,79,100,.10)}
 .element-tile .sym{font-family:ui-monospace,monospace;font-size:25px;font-weight:900;color:#14566f}
 .element-tile .ename{font-size:10px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.element-tile.used{background:#eef2f4;border-color:#c7d0d5;box-shadow:none;opacity:.62}
+.element-tile.used:hover{opacity:.82;transform:translateY(-1px);box-shadow:0 5px 12px rgba(25,79,100,.08)}
+.element-tile .usage-badge{display:none;margin:6px auto 0;width:max-content;max-width:92%;border-radius:999px;padding:3px 7px;background:#dce6ea;color:#315666;font-size:9px;font-weight:900;line-height:1.2}
+.element-tile.used .usage-badge{display:block}
+.unused-summary{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 0 -6px;color:#49636f;font-size:13px;font-weight:800}
+.unused-dot{width:10px;height:10px;border-radius:50%;background:#fbfdfe;border:2px solid #6f9caf;display:inline-block}
+.used-dot{width:10px;height:10px;border-radius:50%;background:#c7d0d5;display:inline-block;margin-left:7px}
 .selection{min-height:82px;border:2px dashed #bfd0d8;background:#f8fbfc;border-radius:18px;padding:12px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
 .chip{display:inline-flex;align-items:center;justify-content:center;min-width:52px;height:48px;padding:0 12px;border-radius:12px;background:#183f52;color:white;font-family:ui-monospace,monospace;font-size:21px;font-weight:900}
 .preview{text-align:center;font-size:24px;font-weight:900;letter-spacing:.05em;margin:10px 0 2px;min-height:30px}
@@ -139,20 +146,21 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(23,107,135,.12)
   <section id="gameCard" class="card hidden">
     <div class="topbar">
       <span class="count-pill">🧩 Gesucht: <b id="elementCount">–</b> Elementsymbole</span>
-      <span class="small">15 Elemente zur Auswahl</span>
+      <span id="unusedTop" class="small">15 Elemente zur Auswahl</span>
     </div>
     <div id="timer" class="timer">00:00.000</div>
     <div class="rule">Falsche Versuche kosten keine Punkte – aber die Uhr läuft weiter. Ab 5 Elementsymbolen sind bis zu drei Tipps möglich.</div>
 
     <div id="hintPanel" class="hint-panel hidden">
       <div><strong>💡 Element-Tipp</strong></div>
-      <div class="small">Der Tipp nennt ein Element, das irgendwo im gesuchten Wort vorkommt. 1. Tipp: +1 Min · 2. Tipp: +2 Min · 3. Tipp: +5 Min.</div>
+      <div class="small">Der Tipp nennt ein Element und zeigt zusätzlich seine genaue Stelle im gesuchten Wort. 1. Tipp: +1 Min · 2. Tipp: +2 Min · 3. Tipp: +5 Min.</div>
       <button id="hintBtn" class="hint-btn" onclick="takeHint()">Tipp verwenden</button>
       <div id="hintPenalty" class="hint-penalty"></div>
       <div id="hintHistory" class="hint-history"></div>
       <div id="hintMsg" class="small" style="margin-top:8px"></div>
     </div>
 
+    <div id="unusedSummary" class="unused-summary"><span class="unused-dot"></span> Noch ungenutzt: 15 von 15 <span class="used-dot"></span> bereits benutzt</div>
     <div id="tiles" class="tiles"></div>
 
     <div id="selectionBox" class="selection"><span class="small">Klicke die Elementsymbole in der richtigen Reihenfolge an.</span></div>
@@ -540,7 +548,7 @@ let session = null;
 let puzzle = null;
 let selected = [];
 let timerHandle = null;
-let hintState = {hints_used:0, hint_penalty_ms:0, revealed_hints:[]};
+let hintState = {hints_used:0, hint_penalty_ms:0, revealed_hints:[], revealed_hint_slots:[], revealed_hint_char_starts:[], revealed_hint_char_ends:[]};
 
 function $(id){ return document.getElementById(id); }
 function show(id,on=true){ $(id).classList.toggle("hidden",!on); }
@@ -639,7 +647,7 @@ function renderGame(st){
   show("gameCard",true); show("resultCard",false); show("leaderCard",true);
   $("elementCount").textContent=st.element_count;
   selected=[];
-  hintState={hints_used:0,hint_penalty_ms:0,revealed_hints:[]};
+  hintState={hints_used:0,hint_penalty_ms:0,revealed_hints:[],revealed_hint_slots:[],revealed_hint_char_starts:[],revealed_hint_char_ends:[]};
   renderTiles(st.choices||[]);
   renderSelection();
   renderHintUI();
@@ -649,6 +657,17 @@ function renderGame(st){
 
 const HINT_PENALTIES=[60000,120000,300000];
 
+function hintPositionText(sym, slot, charStart, charEnd){
+  const parts=[];
+  const slotNo=Number(slot||0);
+  const cs=Number(charStart||0), ce=Number(charEnd||0);
+  if(slotNo>0) parts.push(`${slotNo}. Elementsymbol`);
+  if(cs>0 && ce>0){
+    parts.push(cs===ce ? `Buchstabenstelle ${cs}` : `Buchstabenstellen ${cs}–${ce}`);
+  }
+  return parts.join(" · ");
+}
+
 function renderHintUI(){
   const eligible=!!puzzle && Number(puzzle.element_count)>=5;
   show("hintPanel",eligible);
@@ -657,6 +676,9 @@ function renderHintUI(){
   const used=Number(hintState.hints_used||0);
   const penalty=Number(hintState.hint_penalty_ms||0);
   const revealed=Array.isArray(hintState.revealed_hints)?hintState.revealed_hints:[];
+  const slots=Array.isArray(hintState.revealed_hint_slots)?hintState.revealed_hint_slots:[];
+  const starts=Array.isArray(hintState.revealed_hint_char_starts)?hintState.revealed_hint_char_starts:[];
+  const ends=Array.isArray(hintState.revealed_hint_char_ends)?hintState.revealed_hint_char_ends:[];
   const btn=$("hintBtn");
 
   if(used>=3){
@@ -671,10 +693,10 @@ function renderHintUI(){
   $("hintPenalty").textContent=penalty>0 ? `Bisheriger Zeitzuschlag: +${fmtPenalty(penalty)}` : "Noch kein Zeitzuschlag.";
   $("hintHistory").innerHTML=revealed.map((sym,i)=>{
     const e=BY_SYMBOL[sym]||[sym,sym];
-    return `<span class="hint-chip">Tipp ${i+1}: ${escapeHtml(sym)} · ${escapeHtml(e[1])}</span>`;
+    const pos=hintPositionText(sym,slots[i],starts[i],ends[i]);
+    return `<span class="hint-chip">Tipp ${i+1}: ${escapeHtml(sym)} · ${escapeHtml(e[1])}${pos?` — ${escapeHtml(pos)}`:""}</span>`;
   }).join("");
 }
-
 function fmtPenalty(ms){
   const total=Math.round(Number(ms||0)/1000);
   const min=Math.floor(total/60), sec=total%60;
@@ -695,7 +717,10 @@ async function loadHintState(){
     hintState={
       hints_used:Number(r.hints_used||0),
       hint_penalty_ms:Number(r.hint_penalty_ms||0),
-      revealed_hints:r.revealed_hints||[]
+      revealed_hints:r.revealed_hints||[],
+      revealed_hint_slots:r.revealed_hint_slots||[],
+      revealed_hint_char_starts:r.revealed_hint_char_starts||[],
+      revealed_hint_char_ends:r.revealed_hint_char_ends||[]
     };
     renderHintUI();
   }
@@ -717,10 +742,14 @@ async function takeHint(){
     hintState={
       hints_used:Number(r.hints_used||0),
       hint_penalty_ms:Number(r.hint_penalty_ms||0),
-      revealed_hints:r.revealed_hints||[]
+      revealed_hints:r.revealed_hints||[],
+      revealed_hint_slots:r.revealed_hint_slots||[],
+      revealed_hint_char_starts:r.revealed_hint_char_starts||[],
+      revealed_hint_char_ends:r.revealed_hint_char_ends||[]
     };
     const e=BY_SYMBOL[r.new_hint]||[r.new_hint,r.new_hint];
-    $("hintMsg").textContent=`Neuer Tipp: ${r.new_hint} (${e[1]}) kommt im gesuchten Wort vor. +${fmtPenalty(r.added_penalty_ms)}.`;
+    const pos=hintPositionText(r.new_hint,r.new_hint_slot,r.new_hint_char_start,r.new_hint_char_end);
+    $("hintMsg").textContent=`Neuer Tipp: ${r.new_hint} (${e[1]})${pos?` — ${pos}`:" kommt im gesuchten Wort vor"}. +${fmtPenalty(r.added_penalty_ms)}.`;
     renderHintUI();
   }
 }
@@ -728,8 +757,9 @@ async function takeHint(){
 function renderTiles(choices){
   $("tiles").innerHTML=choices.map(sym=>{
     const e=BY_SYMBOL[sym]||[sym,sym];
-    return `<button class="element-tile" onclick="chooseSymbol('${sym}')"><div class="sym">${sym}</div><div class="ename">${e[1]}</div></button>`;
+    return `<button class="element-tile" data-symbol="${escapeHtml(sym)}" onclick="chooseSymbol('${sym}')"><div class="sym">${escapeHtml(sym)}</div><div class="ename">${escapeHtml(e[1])}</div><div class="usage-badge"></div></button>`;
   }).join("");
+  updateTileUsage();
 }
 
 function chooseSymbol(sym){
@@ -738,14 +768,33 @@ function chooseSymbol(sym){
 }
 function undoSymbol(){ selected.pop(); renderSelection(); }
 function clearSelection(){ selected=[]; renderSelection(); }
+
+function updateTileUsage(){
+  const counts={};
+  for(const sym of selected) counts[sym]=(counts[sym]||0)+1;
+  const buttons=[...document.querySelectorAll("#tiles .element-tile")];
+  let unused=0;
+  for(const btn of buttons){
+    const sym=btn.dataset.symbol;
+    const count=counts[sym]||0;
+    btn.classList.toggle("used",count>0);
+    const badge=btn.querySelector(".usage-badge");
+    if(badge) badge.textContent=count>0 ? `${count}× benutzt` : "";
+    if(count===0) unused++;
+    btn.title=count>0 ? `${sym}: bereits ${count}× benutzt – kann bei Bedarf erneut angeklickt werden` : `${sym}: noch ungenutzt`;
+  }
+  if($("unusedSummary")) $("unusedSummary").innerHTML=`<span class="unused-dot"></span> Noch ungenutzt: <b>${unused} von ${buttons.length}</b> <span class="used-dot"></span> bereits benutzt`;
+  if($("unusedTop")) $("unusedTop").textContent=`${unused} von ${buttons.length} Elementen noch ungenutzt`;
+}
+
 function renderSelection(){
   const box=$("selectionBox");
   if(!selected.length) box.innerHTML='<span class="small">Klicke die Elementsymbole in der richtigen Reihenfolge an.</span>';
-  else box.innerHTML=selected.map(s=>`<span class="chip">${s}</span>`).join("");
+  else box.innerHTML=selected.map((s,i)=>`<span class="chip" title="${i+1}. Elementsymbol">${escapeHtml(s)}</span>`).join("");
   $("preview").textContent=selected.map(s=>s).join("");
   $("submitBtn").disabled=!puzzle || selected.length!==Number(puzzle.element_count);
+  updateTileUsage();
 }
-
 async function submitGuess(){
   if(!puzzle || selected.length!==Number(puzzle.element_count)) return;
   $("submitBtn").disabled=true;
