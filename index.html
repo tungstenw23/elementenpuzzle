@@ -53,6 +53,12 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(23,107,135,.12)
 .hint-history{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:10px}
 .hint-chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;background:#fff;border:1px solid #e7c977;padding:7px 10px;font-weight:800;color:#6d4b00}
 .hint-penalty{margin-top:8px;font-weight:800;color:#9a5c00}
+.hint-map{margin:12px auto 2px;padding-top:11px;border-top:1px solid #efdcae}
+.hint-map-title{font-size:12px;font-weight:900;color:#7a5a12;margin-bottom:8px}
+.hint-map-slots{display:flex;justify-content:center;gap:7px;flex-wrap:wrap}
+.hint-slot{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:45px;padding:0 8px;border:2px dashed #d8c58f;border-radius:11px;background:#fffdf7;color:#8a6a1c;font-family:ui-monospace,monospace;font-size:19px;font-weight:900;box-sizing:border-box}
+.hint-slot.revealed{border-style:solid;border-color:#d19a21;background:#fff1c8;color:#6d4b00;box-shadow:0 3px 8px rgba(154,92,0,.10)}
+.hint-slot-no{display:block;font-family:inherit;font-size:9px;line-height:1;color:#a18a50;margin-right:4px;font-weight:800}
 .count-pill{display:inline-flex;align-items:center;gap:7px;border-radius:999px;background:#fff3d8;color:#754e00;padding:8px 12px;font-weight:800}
 .tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:18px 0}
 .element-tile{border:1px solid #c6d2d9;background:#fbfdfe;border-radius:16px;padding:13px 5px;min-height:78px;transition:.12s transform,.12s box-shadow,.12s border-color}
@@ -158,6 +164,10 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(23,107,135,.12)
       <div id="hintPenalty" class="hint-penalty"></div>
       <div id="hintHistory" class="hint-history"></div>
       <div id="hintMsg" class="small" style="margin-top:8px"></div>
+      <div id="hintMap" class="hint-map hidden">
+        <div class="hint-map-title">Positionen der verratenen Elemente im Lösungswort</div>
+        <div id="hintMapSlots" class="hint-map-slots"></div>
+      </div>
     </div>
 
     <div id="unusedSummary" class="unused-summary"><span class="unused-dot"></span> Noch ungenutzt: 15 von 15 <span class="used-dot"></span> bereits benutzt</div>
@@ -668,6 +678,31 @@ function hintPositionText(sym, slot, charStart, charEnd){
   return parts.join(" · ");
 }
 
+function renderHintMap(){
+  const map=$("hintMap");
+  const box=$("hintMapSlots");
+  if(!map || !box || !puzzle){ return; }
+
+  const count=Number(puzzle.element_count||0);
+  const revealed=Array.isArray(hintState.revealed_hints)?hintState.revealed_hints:[];
+  const slots=Array.isArray(hintState.revealed_hint_slots)?hintState.revealed_hint_slots:[];
+  const known={};
+  revealed.forEach((sym,i)=>{
+    const pos=Number(slots[i]||0);
+    if(pos>=1 && pos<=count) known[pos]=sym;
+  });
+
+  const hasKnown=Object.keys(known).length>0;
+  show("hintMap",hasKnown);
+  if(!hasKnown){ box.innerHTML=""; return; }
+
+  box.innerHTML=Array.from({length:count},(_,i)=>{
+    const pos=i+1;
+    const sym=known[pos]||"";
+    return `<span class="hint-slot${sym?" revealed":""}" title="${pos}. Elementsymbol${sym?`: ${escapeHtml(sym)}`:" – noch unbekannt"}"><span class="hint-slot-no">${pos}</span>${sym?escapeHtml(sym):"&nbsp;"}</span>`;
+  }).join("");
+}
+
 function renderHintUI(){
   const eligible=!!puzzle && Number(puzzle.element_count)>=5;
   show("hintPanel",eligible);
@@ -696,6 +731,7 @@ function renderHintUI(){
     const pos=hintPositionText(sym,slots[i],starts[i],ends[i]);
     return `<span class="hint-chip">Tipp ${i+1}: ${escapeHtml(sym)} · ${escapeHtml(e[1])}${pos?` — ${escapeHtml(pos)}`:""}</span>`;
   }).join("");
+  renderHintMap();
 }
 function fmtPenalty(ms){
   const total=Math.round(Number(ms||0)/1000);
