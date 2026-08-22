@@ -46,6 +46,13 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(23,107,135,.12)
 .topbar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
 .timer{font-family:ui-monospace,monospace;font-variant-numeric:tabular-nums;font-size:clamp(34px,7vw,62px);font-weight:900;letter-spacing:.03em;color:#113a4e;text-align:center;margin:10px 0 2px}
 .rule{text-align:center;color:var(--muted);margin-bottom:18px}
+.hint-panel{max-width:700px;margin:0 auto 18px;padding:14px;border:1px solid #f0d79b;background:#fff8e8;border-radius:16px;text-align:center}
+.hint-panel .small{line-height:1.45}
+.hint-btn{border:0;border-radius:13px;padding:11px 16px;font-weight:850;background:#e4a11b;color:#3d2a00;margin-top:9px}
+.hint-btn:disabled{opacity:.48;cursor:not-allowed}
+.hint-history{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+.hint-chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;background:#fff;border:1px solid #e7c977;padding:7px 10px;font-weight:800;color:#6d4b00}
+.hint-penalty{margin-top:8px;font-weight:800;color:#9a5c00}
 .count-pill{display:inline-flex;align-items:center;gap:7px;border-radius:999px;background:#fff3d8;color:#754e00;padding:8px 12px;font-weight:800}
 .tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:18px 0}
 .element-tile{border:1px solid #c6d2d9;background:#fbfdfe;border-radius:16px;padding:13px 5px;min-height:78px;transition:.12s transform,.12s box-shadow,.12s border-color}
@@ -135,7 +142,16 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(23,107,135,.12)
       <span class="small">15 Elemente zur Auswahl</span>
     </div>
     <div id="timer" class="timer">00:00.000</div>
-    <div class="rule">Es gibt keinen weiteren Hinweis. Falsche Versuche kosten keine Punkte – aber die Uhr läuft weiter.</div>
+    <div class="rule">Falsche Versuche kosten keine Punkte – aber die Uhr läuft weiter. Ab 5 Elementsymbolen sind bis zu drei Tipps möglich.</div>
+
+    <div id="hintPanel" class="hint-panel hidden">
+      <div><strong>💡 Element-Tipp</strong></div>
+      <div class="small">Der Tipp nennt ein Element, das irgendwo im gesuchten Wort vorkommt. 1. Tipp: +1 Min · 2. Tipp: +2 Min · 3. Tipp: +5 Min.</div>
+      <button id="hintBtn" class="hint-btn" onclick="takeHint()">Tipp verwenden</button>
+      <div id="hintPenalty" class="hint-penalty"></div>
+      <div id="hintHistory" class="hint-history"></div>
+      <div id="hintMsg" class="small" style="margin-top:8px"></div>
+    </div>
 
     <div id="tiles" class="tiles"></div>
 
@@ -524,6 +540,7 @@ let session = null;
 let puzzle = null;
 let selected = [];
 let timerHandle = null;
+let hintState = {hints_used:0, hint_penalty_ms:0, revealed_hints:[]};
 
 function $(id){ return document.getElementById(id); }
 function show(id,on=true){ $(id).classList.toggle("hidden",!on); }
@@ -622,9 +639,90 @@ function renderGame(st){
   show("gameCard",true); show("resultCard",false); show("leaderCard",true);
   $("elementCount").textContent=st.element_count;
   selected=[];
+  hintState={hints_used:0,hint_penalty_ms:0,revealed_hints:[]};
   renderTiles(st.choices||[]);
   renderSelection();
+  renderHintUI();
   startTimer(st.started_at);
+  loadHintState();
+}
+
+const HINT_PENALTIES=[60000,120000,300000];
+
+function renderHintUI(){
+  const eligible=!!puzzle && Number(puzzle.element_count)>=5;
+  show("hintPanel",eligible);
+  if(!eligible) return;
+
+  const used=Number(hintState.hints_used||0);
+  const penalty=Number(hintState.hint_penalty_ms||0);
+  const revealed=Array.isArray(hintState.revealed_hints)?hintState.revealed_hints:[];
+  const btn=$("hintBtn");
+
+  if(used>=3){
+    btn.textContent="Alle 3 Tipps verwendet";
+    btn.disabled=true;
+  }else{
+    const plus=HINT_PENALTIES[used];
+    btn.textContent=`Tipp ${used+1} verwenden (+${Math.round(plus/60000)} Min)`;
+    btn.disabled=false;
+  }
+
+  $("hintPenalty").textContent=penalty>0 ? `Bisheriger Zeitzuschlag: +${fmtPenalty(penalty)}` : "Noch kein Zeitzuschlag.";
+  $("hintHistory").innerHTML=revealed.map((sym,i)=>{
+    const e=BY_SYMBOL[sym]||[sym,sym];
+    return `<span class="hint-chip">Tipp ${i+1}: ${escapeHtml(sym)} · ${escapeHtml(e[1])}</span>`;
+  }).join("");
+}
+
+function fmtPenalty(ms){
+  const total=Math.round(Number(ms||0)/1000);
+  const min=Math.floor(total/60), sec=total%60;
+  return sec ? `${min}:${String(sec).padStart(2,"0")} Min` : `${min} Min`;
+}
+
+async function loadHintState(){
+  if(!puzzle || Number(puzzle.element_count)<5) return;
+  $("hintMsg").textContent="";
+  const {data,error}=await supabaseClient.rpc("elementenpuzzle_hint",{p_take:false});
+  if(error){
+    $("hintMsg").textContent="Tippfunktion ist in Supabase noch nicht eingerichtet: "+error.message;
+    $("hintBtn").disabled=true;
+    return;
+  }
+  const r=Array.isArray(data)?data[0]:data;
+  if(r){
+    hintState={
+      hints_used:Number(r.hints_used||0),
+      hint_penalty_ms:Number(r.hint_penalty_ms||0),
+      revealed_hints:r.revealed_hints||[]
+    };
+    renderHintUI();
+  }
+}
+
+async function takeHint(){
+  if(!puzzle || Number(puzzle.element_count)<5 || Number(hintState.hints_used||0)>=3) return;
+  const btn=$("hintBtn");
+  btn.disabled=true;
+  $("hintMsg").textContent="Tipp wird geladen …";
+  const {data,error}=await supabaseClient.rpc("elementenpuzzle_hint",{p_take:true});
+  if(error){
+    $("hintMsg").textContent=error.message;
+    renderHintUI();
+    return;
+  }
+  const r=Array.isArray(data)?data[0]:data;
+  if(r){
+    hintState={
+      hints_used:Number(r.hints_used||0),
+      hint_penalty_ms:Number(r.hint_penalty_ms||0),
+      revealed_hints:r.revealed_hints||[]
+    };
+    const e=BY_SYMBOL[r.new_hint]||[r.new_hint,r.new_hint];
+    $("hintMsg").textContent=`Neuer Tipp: ${r.new_hint} (${e[1]}) kommt im gesuchten Wort vor. +${fmtPenalty(r.added_penalty_ms)}.`;
+    renderHintUI();
+  }
 }
 
 function renderTiles(choices){
@@ -673,7 +771,7 @@ async function submitGuess(){
 function startTimer(startIso){
   stopTimer();
   const start=new Date(startIso).getTime();
-  const tick=()=>{ $("timer").textContent=fmtTime(Date.now()-start); };
+  const tick=()=>{ $("timer").textContent=fmtTime(Date.now()-start+Number(hintState.hint_penalty_ms||0)); };
   tick(); timerHandle=setInterval(tick,31);
 }
 function stopTimer(){ if(timerHandle) clearInterval(timerHandle); timerHandle=null; }
