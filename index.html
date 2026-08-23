@@ -267,18 +267,18 @@ body:after{
 }
 .lab-stage>svg{display:none!important}
 .photo-lab-fx{position:absolute;pointer-events:none;mix-blend-mode:screen}
-.photo-glow{border-radius:50%;filter:blur(28px);opacity:.30;animation:photoGlow 7s ease-in-out infinite alternate}
+.photo-glow{border-radius:50%;filter:blur(24px);opacity:.34;animation:photoGlow 4.6s ease-in-out infinite alternate}
 .glow-blue{left:8%;top:45%;width:14%;height:18%;background:radial-gradient(circle,#1caaff 0,rgba(28,170,255,.34) 35%,transparent 70%)}
 .glow-green{left:26%;top:42%;width:12%;height:18%;background:radial-gradient(circle,#36ff73 0,rgba(54,255,115,.30) 38%,transparent 72%);animation-delay:-2.3s}
 .glow-column{right:19%;top:24%;width:10%;height:33%;border-radius:42%;background:linear-gradient(180deg,rgba(255,63,100,.24),rgba(255,176,35,.25),rgba(60,255,128,.20),rgba(50,180,255,.22),rgba(158,87,255,.24));animation-delay:-4.1s}
 .glow-red{right:8%;top:43%;width:12%;height:18%;background:radial-gradient(circle,#ff3c50 0,rgba(255,60,80,.32) 36%,transparent 72%);animation-delay:-1.2s}
-.photo-smoke{width:8%;height:26%;filter:blur(16px);opacity:.34;border-radius:50%;animation:photoSmoke 4.8s ease-in-out infinite}
-.smoke-green{left:24%;top:18%;background:radial-gradient(ellipse at 50% 100%,rgba(66,255,105,.98),rgba(44,220,86,.42) 45%,transparent 72%);animation:photoSmokeGreen 2.6s ease-in-out infinite}
-.smoke-red{right:24%;top:18%;background:radial-gradient(ellipse at 50% 100%,rgba(255,65,86,.98),rgba(255,58,88,.40) 45%,transparent 72%);animation:photoSmokeRed 3.2s ease-in-out infinite;animation-delay:-1.1s}
-@keyframes photoGlow{0%{opacity:.18;transform:scale(.86);filter:blur(32px) hue-rotate(0deg)}100%{opacity:.42;transform:scale(1.12);filter:blur(24px) hue-rotate(28deg)}}
-@keyframes photoSmoke{0%{opacity:0;transform:translateY(34px) scale(.72)}20%{opacity:.34}70%{opacity:.22}100%{opacity:0;transform:translateY(-72px) translateX(15px) scale(1.42)}}
-@keyframes photoSmokeGreen{0%{opacity:0;transform:translateY(32px) translateX(0) scale(.62)}18%{opacity:.72}50%{opacity:.52;transform:translateY(-6px) translateX(-16px) scale(.96)}78%{opacity:.34;transform:translateY(-50px) translateX(18px) scale(1.22)}100%{opacity:0;transform:translateY(-92px) translateX(-10px) scale(1.52)}}
-@keyframes photoSmokeRed{0%{opacity:0;transform:translateY(28px) translateX(0) scale(.68)}16%{opacity:.62}52%{opacity:.46;transform:translateY(-10px) translateX(10px) scale(1.0)}100%{opacity:0;transform:translateY(-82px) translateX(-10px) scale(1.42)}}
+.photo-smoke{width:10%;height:30%;filter:blur(12px);opacity:.46;border-radius:50%;animation:photoSmoke 3.6s ease-in-out infinite;transform-origin:50% 100%}
+.smoke-green{left:22.5%;top:16%;background:radial-gradient(ellipse at 50% 100%,rgba(66,255,105,.98),rgba(44,220,86,.50) 44%,transparent 74%);animation:photoSmokeGreen 2.4s cubic-bezier(.34,.05,.29,.98) infinite}
+.smoke-red{right:20%;top:16%;background:radial-gradient(ellipse at 50% 100%,rgba(255,65,86,.98),rgba(255,58,88,.48) 44%,transparent 74%);animation:photoSmokeRed 2.8s cubic-bezier(.34,.05,.29,.98) infinite;animation-delay:-.7s}
+@keyframes photoGlow{0%{opacity:.18;transform:translateY(3px) scale(.84);filter:blur(28px) hue-rotate(0deg)}100%{opacity:.48;transform:translateY(-4px) scale(1.16);filter:blur(20px) hue-rotate(32deg)}}
+@keyframes photoSmoke{0%{opacity:0;transform:translateY(30px) translateX(0) scale(.64) rotate(-3deg)}18%{opacity:.58}54%{opacity:.42;transform:translateY(-12px) translateX(10px) scale(1.0) rotate(4deg)}100%{opacity:0;transform:translateY(-92px) translateX(18px) scale(1.55) rotate(-6deg)}}
+@keyframes photoSmokeGreen{0%{opacity:0;transform:translateY(34px) translateX(0) scale(.56) rotate(-4deg)}16%{opacity:.84}36%{opacity:.74;transform:translateY(4px) translateX(-18px) scale(.92) rotate(3deg)}68%{opacity:.46;transform:translateY(-44px) translateX(24px) scale(1.24) rotate(-8deg)}100%{opacity:0;transform:translateY(-104px) translateX(-14px) scale(1.66) rotate(7deg)}}
+@keyframes photoSmokeRed{0%{opacity:0;transform:translateY(28px) translateX(0) scale(.62) rotate(3deg)}15%{opacity:.78}40%{opacity:.64;transform:translateY(0) translateX(-12px) scale(.94) rotate(-3deg)}72%{opacity:.42;transform:translateY(-40px) translateX(14px) scale(1.18) rotate(6deg)}100%{opacity:0;transform:translateY(-98px) translateX(-12px) scale(1.58) rotate(-5deg)}}
 
 
 /* Bild soll wirken, die Bedienelemente bleiben im Vordergrund */
@@ -355,51 +355,51 @@ body:after{
 /* ===== V7 – deutlich sichtbare Animationen über dem 3D-Laborbild ===== */
 .lab-stage{isolation:isolate}
 .fx-layer{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden}
-.fume-column{position:absolute;bottom:23%;width:11%;height:38%;z-index:5}
-.fume-column.left{left:26.5%}
-.fume-column.right{right:25%}
-.fume-column span{position:absolute;left:50%;bottom:0;width:56px;height:56px;border-radius:50%;opacity:0;transform:translateX(-50%) scale(.48);filter:blur(12px);animation:bigFume 4.8s ease-in-out infinite}
+.fume-column{position:absolute;bottom:21%;width:12%;height:40%;z-index:5}
+.fume-column.left{left:24.5%}
+.fume-column.right{right:20%}
+.fume-column span{position:absolute;left:50%;bottom:0;width:70px;height:70px;border-radius:50%;opacity:0;transform:translateX(-50%) scale(.42);filter:blur(14px);animation:bigFume 3.4s cubic-bezier(.33,.05,.2,.98) infinite}
 .fume-column.left span{background:radial-gradient(circle at 50% 60%,rgba(131,255,85,.98),rgba(74,255,126,.56) 46%,rgba(74,255,126,0) 76%);animation-name:greenFume}
 .fume-column.right span{background:radial-gradient(circle at 50% 60%,rgba(255,86,104,.98),rgba(255,72,153,.48) 46%,rgba(255,72,153,0) 76%);animation-name:redFume}
 .fume-column span:nth-child(1){animation-delay:0s}
-.fume-column span:nth-child(2){animation-delay:1.0s}
-.fume-column span:nth-child(3){animation-delay:2.1s}
-.fume-column span:nth-child(4){animation-delay:3.2s}
-.fume-column span:nth-child(5){animation-delay:4.3s}
-.fume-column span:nth-child(6){animation-delay:5.4s}
-.fume-column span:nth-child(7){animation-delay:6.1s}
-.bubble-stream{position:absolute;bottom:21%;width:6%;height:21%;z-index:5}
+.fume-column span:nth-child(2){animation-delay:.55s}
+.fume-column span:nth-child(3){animation-delay:1.05s}
+.fume-column span:nth-child(4){animation-delay:1.55s}
+.fume-column span:nth-child(5){animation-delay:2.0s}
+.fume-column span:nth-child(6){animation-delay:2.45s}
+.fume-column span:nth-child(7){animation-delay:2.9s}
+.bubble-stream{position:absolute;bottom:21%;width:6%;height:23%;z-index:5}
 .bubble-stream.stream-left{left:31.5%}
 .bubble-stream.stream-mid{left:58.8%}
 .bubble-stream.stream-right{right:17.5%}
-.bubble-stream span{position:absolute;bottom:0;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.98),rgba(158,242,255,.82) 50%,rgba(158,242,255,0) 75%);box-shadow:0 0 16px rgba(133,237,255,.62);opacity:0;animation:bubbleRiseBig 3.1s ease-in-out infinite}
+.bubble-stream span{position:absolute;bottom:0;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.98),rgba(158,242,255,.88) 50%,rgba(158,242,255,0) 75%);box-shadow:0 0 18px rgba(133,237,255,.76);opacity:0;animation:bubbleRiseBig 2.2s ease-in-out infinite}
 .bubble-stream span:nth-child(1){left:8%;animation-delay:0s}
 .bubble-stream span:nth-child(2){left:42%;animation-delay:1.1s;width:10px;height:10px}
 .bubble-stream span:nth-child(3){left:68%;animation-delay:2.0s;width:12px;height:12px}
 .bubble-stream span:nth-child(4){left:20%;animation-delay:2.9s;width:8px;height:8px}
 .bubble-stream span:nth-child(5){left:58%;animation-delay:3.6s;width:13px;height:13px}
-.liquid-pulse{position:absolute;border-radius:50%;filter:blur(18px);opacity:.42;animation:liquidPulse 2.8s ease-in-out infinite alternate;mix-blend-mode:screen}
+.liquid-pulse{position:absolute;border-radius:50%;filter:blur(16px);opacity:.48;animation:liquidPulse 1.9s ease-in-out infinite alternate;mix-blend-mode:screen}
 .pulse-left{left:11%;bottom:17%;width:13%;height:8%;background:radial-gradient(circle,rgba(34,176,255,.9),rgba(34,176,255,0) 72%)}
 .pulse-center{left:29%;bottom:16%;width:12%;height:8%;background:radial-gradient(circle,rgba(85,255,112,.92),rgba(85,255,112,0) 72%);animation-delay:-1.4s}
 .pulse-right{right:8%;bottom:18%;width:12%;height:8%;background:radial-gradient(circle,rgba(255,82,95,.92),rgba(255,82,95,0) 72%);animation-delay:-2.3s}
-.column-shimmer{position:absolute;right:18.9%;bottom:23%;width:5.1%;height:34%;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,0) 0%,rgba(255,255,255,.14) 24%,rgba(255,255,255,.68) 48%,rgba(255,255,255,.14) 72%,rgba(255,255,255,0) 100%);filter:blur(1px);opacity:.6;animation:columnSweep 3.8s ease-in-out infinite}
-@keyframes bigFume{0%{opacity:0;transform:translateX(-50%) translateY(22px) scale(.38)}12%{opacity:.96}52%{opacity:.74}100%{opacity:0;transform:translateX(calc(-50% + 8px)) translateY(-150px) scale(2.7)}}
-@keyframes greenFume{0%{opacity:0;transform:translateX(-50%) translateY(22px) scale(.35)}14%{opacity:.98}46%{opacity:.82;transform:translateX(calc(-50% - 18px)) translateY(-42px) scale(1.16)}76%{opacity:.46;transform:translateX(calc(-50% + 22px)) translateY(-108px) scale(1.95)}100%{opacity:0;transform:translateX(calc(-50% - 12px)) translateY(-158px) scale(2.7)}}
-@keyframes redFume{0%{opacity:0;transform:translateX(-50%) translateY(22px) scale(.38)}12%{opacity:.96}52%{opacity:.74;transform:translateX(calc(-50% + 10px)) translateY(-56px) scale(1.24)}100%{opacity:0;transform:translateX(calc(-50% - 8px)) translateY(-150px) scale(2.7)}}
-@keyframes bubbleRiseBig{0%{opacity:0;transform:translateY(0) scale(.35)}18%{opacity:1}100%{opacity:0;transform:translateY(-138px) translateX(12px) scale(1.26)}}
-@keyframes liquidPulse{0%{opacity:.26;transform:scale(.76)}100%{opacity:.58;transform:scale(1.16)}}
+.column-shimmer{position:absolute;right:18.9%;bottom:23%;width:5.1%;height:34%;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,0) 0%,rgba(255,255,255,.16) 24%,rgba(255,255,255,.82) 48%,rgba(255,255,255,.16) 72%,rgba(255,255,255,0) 100%);filter:blur(1px);opacity:.72;animation:columnSweep 2.4s ease-in-out infinite}
+@keyframes bigFume{0%{opacity:0;transform:translateX(-50%) translateY(24px) scale(.30)}14%{opacity:1}48%{opacity:.82;transform:translateX(calc(-50% + 12px)) translateY(-50px) scale(1.15)}100%{opacity:0;transform:translateX(calc(-50% - 10px)) translateY(-172px) scale(2.95)}}
+@keyframes greenFume{0%{opacity:0;transform:translateX(-50%) translateY(24px) scale(.28) rotate(-6deg)}16%{opacity:1}34%{opacity:.92;transform:translateX(calc(-50% - 28px)) translateY(-18px) scale(.92) rotate(5deg)}58%{opacity:.70;transform:translateX(calc(-50% + 34px)) translateY(-82px) scale(1.62) rotate(-10deg)}100%{opacity:0;transform:translateX(calc(-50% - 22px)) translateY(-182px) scale(3.0) rotate(8deg)}}
+@keyframes redFume{0%{opacity:0;transform:translateX(-50%) translateY(24px) scale(.30) rotate(4deg)}14%{opacity:.98}42%{opacity:.84;transform:translateX(calc(-50% - 18px)) translateY(-28px) scale(1.0) rotate(-4deg)}100%{opacity:0;transform:translateX(calc(-50% + 14px)) translateY(-172px) scale(2.86) rotate(6deg)}}
+@keyframes bubbleRiseBig{0%{opacity:0;transform:translateY(0) scale(.28)}16%{opacity:1}100%{opacity:0;transform:translateY(-154px) translateX(12px) scale(1.32)}}
+@keyframes liquidPulse{0%{opacity:.22;transform:scale(.72)}100%{opacity:.66;transform:scale(1.22)}}
 .fume-column.left span:nth-child(odd){animation-duration:4.0s}
 .fume-column.left span:nth-child(even){animation-duration:3.6s}
 .fume-column.right span:nth-child(odd){animation-duration:4.4s}
 .fume-column.right span:nth-child(even){animation-duration:4.1s}
 
-@keyframes columnSweep{0%,100%{opacity:.28;transform:translateY(-12px)}50%{opacity:.88;transform:translateY(12px)}}
+@keyframes columnSweep{0%,100%{opacity:.34;transform:translateY(-14px)}50%{opacity:1;transform:translateY(14px)}}
 @media(max-width:900px){
-  .fume-column{height:31%;bottom:25%}
-  .fume-column.left{left:23%}
-  .fume-column.right{right:19%}
+  .fume-column{height:33%;bottom:23%}
+  .fume-column.left{left:21.5%}
+  .fume-column.right{right:16%}
   .bubble-stream.stream-mid{left:56.5%}
-  .column-shimmer{right:17.5%;height:30%}
+  .column-shimmer{right:17.5%;height:31%}
 }
 @media(max-width:560px){
   .fx-layer{opacity:.82}
