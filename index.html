@@ -135,10 +135,10 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;bac
   --lab-orange:#ff9a32;--lab-red:#ff4f5e;--lab-gold:#ffd34d;--lab-panel:rgba(5,18,34,.84);
 }
 html{background:#020914}
-body{background:linear-gradient(180deg,rgba(1,8,19,.28),rgba(1,10,20,.72));color:#eaf7ff;overflow-x:hidden}
+body{position:relative;isolation:isolate;background:linear-gradient(180deg,rgba(1,8,19,.10),rgba(1,10,20,.30));color:#eaf7ff;overflow-x:hidden}
 body:before{display:none}
-body:after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(90deg,rgba(0,8,18,.42),transparent 22%,transparent 78%,rgba(0,8,18,.45)),linear-gradient(180deg,rgba(1,7,17,.08),rgba(1,8,17,.55))}
-.lab-stage{position:fixed;inset:0;z-index:-3;overflow:hidden;pointer-events:none;background:radial-gradient(circle at 18% 20%,#163f64 0,transparent 32%),radial-gradient(circle at 85% 32%,#37194f 0,transparent 32%),linear-gradient(180deg,#071526,#020812 68%,#06101b)}
+body:after{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(0,8,18,.18),transparent 18%,transparent 82%,rgba(0,8,18,.18)),linear-gradient(180deg,rgba(1,7,17,.02),rgba(1,8,17,.18))}
+.lab-stage{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:radial-gradient(circle at 18% 20%,#163f64 0,transparent 32%),radial-gradient(circle at 85% 32%,#37194f 0,transparent 32%),linear-gradient(180deg,#071526,#020812 68%,#06101b)}
 .lab-stage svg{width:100%;height:100%;display:block;filter:saturate(1.15) contrast(1.03)}
 .lab-solution-a{animation:solutionA 12s ease-in-out infinite alternate}
 .lab-solution-b{animation:solutionB 15s ease-in-out infinite alternate}
@@ -154,13 +154,13 @@ body:after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;back
 @keyframes smokeRise{0%{opacity:0;transform:translateY(18px) scale(.65)}20%{opacity:.7}75%{opacity:.35}100%{opacity:0;transform:translateY(-95px) translateX(18px) scale(1.8)}}
 @keyframes chromShift{0%{opacity:.78;transform:translateY(0)}100%{opacity:1;transform:translateY(9px)}}
 @keyframes bubble{0%{opacity:.2;transform:translateY(8px) scale(.65)}50%{opacity:.95}100%{opacity:0;transform:translateY(-26px) scale(1.05)}}
-.shell{max-width:1420px;padding:22px 20px 60px}
-.hero{background:linear-gradient(135deg,rgba(5,22,43,.92),rgba(8,48,75,.78));border:1px solid rgba(69,217,255,.48);box-shadow:0 20px 55px rgba(0,0,0,.32),inset 0 0 35px rgba(69,217,255,.07);border-radius:28px}
+ .shell{position:relative;z-index:2;max-width:1340px;padding:18px 20px 60px}
+.hero{background:linear-gradient(135deg,rgba(5,22,43,.74),rgba(8,48,75,.58));border:1px solid rgba(69,217,255,.48);box-shadow:0 20px 55px rgba(0,0,0,.32),inset 0 0 35px rgba(69,217,255,.07);border-radius:28px}
 .hero:after{background:radial-gradient(circle,rgba(150,93,255,.26),transparent 68%)}
 .hero h1{font-size:clamp(34px,5vw,62px);background:linear-gradient(180deg,#fff,#a9e9ff 62%,#68bfff);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 22px rgba(69,217,255,.22)}
 .hero p{font-size:clamp(14px,2vw,18px);color:#d8f1ff}
 .sound-control{background:rgba(2,13,26,.72);border-color:rgba(69,217,255,.38)}
-.card{background:var(--lab-panel);color:#eaf7ff;border:1px solid rgba(80,205,255,.28);box-shadow:0 18px 48px rgba(0,0,0,.35),inset 0 0 40px rgba(34,142,194,.04);backdrop-filter:blur(12px) saturate(1.05)}
+.card{background:rgba(5,18,34,.72);color:#eaf7ff;border:1px solid rgba(80,205,255,.28);box-shadow:0 18px 48px rgba(0,0,0,.35),inset 0 0 40px rgba(34,142,194,.04);backdrop-filter:blur(12px) saturate(1.05)}
 .card:hover{box-shadow:0 20px 52px rgba(0,0,0,.38),inset 0 0 42px rgba(44,169,227,.05)}
 .small,.rule,.footer{color:#a9c3d2}
 label{color:#d6efff}
@@ -170,7 +170,7 @@ input:focus{border-color:var(--lab-cyan);box-shadow:0 0 0 3px rgba(69,217,255,.1
 .secondary{background:linear-gradient(135deg,rgba(37,66,91,.92),rgba(29,49,73,.92));color:#e8f7ff;border:1px solid rgba(111,180,218,.25)}
 .danger{background:rgba(125,43,47,.88);color:#ffe6e9}
 .notice{background:rgba(20,73,100,.76);color:#d8f4ff}.notice.good{background:rgba(16,93,62,.76);color:#dcffeb}.notice.bad{background:rgba(117,39,46,.78);color:#ffe2e4}
-#gameCard{position:relative;overflow:hidden;border-color:rgba(69,217,255,.42)}
+#gameCard{position:relative;overflow:hidden;border-color:rgba(69,217,255,.42);background:rgba(3,16,30,.66);max-width:1120px;margin-left:auto;margin-right:auto}
 #gameCard:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 42%,rgba(41,173,255,.10),transparent 36%),linear-gradient(120deg,rgba(150,93,255,.04),transparent 45%,rgba(34,220,141,.04));z-index:0}
 #gameCard>*{position:relative;z-index:1}
 .game-rule-strip{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:8px auto 12px}
@@ -277,6 +277,18 @@ input:focus{border-color:var(--lab-cyan);box-shadow:0 0 0 3px rgba(69,217,255,.1
 
   <!-- Reagenzglasreihe -->
   <g transform="translate(1260 720)" opacity=".85"><path d="M0 88H260" stroke="#55798c" stroke-width="10"/><g stroke="#a8efff" stroke-width="3" fill="url(#glass)"><rect x="16" y="0" width="24" height="86" rx="12"/><rect x="58" y="0" width="24" height="86" rx="12"/><rect x="100" y="0" width="24" height="86" rx="12"/><rect x="142" y="0" width="24" height="86" rx="12"/><rect x="184" y="0" width="24" height="86" rx="12"/><rect x="226" y="0" width="24" height="86" rx="12"/></g><g opacity=".9"><rect class="lab-solution-b" x="20" y="49" width="16" height="31" rx="8"/><rect class="lab-solution-c" x="62" y="38" width="16" height="42" rx="8"/><rect class="lab-solution-a" x="104" y="53" width="16" height="27" rx="8"/><rect class="lab-solution-b" x="146" y="43" width="16" height="37" rx="8"/><rect class="lab-solution-c" x="188" y="48" width="16" height="32" rx="8"/><rect class="lab-solution-a" x="230" y="35" width="16" height="45" rx="8"/></g></g>
+
+  <!-- Laborbeschriftungen und zusätzliche Tiefe -->
+  <g opacity=".82" font-family="Inter,Arial,sans-serif">
+    <rect x="1090" y="278" width="305" height="48" rx="12" fill="#04111e" stroke="#43cfff" stroke-opacity=".45"/>
+    <text x="1242" y="309" text-anchor="middle" fill="#8deaff" font-size="20" font-weight="700">DESTILLATION</text>
+    <rect x="1368" y="676" width="185" height="42" rx="11" fill="#04111e" stroke="#9f76ff" stroke-opacity=".48"/>
+    <text x="1460" y="703" text-anchor="middle" fill="#cbb7ff" font-size="17" font-weight="700">CHROMATOGRAPHIE</text>
+  </g>
+  <g opacity=".45" stroke="#78cbe8" stroke-width="2">
+    <path d="M400 510 C520 470 650 520 770 478 S1030 470 1110 510" fill="none"/>
+    <circle cx="460" cy="492" r="7" fill="#5ee7ff"/><circle cx="620" cy="500" r="7" fill="#9c67ff"/><circle cx="795" cy="481" r="7" fill="#59e698"/>
+  </g>
 
   <!-- weiche Lichtakzente -->
   <circle cx="890" cy="560" r="260" fill="#147fc7" opacity=".08" filter="url(#soft)"/><circle cx="1340" cy="470" r="220" fill="#7d32b7" opacity=".08" filter="url(#soft)"/>
