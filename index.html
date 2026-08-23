@@ -139,7 +139,7 @@ body{position:relative;isolation:isolate;background:linear-gradient(180deg,rgba(
 body:before{display:none}
 body:after{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(0,8,18,.18),transparent 18%,transparent 82%,rgba(0,8,18,.18)),linear-gradient(180deg,rgba(1,7,17,.02),rgba(1,8,17,.18))}
 .lab-stage{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:radial-gradient(circle at 18% 20%,#163f64 0,transparent 32%),radial-gradient(circle at 85% 32%,#37194f 0,transparent 32%),linear-gradient(180deg,#071526,#020812 68%,#06101b)}
-.lab-stage svg{width:100%;height:100%;display:block;filter:saturate(1.15) contrast(1.03)}
+.lab-stage svg{width:100%;height:100%;display:block;filter:saturate(1.35) contrast(1.06) brightness(1.18)}
 .lab-solution-a{animation:solutionA 12s ease-in-out infinite alternate}
 .lab-solution-b{animation:solutionB 15s ease-in-out infinite alternate}
 .lab-solution-c{animation:solutionC 10s ease-in-out infinite alternate}
@@ -207,6 +207,45 @@ input:focus{border-color:var(--lab-cyan);box-shadow:0 0 0 3px rgba(69,217,255,.1
 @media(max-width:900px){.tiles{grid-template-columns:repeat(3,minmax(92px,1fr));gap:18px 12px}.element-tile{min-height:102px}.shell{padding-left:12px;padding-right:12px}}
 @media(max-width:520px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr));max-width:380px}.element-tile{min-height:96px}.hero h1{font-size:36px}.card{padding:16px}.game-rule-strip{gap:7px}.game-rule-chip{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.element-tile.reveal-in{animation:none;opacity:1;transform:none}.smoke-puff,.lab-solution-a,.lab-solution-b,.lab-solution-c,.chrom-band,.lab-bubble{animation-duration:1ms;animation-iteration-count:1}}
+
+
+/* ===== NEONLABOR V4 – Labor im sichtbaren Spielfeld ===== */
+body:after{background:linear-gradient(180deg,rgba(1,7,17,.00),rgba(1,8,17,.06));}
+.shell{max-width:1120px;}
+#gameCard{background:rgba(3,16,30,.52);backdrop-filter:blur(7px) saturate(1.08);}
+.lab-window{
+  position:relative;
+  max-width:1040px;
+  min-height:300px;
+  margin:18px auto 26px;
+  border:1px solid rgba(91,222,255,.48);
+  border-radius:24px;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 17% 35%,rgba(41,187,255,.18),transparent 30%),
+    radial-gradient(circle at 82% 38%,rgba(159,84,255,.18),transparent 30%),
+    linear-gradient(180deg,rgba(4,21,38,.90),rgba(2,10,19,.82));
+  box-shadow:inset 0 0 45px rgba(70,210,255,.08),0 20px 34px rgba(0,0,0,.28);
+}
+.lab-window:before{content:"";position:absolute;left:0;right:0;bottom:0;height:29%;background:linear-gradient(180deg,rgba(15,45,58,.72),rgba(3,10,15,.96));border-top:2px solid rgba(112,217,240,.26)}
+.lab-window-title{position:absolute;left:18px;top:14px;z-index:3;padding:7px 12px;border-radius:999px;background:rgba(3,18,32,.82);border:1px solid rgba(82,220,255,.35);font-size:12px;font-weight:900;color:#bdf3ff;letter-spacing:.04em}
+.lab-window svg{position:relative;z-index:2;width:100%;height:300px;display:block}
+.lab-window .glass{fill:rgba(191,239,255,.09);stroke:#b8efff;stroke-width:3}
+.lab-window .metal{stroke:#728c9d;stroke-width:7;fill:none;stroke-linecap:round}
+.lab-window .thinmetal{stroke:#9cc1d2;stroke-width:3;fill:none;stroke-linecap:round}
+.lab-window .liquid-a{animation:solutionA 10s ease-in-out infinite alternate}
+.lab-window .liquid-b{animation:solutionB 13s ease-in-out infinite alternate}
+.lab-window .liquid-c{animation:solutionC 8s ease-in-out infinite alternate}
+.lab-window .liquid-d{animation:solutionD 16s ease-in-out infinite alternate}
+.lab-window .lab-smoke{filter:url(#miniSmoke);transform-box:fill-box;transform-origin:center;animation:miniSmokeRise var(--d,6.8s) ease-in-out infinite;animation-delay:var(--delay,0s)}
+.lab-window .mini-bubble{animation:bubble 4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.lab-window .chrom-mini{animation:chromMini 9s ease-in-out infinite alternate}
+@keyframes solutionD{0%{fill:#884dff}34%{fill:#ff3e69}67%{fill:#ffae24}100%{fill:#19e9a0}}
+@keyframes miniSmokeRise{0%{opacity:0;transform:translateY(18px) scale(.62)}18%{opacity:.85}75%{opacity:.46}100%{opacity:0;transform:translateY(-88px) translateX(12px) scale(1.7)}}
+@keyframes chromMini{0%{transform:translateY(-5px);opacity:.75}100%{transform:translateY(7px);opacity:1}}
+.lab-window-label{font:800 13px Inter,Arial,sans-serif;fill:#bdefff;letter-spacing:.06em}
+.lab-window-note{position:absolute;right:16px;top:14px;z-index:3;color:#b7d8e8;font-size:11px;font-weight:750;background:rgba(3,14,25,.72);border:1px solid rgba(132,188,214,.20);border-radius:999px;padding:7px 10px}
+@media(max-width:760px){.lab-window{min-height:235px}.lab-window svg{height:235px}.lab-window-title{font-size:10px;left:10px;top:9px}.lab-window-note{display:none}}
 
 </style>
 </head>
@@ -350,6 +389,57 @@ input:focus{border-color:var(--lab-cyan);box-shadow:0 0 0 3px rgba(69,217,255,.1
     <div id="timer" class="timer">00:00.000</div>
     <div id="timerNote" class="timer-note">Die Uhr wartet auf die Element-Einblendung.</div>
     <div class="game-rule-strip"><span class="game-rule-chip">Bis 5 Elemente: <b>10</b> zur Auswahl</span><span class="game-rule-chip">Ab 6 Elemente: <b>15</b> zur Auswahl</span><span class="game-rule-chip">⏱ Start erst nach Einblendung</span></div>
+
+    <div class="lab-window" aria-label="Animiertes Chemielabor mit Destillation, Säulenchromatographie und farbigen Lösungen">
+      <div class="lab-window-title">🧪 AKTIVES LABOR</div>
+      <div class="lab-window-note">Lösungen verändern langsam ihre Farbe</div>
+      <svg viewBox="0 0 1040 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Chemielabor">
+        <defs><filter id="miniSmoke"><feGaussianBlur stdDeviation="4.5"/></filter><linearGradient id="miniGlass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#eaffff" stop-opacity=".30"/><stop offset=".55" stop-color="#70dfff" stop-opacity=".05"/><stop offset="1" stop-color="#eaffff" stop-opacity=".20"/></linearGradient></defs>
+        <!-- Regale und Laborhintergrund -->
+        <path d="M30 72H1010M30 132H1010" stroke="#496679" stroke-width="5" opacity=".55"/>
+        <g opacity=".68">
+          <rect x="80" y="42" width="24" height="49" rx="6" fill="url(#miniGlass)" stroke="#86dfff"/><rect x="84" y="67" width="16" height="19" rx="4" class="liquid-c"/>
+          <rect x="122" y="35" width="28" height="56" rx="6" fill="url(#miniGlass)" stroke="#86dfff"/><rect x="126" y="63" width="20" height="23" rx="4" class="liquid-b"/>
+          <rect x="167" y="48" width="22" height="43" rx="5" fill="url(#miniGlass)" stroke="#86dfff"/><rect x="171" y="71" width="14" height="15" rx="3" class="liquid-a"/>
+          <rect x="842" y="42" width="24" height="49" rx="6" fill="url(#miniGlass)" stroke="#86dfff"/><rect x="846" y="65" width="16" height="21" rx="4" class="liquid-d"/>
+          <rect x="883" y="34" width="28" height="57" rx="6" fill="url(#miniGlass)" stroke="#86dfff"/><rect x="887" y="61" width="20" height="25" rx="4" class="liquid-a"/>
+        </g>
+        <!-- Erlenmeyerkolben links -->
+        <g transform="translate(55 113)">
+          <path d="M52 0h30v45l54 106q9 19-14 19H13q-22 0-12-20L52 45Z" fill="url(#miniGlass)" stroke="#b8efff" stroke-width="3"/>
+          <path d="M16 132Q66 114 120 133L135 158Q68 178 2 158Z" class="liquid-a" opacity=".95"/>
+          <circle class="mini-bubble" cx="40" cy="143" r="5" fill="#eafff3"/><circle class="mini-bubble" cx="76" cy="151" r="4" fill="#eafff3" style="animation-delay:1s"/>
+          <g filter="url(#miniSmoke)"><circle class="lab-smoke" cx="67" cy="34" r="17" fill="#35ff72"/><circle class="lab-smoke" cx="58" cy="42" r="14" fill="#ff4561" style="--delay:1.6s;--d:7.5s"/><circle class="lab-smoke" cx="78" cy="43" r="12" fill="#42ff8a" style="--delay:3.1s"/></g>
+        </g>
+        <text x="122" y="292" text-anchor="middle" class="lab-window-label">ERLENMEYER + DAMPF</text>
+        <!-- Destillationsanlage Mitte -->
+        <g transform="translate(280 90)">
+          <path class="metal" d="M0 178H360M42 178V14M276 178V8"/>
+          <path d="M65 80c-37 0-61 28-61 62 0 42 29 66 65 66s65-25 65-66c0-34-23-62-58-62V36H65Z" fill="url(#miniGlass)" stroke="#b8efff" stroke-width="3"/>
+          <path d="M19 163Q67 145 119 163L131 188Q67 211 7 188Z" class="liquid-b" opacity=".94"/>
+          <path class="thinmetal" d="M76 36H158"/><rect x="157" y="20" width="42" height="118" rx="16" fill="url(#miniGlass)" stroke="#b8efff" stroke-width="3"/>
+          <path class="thinmetal" d="M178 20V-8H269V68M199 44h78M199 74h78"/>
+          <path d="M290 105c-27 0-45 21-45 48 0 31 21 50 50 50s50-19 50-50c0-26-18-48-44-48Z" fill="url(#miniGlass)" stroke="#b8efff" stroke-width="3"/>
+          <path d="M254 167Q294 153 335 168L343 187Q295 205 247 187Z" class="liquid-c" opacity=".9"/>
+          <g transform="translate(43 205)"><path d="M0 22C-9 10 3 7 5 0c12 8 15 14 8 22Z" fill="#298eff"/><path d="M4 20C1 12 7 10 8 5c6 5 7 10 3 15Z" fill="#a9ecff"/></g>
+        </g>
+        <text x="455" y="292" text-anchor="middle" class="lab-window-label">DESTILLATIONSANLAGE</text>
+        <!-- Säulenchromatographie rechts -->
+        <g transform="translate(760 82)">
+          <path class="metal" d="M0 196H230M38 196V4M185 196V4"/>
+          <rect x="87" y="4" width="57" height="183" rx="24" fill="url(#miniGlass)" stroke="#b8efff" stroke-width="3"/>
+          <rect class="chrom-mini" x="94" y="38" width="43" height="18" rx="7" fill="#ff4c67"/>
+          <rect class="chrom-mini" x="94" y="63" width="43" height="17" rx="7" fill="#ffb22f" style="animation-delay:1s"/>
+          <rect class="chrom-mini" x="94" y="87" width="43" height="18" rx="7" fill="#3fe379" style="animation-delay:2s"/>
+          <rect class="chrom-mini" x="94" y="112" width="43" height="18" rx="7" fill="#31b8ff" style="animation-delay:3s"/>
+          <rect class="chrom-mini" x="94" y="137" width="43" height="18" rx="7" fill="#9d5dff" style="animation-delay:4s"/>
+          <path class="thinmetal" d="M115 187v27h30"/>
+          <g transform="translate(158 86)"><path d="M28 0h17v25l30 60q7 14-8 14H7q-15 0-7-15l28-59Z" fill="url(#miniGlass)" stroke="#b8efff" stroke-width="2.5"/><path d="M6 82Q38 70 68 82L74 94Q38 105 3 94Z" class="liquid-d"/></g>
+        </g>
+        <text x="872" y="292" text-anchor="middle" class="lab-window-label">SÄULENCHROMATOGRAPHIE</text>
+      </svg>
+    </div>
+
     <div class="rule">Falsche Versuche kosten keine Punkte – die Uhr läuft weiter. Ab 5 Elementsymbolen sind bis zu drei Tipps möglich.</div>
     <div class="status-strip"><span class="status-chip">🔊 akustische Rückmeldung</span><span class="status-chip">✨ Lösungseffekt</span><span class="status-chip">🧪 Element-Klicks</span></div>
 
