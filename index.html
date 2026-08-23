@@ -265,7 +265,7 @@ body:after{
   background-position:center center;
   filter:saturate(1.12) contrast(1.07) brightness(.76);
 }
-.lab-stage>svg{display:none!important}
+.lab-stage>svg:not(.apparatus-overlay){display:none!important}
 .photo-lab-fx{position:absolute;pointer-events:none;mix-blend-mode:screen}
 .photo-glow{border-radius:50%;filter:blur(28px);opacity:.30;animation:photoGlow 7s ease-in-out infinite alternate}
 .glow-blue{left:8%;top:45%;width:14%;height:18%;background:radial-gradient(circle,#1caaff 0,rgba(28,170,255,.34) 35%,transparent 70%)}
@@ -424,6 +424,30 @@ body:after{
 @media(max-width:900px){.tiles{grid-template-columns:repeat(3,minmax(72px,1fr));max-width:500px;gap:8px}.apparatus-overlay{width:116%;left:-8%}}
 @media(max-width:560px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr));max-width:330px}.element-tile{min-height:64px}.apparatus-overlay{width:145%;left:-22%}}
 
+
+/* ===== V12 – Rauch/Animation sichtbar vor dem Laborfoto ===== */
+.lab-stage>.apparatus-overlay{display:block!important;z-index:3!important;opacity:.90!important}
+.lab-stage{overflow:hidden!important}
+.fx-layer{display:block!important;z-index:5!important}
+.fume-column.left{left:18%!important}
+.fume-column.right{right:27%!important}
+.fume-column span{width:64px!important;height:64px!important;filter:blur(10px)!important}
+.fume-column.left span{animation-name:greenFume!important}
+.fume-column.right span{animation-name:redFume!important}
+@keyframes greenFume{
+  0%{opacity:0;transform:translateX(-50%) translateY(26px) scale(.38) rotate(0deg)}
+  12%{opacity:.98}
+  35%{opacity:.86;transform:translateX(calc(-50% - 24px)) translateY(-35px) scale(1.10) rotate(-7deg)}
+  62%{opacity:.62;transform:translateX(calc(-50% + 28px)) translateY(-88px) scale(1.75) rotate(8deg)}
+  100%{opacity:0;transform:translateX(calc(-50% - 12px)) translateY(-170px) scale(2.85) rotate(-4deg)}
+}
+@keyframes redFume{
+  0%{opacity:0;transform:translateX(-50%) translateY(24px) scale(.40)}
+  14%{opacity:.96}
+  52%{opacity:.72;transform:translateX(calc(-50% - 14px)) translateY(-66px) scale(1.42)}
+  100%{opacity:0;transform:translateX(calc(-50% + 12px)) translateY(-160px) scale(2.65)}
+}
+
 </style>
 </head>
 <body>
@@ -433,6 +457,13 @@ body:after{
   <div class="photo-lab-fx photo-glow glow-green"></div>
   <div class="photo-lab-fx photo-glow glow-column"></div>
   <div class="photo-lab-fx photo-glow glow-red"></div>
+  <div class="fx-layer" aria-hidden="true">
+    <div class="fume-column left"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="fume-column right"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="bubble-stream stream-left"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="bubble-stream stream-mid"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="liquid-pulse pulse-left"></div><div class="liquid-pulse pulse-center"></div><div class="liquid-pulse pulse-right"></div>
+  </div>
   <svg class="apparatus-overlay" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" role="presentation" aria-hidden="true">
     <defs>
       <linearGradient id="aglass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5ffff" stop-opacity=".55"/><stop offset=".45" stop-color="#8edfff" stop-opacity=".10"/><stop offset="1" stop-color="#ffffff" stop-opacity=".34"/></linearGradient>
@@ -442,7 +473,7 @@ body:after{
     </defs>
 
     <!-- linker Kolben: grüner, eindeutig bewegter Rauch -->
-    <g transform="translate(190 505)">
+    <g transform="translate(285 505)">
       <path d="M92 0h45v92l83 158c10 20-4 31-24 31H33c-23 0-35-12-24-33L92 92Z" fill="url(#aglass)" stroke="#d9f7ff" stroke-width="5" opacity=".96"/>
       <path d="M30 228 Q111 201 201 228 L216 260 Q205 273 191 273H40Q22 273 16 260Z" fill="#42f06c" opacity=".86" filter="url(#aglow)">
         <animate attributeName="fill" values="#42f06c;#00e0b8;#7dff4d;#42f06c" dur="3.2s" repeatCount="indefinite"/>
@@ -485,7 +516,7 @@ body:after{
     </g>
 
     <!-- rechter Kolben: roter Rauch absichtlich weit innerhalb des Bildes -->
-    <g transform="translate(1210 545)">
+    <g transform="translate(1090 545)">
       <path d="M75 0h40v82l70 135c10 19-2 29-21 29H28c-21 0-31-11-21-31L75 82Z" fill="url(#aglass)" stroke="#d9f7ff" stroke-width="5" opacity=".96"/>
       <path d="M24 198Q96 175 169 199l11 27q-79 27-164 0Z" fill="#ff334d" opacity=".88" filter="url(#aglow)"><animate attributeName="fill" values="#ff334d;#ff7b22;#ff256f;#ff334d" dur="3.6s" repeatCount="indefinite"/></path>
       <g filter="url(#asmoke)">
