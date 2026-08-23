@@ -127,9 +127,162 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;bac
 .status-strip{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:-2px 0 13px}.status-chip{font-size:12px;font-weight:850;color:#46606d;background:#edf4f7;border:1px solid #d4e1e7;border-radius:999px;padding:6px 10px}
 @media(max-width:720px){.sound-control{right:14px;bottom:14px}.hero{padding-bottom:76px}}
 
+
+
+/* ===== NEONLABOR V2 – Laborbühne, 3D-Elemente, dynamische Lösungen ===== */
+:root{
+  --lab-cyan:#45d9ff;--lab-blue:#1769ff;--lab-violet:#965dff;--lab-green:#39e67b;
+  --lab-orange:#ff9a32;--lab-red:#ff4f5e;--lab-gold:#ffd34d;--lab-panel:rgba(5,18,34,.84);
+}
+html{background:#020914}
+body{background:linear-gradient(180deg,rgba(1,8,19,.28),rgba(1,10,20,.72));color:#eaf7ff;overflow-x:hidden}
+body:before{display:none}
+body:after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(90deg,rgba(0,8,18,.42),transparent 22%,transparent 78%,rgba(0,8,18,.45)),linear-gradient(180deg,rgba(1,7,17,.08),rgba(1,8,17,.55))}
+.lab-stage{position:fixed;inset:0;z-index:-3;overflow:hidden;pointer-events:none;background:radial-gradient(circle at 18% 20%,#163f64 0,transparent 32%),radial-gradient(circle at 85% 32%,#37194f 0,transparent 32%),linear-gradient(180deg,#071526,#020812 68%,#06101b)}
+.lab-stage svg{width:100%;height:100%;display:block;filter:saturate(1.15) contrast(1.03)}
+.lab-solution-a{animation:solutionA 12s ease-in-out infinite alternate}
+.lab-solution-b{animation:solutionB 15s ease-in-out infinite alternate}
+.lab-solution-c{animation:solutionC 10s ease-in-out infinite alternate}
+.lab-glow{animation:labGlow 6s ease-in-out infinite alternate;transform-origin:center}
+.smoke-puff{transform-box:fill-box;transform-origin:center;animation:smokeRise var(--smoke-dur,7s) ease-in-out infinite;animation-delay:var(--smoke-delay,0s)}
+.chrom-band{animation:chromShift 13s ease-in-out infinite alternate}
+.lab-bubble{animation:bubble 4.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes solutionA{0%{fill:#17db7a}35%{fill:#3beaff}70%{fill:#ff4f79}100%{fill:#ffb21d}}
+@keyframes solutionB{0%{fill:#ff414e}45%{fill:#a858ff}75%{fill:#2d8cff}100%{fill:#15d995}}
+@keyframes solutionC{0%{fill:#15cfe8}40%{fill:#5df270}72%{fill:#ffb62e}100%{fill:#ff4f6e}}
+@keyframes labGlow{from{opacity:.55;filter:drop-shadow(0 0 3px currentColor)}to{opacity:1;filter:drop-shadow(0 0 13px currentColor)}}
+@keyframes smokeRise{0%{opacity:0;transform:translateY(18px) scale(.65)}20%{opacity:.7}75%{opacity:.35}100%{opacity:0;transform:translateY(-95px) translateX(18px) scale(1.8)}}
+@keyframes chromShift{0%{opacity:.78;transform:translateY(0)}100%{opacity:1;transform:translateY(9px)}}
+@keyframes bubble{0%{opacity:.2;transform:translateY(8px) scale(.65)}50%{opacity:.95}100%{opacity:0;transform:translateY(-26px) scale(1.05)}}
+.shell{max-width:1420px;padding:22px 20px 60px}
+.hero{background:linear-gradient(135deg,rgba(5,22,43,.92),rgba(8,48,75,.78));border:1px solid rgba(69,217,255,.48);box-shadow:0 20px 55px rgba(0,0,0,.32),inset 0 0 35px rgba(69,217,255,.07);border-radius:28px}
+.hero:after{background:radial-gradient(circle,rgba(150,93,255,.26),transparent 68%)}
+.hero h1{font-size:clamp(34px,5vw,62px);background:linear-gradient(180deg,#fff,#a9e9ff 62%,#68bfff);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 22px rgba(69,217,255,.22)}
+.hero p{font-size:clamp(14px,2vw,18px);color:#d8f1ff}
+.sound-control{background:rgba(2,13,26,.72);border-color:rgba(69,217,255,.38)}
+.card{background:var(--lab-panel);color:#eaf7ff;border:1px solid rgba(80,205,255,.28);box-shadow:0 18px 48px rgba(0,0,0,.35),inset 0 0 40px rgba(34,142,194,.04);backdrop-filter:blur(12px) saturate(1.05)}
+.card:hover{box-shadow:0 20px 52px rgba(0,0,0,.38),inset 0 0 42px rgba(44,169,227,.05)}
+.small,.rule,.footer{color:#a9c3d2}
+label{color:#d6efff}
+input{background:rgba(3,15,28,.88);border-color:#31566c;color:#effaff}
+input:focus{border-color:var(--lab-cyan);box-shadow:0 0 0 3px rgba(69,217,255,.14)}
+.primary{background:linear-gradient(135deg,#087da8,#1769ff);box-shadow:0 8px 20px rgba(14,115,201,.28)}
+.secondary{background:linear-gradient(135deg,rgba(37,66,91,.92),rgba(29,49,73,.92));color:#e8f7ff;border:1px solid rgba(111,180,218,.25)}
+.danger{background:rgba(125,43,47,.88);color:#ffe6e9}
+.notice{background:rgba(20,73,100,.76);color:#d8f4ff}.notice.good{background:rgba(16,93,62,.76);color:#dcffeb}.notice.bad{background:rgba(117,39,46,.78);color:#ffe2e4}
+#gameCard{position:relative;overflow:hidden;border-color:rgba(69,217,255,.42)}
+#gameCard:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 42%,rgba(41,173,255,.10),transparent 36%),linear-gradient(120deg,rgba(150,93,255,.04),transparent 45%,rgba(34,220,141,.04));z-index:0}
+#gameCard>*{position:relative;z-index:1}
+.game-rule-strip{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:8px auto 12px}
+.game-rule-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;background:rgba(8,30,48,.78);border:1px solid rgba(69,217,255,.22);color:#ccefff;font-size:12px;font-weight:850}
+.game-rule-chip b{color:#72e9ff}
+.timer{color:#8cecff;text-shadow:0 0 18px rgba(69,217,255,.46);font-size:clamp(40px,7vw,68px)}
+.timer.armed{color:#a7bed0;text-shadow:0 0 15px rgba(80,170,220,.18)}
+.timer-note{text-align:center;min-height:20px;margin-top:-3px;margin-bottom:8px;color:#8dddf7;font-size:12px;font-weight:800;letter-spacing:.03em}
+.count-pill{background:linear-gradient(135deg,rgba(35,40,86,.9),rgba(27,104,141,.82));color:#eaf8ff;border:1px solid rgba(120,220,255,.2)}
+.status-chip{background:rgba(9,31,49,.72);border-color:rgba(80,170,210,.22);color:#a9d0e4}
+.hint-panel{background:rgba(43,31,11,.82);border-color:rgba(255,197,74,.38);color:#ffe8a9}
+.hint-panel .small{color:#ddc788}.hint-btn{background:linear-gradient(135deg,#ffbd35,#ff8b24);color:#382100}.hint-chip{background:rgba(49,36,11,.92);border-color:#a98227;color:#ffe7a8}.hint-map{border-top-color:#735d2e}.hint-slot{background:rgba(22,25,27,.88);border-color:#8f7642;color:#d9c58d}.hint-slot.revealed{background:#5b4312;border-color:#ffc950;color:#fff0b7}
+.unused-summary{color:#a9c9d8}.unused-dot{background:#10283a;border-color:#56dfff}.used-dot{background:#647a86}
+.tiles{display:grid;grid-template-columns:repeat(5,minmax(110px,1fr));gap:22px 18px;margin:26px auto 30px;max-width:1050px;perspective:1200px;align-items:stretch}
+.element-tile{--tile-hue:190;--tilt:0deg;position:relative;min-height:112px;padding:14px 8px 12px;border:1px solid hsl(var(--tile-hue) 92% 72% / .58);border-radius:18px;color:#fff;background:linear-gradient(145deg,hsl(var(--tile-hue) 80% 56% / .96),hsl(calc(var(--tile-hue) + 18) 78% 30% / .98));box-shadow:0 16px 26px rgba(0,0,0,.32),0 0 22px hsl(var(--tile-hue) 90% 55% / .22),inset 0 1px 0 rgba(255,255,255,.52),inset 0 -10px 18px rgba(0,0,0,.18);transform-style:preserve-3d;transform:rotateX(7deg) rotateY(var(--tilt)) translateZ(0);transition:transform .22s ease,filter .22s ease,opacity .22s ease,box-shadow .22s ease;overflow:visible}
+.element-tile:before{content:"";position:absolute;left:9px;right:9px;bottom:-9px;height:12px;border-radius:0 0 12px 12px;background:hsl(var(--tile-hue) 65% 22% / .92);transform:translateZ(-4px);filter:brightness(.76)}
+.element-tile:after{border-radius:17px;background:linear-gradient(120deg,transparent 20%,rgba(255,255,255,.52) 47%,transparent 74%)}
+.element-tile:hover:not(:disabled){transform:rotateX(3deg) rotateY(var(--tilt)) translateY(-9px) translateZ(16px) scale(1.035);filter:saturate(1.12) brightness(1.06);border-color:rgba(255,255,255,.78);box-shadow:0 24px 34px rgba(0,0,0,.36),0 0 34px hsl(var(--tile-hue) 92% 58% / .42),inset 0 1px 0 rgba(255,255,255,.64)}
+.element-tile:disabled{cursor:default}
+.element-tile .atomic{position:absolute;left:11px;top:7px;font-family:ui-monospace,monospace;font-size:12px;font-weight:900;color:rgba(255,255,255,.86)}
+.element-tile .sym{font-size:34px;color:#fff;text-shadow:0 3px 10px rgba(0,0,0,.32);margin-top:10px}
+.element-tile .ename{font-size:11px;color:rgba(255,255,255,.91);font-weight:750;text-shadow:0 2px 5px rgba(0,0,0,.3)}
+.element-tile .usage-badge{background:rgba(0,0,0,.28);color:#fff;border:1px solid rgba(255,255,255,.18)}
+.element-tile.used{background:linear-gradient(145deg,#314757,#1d2933);border-color:#5a6d79;opacity:.58;filter:saturate(.35)}
+.tiles.reveal-lock .element-tile{pointer-events:none}
+.element-tile.reveal-in{opacity:0;transform:rotateX(28deg) rotateY(var(--tilt)) translateY(48px) translateZ(-80px) scale(.70);animation:neonTileReveal .8s cubic-bezier(.16,.78,.2,1) forwards;animation-delay:calc(var(--i) * 220ms)}
+@keyframes neonTileReveal{0%{opacity:0;filter:blur(6px) saturate(.6);transform:rotateX(34deg) rotateY(var(--tilt)) translateY(55px) translateZ(-95px) scale(.67)}60%{opacity:1;filter:blur(0) saturate(1.18);transform:rotateX(4deg) rotateY(var(--tilt)) translateY(-6px) translateZ(20px) scale(1.045)}100%{opacity:1;filter:none;transform:rotateX(7deg) rotateY(var(--tilt)) translateY(0) translateZ(0) scale(1)}}
+.selection{background:rgba(4,23,37,.82);border-color:#31566a;color:#d7effa}.selection.active{background:rgba(5,42,61,.85);border-color:#59ddff;box-shadow:inset 0 0 0 2px rgba(69,217,255,.07),0 0 22px rgba(69,217,255,.08)}
+.chip{background:linear-gradient(135deg,#124f6e,#222c69);box-shadow:0 5px 14px rgba(0,0,0,.25)}
+.preview{background:linear-gradient(90deg,#6fe8ff,#b997ff,#77f0aa);-webkit-background-clip:text;background-clip:text;color:transparent}
+.info-card{background:rgba(5,24,38,.82);border-color:rgba(92,171,207,.25)}.info-card p{color:#bfd5e1}.info-symbol{background:linear-gradient(135deg,#0a8bb6,#644be0)}
+.leaderboard th{color:#8fb5c8}.leaderboard td{border-bottom-color:rgba(111,170,198,.18)}
+.footer{color:#7fa3b6}
+@media(max-width:900px){.tiles{grid-template-columns:repeat(3,minmax(92px,1fr));gap:18px 12px}.element-tile{min-height:102px}.shell{padding-left:12px;padding-right:12px}}
+@media(max-width:520px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr));max-width:380px}.element-tile{min-height:96px}.hero h1{font-size:36px}.card{padding:16px}.game-rule-strip{gap:7px}.game-rule-chip{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.element-tile.reveal-in{animation:none;opacity:1;transform:none}.smoke-puff,.lab-solution-a,.lab-solution-b,.lab-solution-c,.chrom-band,.lab-bubble{animation-duration:1ms;animation-iteration-count:1}}
+
 </style>
 </head>
 <body>
+
+<div class="lab-stage" aria-hidden="true">
+<svg viewBox="0 0 1600 950" preserveAspectRatio="xMidYMid slice" role="presentation">
+  <defs>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b2136"/><stop offset=".58" stop-color="#071727"/><stop offset="1" stop-color="#030a12"/></linearGradient>
+    <linearGradient id="bench" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#142d3c"/><stop offset=".22" stop-color="#0b1924"/><stop offset="1" stop-color="#02060a"/></linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#eaffff" stop-opacity=".42"/><stop offset=".5" stop-color="#7bdfff" stop-opacity=".08"/><stop offset="1" stop-color="#d9fbff" stop-opacity=".28"/></linearGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="10"/></filter>
+    <filter id="smokeBlur"><feGaussianBlur stdDeviation="7"/></filter>
+  </defs>
+  <rect width="1600" height="950" fill="url(#wall)"/>
+  <rect x="0" y="590" width="1600" height="360" fill="url(#bench)"/>
+  <path d="M0 610 H1600" stroke="#2d6179" stroke-opacity=".5" stroke-width="3"/>
+  <!-- großes Laborfenster -->
+  <g opacity=".78"><path d="M65 80 Q240 10 395 95 V430 H65Z" fill="#15324a" stroke="#4ca1ca" stroke-opacity=".4" stroke-width="5"/><rect x="92" y="110" width="275" height="284" rx="6" fill="#6bc3ee" opacity=".18"/><path d="M228 92V412M92 250H370" stroke="#8bd8ff" stroke-opacity=".28" stroke-width="7"/></g>
+  <!-- Kreidetafel -->
+  <g opacity=".58"><rect x="34" y="190" width="330" height="260" rx="14" fill="#071413" stroke="#5f8d81" stroke-width="3"/><g fill="#b8ddd1" font-family="monospace" font-size="22"><text x="58" y="230">CH₃   OH   NH₂</text><text x="60" y="274">H₂SO₄   CH₃COOH</text><text x="72" y="330">⌬—Cl     O=C=O</text><text x="58" y="385">Na  Mg  Al  Si  P</text></g></g>
+  <!-- Regale -->
+  <g opacity=".72" stroke="#38566a" stroke-width="6"><path d="M420 130H1510M420 240H1510"/><path d="M470 130V270M740 130V270M1010 130V270M1290 130V270"/></g>
+  <g opacity=".72">
+    <g transform="translate(470 166)"><rect width="30" height="58" rx="6" fill="url(#glass)" stroke="#9aeaff"/><rect x="4" y="32" width="22" height="20" rx="4" class="lab-solution-c" opacity=".85"/></g>
+    <g transform="translate(535 152)"><rect width="36" height="72" rx="8" fill="url(#glass)" stroke="#9aeaff"/><rect x="4" y="39" width="28" height="27" rx="5" class="lab-solution-b" opacity=".72"/></g>
+    <g transform="translate(612 171)"><rect width="26" height="52" rx="6" fill="url(#glass)" stroke="#9aeaff"/><rect x="3" y="28" width="20" height="19" rx="4" class="lab-solution-a" opacity=".76"/></g>
+    <g transform="translate(705 160)"><rect width="40" height="64" rx="9" fill="url(#glass)" stroke="#9aeaff"/><rect x="5" y="34" width="30" height="24" rx="4" class="lab-solution-c" opacity=".7"/></g>
+    <g transform="translate(870 158)"><rect width="34" height="66" rx="8" fill="url(#glass)" stroke="#9aeaff"/><rect x="4" y="37" width="26" height="23" rx="4" class="lab-solution-a" opacity=".75"/></g>
+    <g transform="translate(1130 156)"><rect width="38" height="68" rx="8" fill="url(#glass)" stroke="#9aeaff"/><rect x="5" y="38" width="28" height="24" rx="4" class="lab-solution-b" opacity=".75"/></g>
+    <g transform="translate(1370 166)"><rect width="32" height="58" rx="7" fill="url(#glass)" stroke="#9aeaff"/><rect x="4" y="31" width="24" height="21" rx="4" class="lab-solution-c" opacity=".75"/></g>
+  </g>
+
+  <!-- Erlenmeyerkolben links mit wechselnder Lösung und grün/rotem Rauch -->
+  <g transform="translate(120 560)">
+    <path d="M96 8h46v94l78 154q10 22-18 22H34q-29 0-17-25l79-151Z" fill="url(#glass)" stroke="#a9efff" stroke-width="5"/>
+    <path d="M42 220 Q118 196 198 222 L216 256 Q219 265 201 265H38Q23 265 28 253Z" class="lab-solution-a" opacity=".9"/>
+    <circle class="lab-bubble" cx="78" cy="235" r="8" fill="#dcfff0"/><circle class="lab-bubble" cx="130" cy="247" r="6" fill="#dcfff0" style="animation-delay:1.2s"/><circle class="lab-bubble" cx="165" cy="225" r="7" fill="#dcfff0" style="animation-delay:2.3s"/>
+    <g filter="url(#smokeBlur)"><circle class="smoke-puff" cx="118" cy="95" r="28" fill="#42ff78" style="--smoke-delay:0s"/><circle class="smoke-puff" cx="105" cy="100" r="24" fill="#ff4c63" style="--smoke-delay:1.8s;--smoke-dur:8s"/><circle class="smoke-puff" cx="132" cy="110" r="21" fill="#45ff91" style="--smoke-delay:3.2s;--smoke-dur:6.5s"/></g>
+  </g>
+
+  <!-- Destillationsanlage rechts -->
+  <g transform="translate(1045 350)" stroke="#b8efff" stroke-width="4" fill="none" opacity=".92">
+    <path d="M120 210 C80 210 52 238 52 278c0 45 31 78 79 78s82-31 82-76c0-41-28-70-65-70v-80h-28z" fill="url(#glass)"/>
+    <path d="M77 312 Q132 287 187 313 L199 337 Q132 366 66 337Z" class="lab-solution-b" stroke="none" opacity=".9"/>
+    <path d="M148 130h92"/><rect x="238" y="102" width="52" height="155" rx="19" fill="url(#glass)"/>
+    <path d="M264 105V53M264 53H350M350 53V160"/>
+    <path d="M290 129h84v34h-84"/>
+    <path d="M374 146h60v136"/>
+    <path d="M416 282 C382 282 360 309 360 343c0 42 30 66 66 66s66-25 66-66c0-33-22-61-55-61z" fill="url(#glass)"/>
+    <path d="M376 360 Q426 341 475 361 L486 386 Q426 408 367 386Z" class="lab-solution-c" stroke="none" opacity=".84"/>
+    <path d="M40 370H222" stroke="#23516a" stroke-width="8"/><path d="M352 420H500" stroke="#23516a" stroke-width="8"/>
+  </g>
+  <!-- Heizflamme -->
+  <g transform="translate(1135 718)" opacity=".9"><path d="M0 55 C-20 27 5 17 8 0c22 19 27 34 12 55Z" fill="#268dff"/><path d="M5 52 C-3 33 11 29 13 17c11 13 13 23 4 35Z" fill="#8ce8ff"/></g>
+
+  <!-- Säulenchromatographie ganz rechts -->
+  <g transform="translate(1450 345)" opacity=".96">
+    <rect x="0" y="0" width="64" height="330" rx="25" fill="url(#glass)" stroke="#bdefff" stroke-width="4"/>
+    <rect class="chrom-band" x="8" y="62" width="48" height="34" rx="8" fill="#ff4b67" style="animation-delay:0s"/>
+    <rect class="chrom-band" x="8" y="101" width="48" height="31" rx="8" fill="#ffad31" style="animation-delay:1s"/>
+    <rect class="chrom-band" x="8" y="138" width="48" height="30" rx="8" fill="#48e57e" style="animation-delay:2s"/>
+    <rect class="chrom-band" x="8" y="174" width="48" height="31" rx="8" fill="#28b8ff" style="animation-delay:3s"/>
+    <rect class="chrom-band" x="8" y="211" width="48" height="32" rx="8" fill="#9a5dff" style="animation-delay:4s"/>
+    <path d="M32 330v52h30" fill="none" stroke="#bdefff" stroke-width="4"/>
+    <path d="M-25 74h25M64 74h28M-20 276h20M64 276h26" stroke="#5a8ba0" stroke-width="8"/>
+  </g>
+
+  <!-- Reagenzglasreihe -->
+  <g transform="translate(1260 720)" opacity=".85"><path d="M0 88H260" stroke="#55798c" stroke-width="10"/><g stroke="#a8efff" stroke-width="3" fill="url(#glass)"><rect x="16" y="0" width="24" height="86" rx="12"/><rect x="58" y="0" width="24" height="86" rx="12"/><rect x="100" y="0" width="24" height="86" rx="12"/><rect x="142" y="0" width="24" height="86" rx="12"/><rect x="184" y="0" width="24" height="86" rx="12"/><rect x="226" y="0" width="24" height="86" rx="12"/></g><g opacity=".9"><rect class="lab-solution-b" x="20" y="49" width="16" height="31" rx="8"/><rect class="lab-solution-c" x="62" y="38" width="16" height="42" rx="8"/><rect class="lab-solution-a" x="104" y="53" width="16" height="27" rx="8"/><rect class="lab-solution-b" x="146" y="43" width="16" height="37" rx="8"/><rect class="lab-solution-c" x="188" y="48" width="16" height="32" rx="8"/><rect class="lab-solution-a" x="230" y="35" width="16" height="45" rx="8"/></g></g>
+
+  <!-- weiche Lichtakzente -->
+  <circle cx="890" cy="560" r="260" fill="#147fc7" opacity=".08" filter="url(#soft)"/><circle cx="1340" cy="470" r="220" fill="#7d32b7" opacity=".08" filter="url(#soft)"/>
+</svg>
+</div>
+
 <div class="shell">
   <section class="hero">
     <div id="elementCloud" class="element-cloud" aria-hidden="true"></div>
@@ -171,7 +324,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;bac
     </div>
     <div style="text-align:center;padding:16px 0 4px">
       <h2 style="font-size:30px;margin-bottom:6px">Tagesrätsel <span id="todayLabel"></span></h2>
-      <p class="small" style="max-width:620px;margin:0 auto 16px">Nach dem Start werden die 15 Elementsymbole sichtbar und die serverseitige Zeitmessung beginnt. Ein Neuladen setzt die Uhr nicht zurück.</p>
+      <p class="small" style="max-width:620px;margin:0 auto 16px">Nach dem Start erscheinen die Auswahl-Elemente langsam in 3D. Bis 5 gesuchte Elementsymbole gibt es 10 Auswahl-Elemente, ab 6 gibt es 15. Die Uhr startet erst, wenn alle Karten sichtbar sind; ein Neuladen setzt sie nicht zurück.</p>
       <button id="startBtn" class="primary" style="font-size:18px;padding:14px 22px" onclick="startPuzzle()">Tagesrätsel starten</button>
     </div>
   </section>
@@ -180,10 +333,12 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;bac
     <div id="testBanner" class="test-banner hidden">🧪 Testmodus – dieses Ergebnis wird nicht gespeichert und verändert die Rangliste nicht.</div>
     <div class="topbar">
       <span class="count-pill">🧩 Gesucht: <b id="elementCount">–</b> Elementsymbole</span>
-      <span id="unusedTop" class="small">15 Elemente zur Auswahl</span>
+      <span id="unusedTop" class="small">Auswahl wird vorbereitet …</span>
     </div>
     <div id="timer" class="timer">00:00.000</div>
-    <div class="rule">Falsche Versuche kosten keine Punkte – aber die Uhr läuft weiter. Ab 5 Elementsymbolen sind bis zu drei Tipps möglich.</div>
+    <div id="timerNote" class="timer-note">Die Uhr wartet auf die Element-Einblendung.</div>
+    <div class="game-rule-strip"><span class="game-rule-chip">Bis 5 Elemente: <b>10</b> zur Auswahl</span><span class="game-rule-chip">Ab 6 Elemente: <b>15</b> zur Auswahl</span><span class="game-rule-chip">⏱ Start erst nach Einblendung</span></div>
+    <div class="rule">Falsche Versuche kosten keine Punkte – die Uhr läuft weiter. Ab 5 Elementsymbolen sind bis zu drei Tipps möglich.</div>
     <div class="status-strip"><span class="status-chip">🔊 akustische Rückmeldung</span><span class="status-chip">✨ Lösungseffekt</span><span class="status-chip">🧪 Element-Klicks</span></div>
 
     <div id="hintPanel" class="hint-panel hidden">
@@ -646,6 +801,9 @@ let session = null;
 let puzzle = null;
 let selected = [];
 let timerHandle = null;
+let revealHandle = null;
+const TILE_REVEAL_STAGGER = 220;
+const TILE_REVEAL_MS = 800;
 let testMode = false;
 let testStartedAt = null;
 let hintState = {hints_used:0, hint_penalty_ms:0, revealed_hints:[], revealed_hint_slots:[], revealed_hint_char_starts:[], revealed_hint_char_ends:[]};
@@ -695,6 +853,7 @@ async function login(){
 
 async function logout(){
   stopTimer();
+  if(revealHandle){clearTimeout(revealHandle);revealHandle=null;}
   await supabaseClient.auth.signOut();
   session=null; puzzle=null; selected=[]; testMode=false; testStartedAt=null;
   renderAuth();
@@ -741,19 +900,55 @@ async function startPuzzle(){
   }
   puzzle=Array.isArray(data)?data[0]:data;
   show("lobbyCard",false);
-  if(puzzle.solved) renderSolved(puzzle); else renderGame(puzzle);
+  if(puzzle.solved) renderSolved(puzzle); else renderGame(puzzle,true);
 }
 
-function renderGame(st){
+function revealDurationFor(choices){
+  const n=Math.max(1,Number(choices?.length||0));
+  return TILE_REVEAL_MS + (n-1)*TILE_REVEAL_STAGGER + 220;
+}
+
+function setTilesInteractive(on){
+  const wrap=$("tiles");
+  if(!wrap) return;
+  wrap.classList.toggle("reveal-lock",!on);
+  wrap.querySelectorAll(".element-tile").forEach(btn=>{ btn.disabled=!on; });
+}
+
+function renderGame(st, animateReveal=false){
+  if(revealHandle){ clearTimeout(revealHandle); revealHandle=null; }
   show("gameCard",true); show("resultCard",false); show("leaderCard",true);
   show("testBanner",testMode);
   $("elementCount").textContent=st.element_count;
   selected=[];
   hintState={hints_used:0,hint_penalty_ms:0,revealed_hints:[],revealed_hint_slots:[],revealed_hint_char_starts:[],revealed_hint_char_ends:[]};
-  renderTiles(st.choices||[]);
+
+  const choices=Array.isArray(st.choices)?st.choices:[];
+  const startIso=testMode ? testStartedAt : st.started_at;
+  const startMs=startIso ? new Date(startIso).getTime() : 0;
+  const waitingForServerStart=startMs>Date.now()+120;
+  const doReveal=animateReveal || waitingForServerStart;
+
+  renderTiles(choices,doReveal);
   renderSelection();
   renderHintUI();
-  startTimer(testMode ? testStartedAt : st.started_at);
+  startTimer(startIso);
+
+  if(doReveal){
+    setTilesInteractive(false);
+    const remaining=Math.max(250,startMs-Date.now());
+    const localReveal=revealDurationFor(choices);
+    const wait=Math.max(remaining,Math.min(localReveal,4400));
+    if($("timerNote")) $("timerNote").textContent="Die Elemente erscheinen – die Uhr startet danach.";
+    revealHandle=setTimeout(()=>{
+      setTilesInteractive(true);
+      if($("timerNote")) $("timerNote").textContent="Alle Elemente sichtbar – Zeit läuft.";
+      revealHandle=null;
+    },wait);
+  }else{
+    setTilesInteractive(true);
+  }
+
   if(!testMode) loadHintState();
 }
 
@@ -763,7 +958,8 @@ function buildTestChoices(st){
   const solution=Array.isArray(st.solved_symbols)?st.solved_symbols.filter(Boolean):[];
   const out=[...new Set(solution)];
   const pool=ELEMENTS.map(e=>e[0]).filter(sym=>!out.includes(sym));
-  while(out.length<15 && pool.length){
+  const targetCount=solution.length<=5 ? 10 : 15;
+  while(out.length<targetCount && pool.length){
     const i=Math.floor(Math.random()*pool.length);
     out.push(pool.splice(i,1)[0]);
   }
@@ -779,12 +975,12 @@ function startLocalTest(){
     return;
   }
   testMode=true;
-  testStartedAt=new Date().toISOString();
   selected=[];
   const solution=puzzle.solved_symbols.slice();
   puzzle={...puzzle, element_count:solution.length, choices:buildTestChoices(puzzle)};
+  testStartedAt=new Date(Date.now()+revealDurationFor(puzzle.choices)).toISOString();
   hintState={hints_used:0,hint_penalty_ms:0,revealed_hints:[],revealed_hint_slots:[],revealed_hint_char_starts:[],revealed_hint_char_ends:[]};
-  renderGame(puzzle);
+  renderGame(puzzle,true);
   msg("gameMsg","Testmodus aktiv: Probiere Sounds, falsche Versuche und die Lösung beliebig oft aus.","good");
 }
 
@@ -939,10 +1135,14 @@ async function takeHint(){
   }
 }
 
-function renderTiles(choices){
-  $("tiles").innerHTML=choices.map(sym=>{
-    const e=BY_SYMBOL[sym]||[sym,sym];
-    return `<button class="element-tile" data-symbol="${escapeHtml(sym)}" onclick="chooseSymbol('${sym}')"><div class="sym">${escapeHtml(sym)}</div><div class="ename">${escapeHtml(e[1])}</div><div class="usage-badge"></div></button>`;
+function renderTiles(choices,animateReveal=false){
+  $("tiles").innerHTML=choices.map((sym,i)=>{
+    const e=BY_SYMBOL[sym]||[sym,sym,"?"];
+    const atomic=Number(e[2]||0);
+    const hue=(atomic*37 + i*19)%360;
+    const center=(choices.length-1)/2;
+    const tilt=((i-center)*-1.7).toFixed(1)+"deg";
+    return `<button class="element-tile${animateReveal?" reveal-in":""}" style="--i:${i};--tile-hue:${hue};--tilt:${tilt}" data-symbol="${escapeHtml(sym)}" onclick="chooseSymbol('${sym}')"><div class="atomic">${escapeHtml(atomic||"")}</div><div class="sym">${escapeHtml(sym)}</div><div class="ename">${escapeHtml(e[1])}</div><div class="usage-badge"></div></button>`;
   }).join("");
   updateTileUsage();
 }
@@ -1032,13 +1232,26 @@ async function submitGuess(){
 function startTimer(startIso){
   stopTimer();
   const start=new Date(startIso).getTime();
-  const tick=()=>{ $("timer").textContent=fmtTime(Date.now()-start+Number(hintState.hint_penalty_ms||0)); };
+  const tick=()=>{
+    const base=Date.now()-start;
+    const timer=$("timer");
+    if(base<0){
+      timer.textContent="00:00.000";
+      timer.classList.add("armed");
+      if($("timerNote") && !$("tiles")?.classList.contains("reveal-lock")) $("timerNote").textContent="Startet, sobald alle Elemente sichtbar sind.";
+    }else{
+      timer.textContent=fmtTime(base+Number(hintState.hint_penalty_ms||0));
+      timer.classList.remove("armed");
+      if($("timerNote") && !$("tiles")?.classList.contains("reveal-lock")) $("timerNote").textContent="Zeit läuft.";
+    }
+  };
   tick(); timerHandle=setInterval(tick,31);
 }
 function stopTimer(){ if(timerHandle) clearInterval(timerHandle); timerHandle=null; }
 
 function renderSolved(st){
   stopTimer();
+  if(revealHandle){clearTimeout(revealHandle);revealHandle=null;}
   show("gameCard",false); show("lobbyCard",false); show("resultCard",true); show("leaderCard",true);
   const word=st.solved_word||"";
   const syms=st.solved_symbols||[];
