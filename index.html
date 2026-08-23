@@ -100,6 +100,10 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(23,107,135,.12)
 .leaderboard td:nth-child(1),.leaderboard td:nth-child(3),.leaderboard td:nth-child(4){font-variant-numeric:tabular-nums}
 .medal{font-size:18px}
 .footer{text-align:center;color:#6c7982;font-size:12px;margin-top:22px}
+
+.test-banner{margin:0 0 14px;padding:12px 14px;border-radius:14px;background:#eef7fb;border:1px solid #b9d9e6;color:#17465a;font-weight:800;text-align:center}
+.test-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+.test-actions .secondary{background:#eaf4f8}
 @media(max-width:720px){.auth-grid{grid-template-columns:1fr}.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}.info-grid{grid-template-columns:1fr}.hero{padding:24px 20px 82px}.floating-element{width:46px;height:46px;font-size:19px}.brand{max-width:100%}}
 
 
@@ -173,6 +177,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;bac
   </section>
 
   <section id="gameCard" class="card hidden">
+    <div id="testBanner" class="test-banner hidden">🧪 Testmodus – dieses Ergebnis wird nicht gespeichert und verändert die Rangliste nicht.</div>
     <div class="topbar">
       <span class="count-pill">🧩 Gesucht: <b id="elementCount">–</b> Elementsymbole</span>
       <span id="unusedTop" class="small">15 Elemente zur Auswahl</span>
@@ -215,6 +220,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;bac
       <div id="solvedBreakdown" class="breakdown"></div>
       <div id="finalTime" class="timer" style="font-size:36px"></div>
       <div id="rankBig" class="rank-big"></div>
+      <div class="test-actions"><button class="secondary" onclick="startLocalTest()">🧪 Heutiges Rätsel nochmals testen</button></div>
     </div>
     <h2 style="margin-top:24px">Chemie nebenbei</h2>
     <p class="small">Zu den Elementen, aus denen das heutige Wort besteht:</p>
@@ -640,6 +646,8 @@ let session = null;
 let puzzle = null;
 let selected = [];
 let timerHandle = null;
+let testMode = false;
+let testStartedAt = null;
 let hintState = {hints_used:0, hint_penalty_ms:0, revealed_hints:[], revealed_hint_slots:[], revealed_hint_char_starts:[], revealed_hint_char_ends:[]};
 
 function $(id){ return document.getElementById(id); }
@@ -688,7 +696,7 @@ async function login(){
 async function logout(){
   stopTimer();
   await supabaseClient.auth.signOut();
-  session=null; puzzle=null; selected=[];
+  session=null; puzzle=null; selected=[]; testMode=false; testStartedAt=null;
   renderAuth();
 }
 
@@ -707,6 +715,7 @@ function renderAuth(){
 }
 
 async function loadStatus(){
+  testMode=false; testStartedAt=null;
   const {data,error}=await supabaseClient.rpc("elementenpuzzle_status");
   if(error) return msg("authMsg","Datenbank noch nicht eingerichtet oder Status konnte nicht geladen werden: "+error.message,"bad");
   const st=Array.isArray(data)?data[0]:data;
@@ -737,14 +746,70 @@ async function startPuzzle(){
 
 function renderGame(st){
   show("gameCard",true); show("resultCard",false); show("leaderCard",true);
+  show("testBanner",testMode);
   $("elementCount").textContent=st.element_count;
   selected=[];
   hintState={hints_used:0,hint_penalty_ms:0,revealed_hints:[],revealed_hint_slots:[],revealed_hint_char_starts:[],revealed_hint_char_ends:[]};
   renderTiles(st.choices||[]);
   renderSelection();
   renderHintUI();
-  startTimer(st.started_at);
-  loadHintState();
+  startTimer(testMode ? testStartedAt : st.started_at);
+  if(!testMode) loadHintState();
+}
+
+function buildTestChoices(st){
+  const existing=Array.isArray(st.choices)?st.choices.filter(Boolean):[];
+  if(existing.length) return existing;
+  const solution=Array.isArray(st.solved_symbols)?st.solved_symbols.filter(Boolean):[];
+  const out=[...new Set(solution)];
+  const pool=ELEMENTS.map(e=>e[0]).filter(sym=>!out.includes(sym));
+  while(out.length<15 && pool.length){
+    const i=Math.floor(Math.random()*pool.length);
+    out.push(pool.splice(i,1)[0]);
+  }
+  for(let i=out.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1)); [out[i],out[j]]=[out[j],out[i]];
+  }
+  return out;
+}
+
+function startLocalTest(){
+  if(!puzzle || !Array.isArray(puzzle.solved_symbols) || !puzzle.solved_symbols.length){
+    alert("Die heutige Lösung ist noch nicht vollständig geladen.");
+    return;
+  }
+  testMode=true;
+  testStartedAt=new Date().toISOString();
+  selected=[];
+  const solution=puzzle.solved_symbols.slice();
+  puzzle={...puzzle, element_count:solution.length, choices:buildTestChoices(puzzle)};
+  hintState={hints_used:0,hint_penalty_ms:0,revealed_hints:[],revealed_hint_slots:[],revealed_hint_char_starts:[],revealed_hint_char_ends:[]};
+  renderGame(puzzle);
+  msg("gameMsg","Testmodus aktiv: Probiere Sounds, falsche Versuche und die Lösung beliebig oft aus.","good");
+}
+
+function localHint(){
+  const solution=Array.isArray(puzzle?.solved_symbols)?puzzle.solved_symbols:[];
+  const used=Number(hintState.hints_used||0);
+  if(used>=3 || !solution.length) return;
+  const already=new Set((hintState.revealed_hint_slots||[]).map(Number));
+  let slot=solution.findIndex((_s,i)=>!already.has(i+1))+1;
+  if(slot<=0) slot=Math.min(used+1,solution.length);
+  const sym=solution[slot-1];
+  let charStart=1;
+  for(let i=0;i<slot-1;i++) charStart+=String(solution[i]).length;
+  const charEnd=charStart+String(sym).length-1;
+  const add=HINT_PENALTIES[used]||0;
+  hintState.hints_used=used+1;
+  hintState.hint_penalty_ms=Number(hintState.hint_penalty_ms||0)+add;
+  hintState.revealed_hints=[...(hintState.revealed_hints||[]),sym];
+  hintState.revealed_hint_slots=[...(hintState.revealed_hint_slots||[]),slot];
+  hintState.revealed_hint_char_starts=[...(hintState.revealed_hint_char_starts||[]),charStart];
+  hintState.revealed_hint_char_ends=[...(hintState.revealed_hint_char_ends||[]),charEnd];
+  const e=BY_SYMBOL[sym]||[sym,sym];
+  $("hintMsg").textContent=`Test-Tipp: ${sym} (${e[1]}) — ${hintPositionText(sym,slot,charStart,charEnd)}. +${fmtPenalty(add)}.`;
+  playSound("hint");
+  renderHintUI();
 }
 
 const HINT_PENALTIES=[60000,120000,300000];
@@ -846,6 +911,7 @@ async function loadHintState(){
 
 async function takeHint(){
   if(!puzzle || Number(puzzle.element_count)<5 || Number(hintState.hints_used||0)>=3) return;
+  if(testMode){ localHint(); return; }
   const btn=$("hintBtn");
   btn.disabled=true;
   $("hintMsg").textContent="Tipp wird geladen …";
@@ -924,6 +990,24 @@ async function submitGuess(){
   $("submitBtn").disabled=true;
   clearMsg("gameMsg");
   const guess=selected.slice();
+  if(testMode){
+    const solution=Array.isArray(puzzle.solved_symbols)?puzzle.solved_symbols:[];
+    const correct=guess.length===solution.length && guess.every((sym,i)=>sym===solution[i]);
+    if(correct){
+      const elapsed=Date.now()-new Date(testStartedAt).getTime()+Number(hintState.hint_penalty_ms||0);
+      playSound("success"); celebrate();
+      const testResult={...puzzle,solved:true,elapsed_ms:elapsed,rank:null};
+      renderSolved(testResult);
+      $("rankBig").textContent="🧪 Test erfolgreich – nicht gespeichert";
+    }else{
+      playSound("wrong");
+      msg("gameMsg","Noch nicht richtig – Testversuch, nichts wird gespeichert.","bad");
+      $("selectionBox").classList.remove("shake"); void $("selectionBox").offsetWidth; $("selectionBox").classList.add("shake");
+      selected=[]; renderSelection();
+      $("submitBtn").disabled=false;
+    }
+    return;
+  }
   const {data,error}=await supabaseClient.rpc("elementenpuzzle_submit",{p_symbols:guess});
   if(error){
     $("submitBtn").disabled=false;
