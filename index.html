@@ -409,15 +409,112 @@ body:after{
 }
 @media(prefers-reduced-motion:reduce){.fx-layer *{animation:none!important;opacity:.18}}
 
+
+/* ===== Apparaturen statt sichtbarem altem Bildrahmen ===== */
+.tile-stage-wrap{
+  position:relative;
+  z-index:6;
+  max-width:1240px;
+  margin:8px auto 14px;
+  display:grid;
+  grid-template-columns:120px minmax(0,930px) 120px;
+  align-items:end;
+  gap:12px;
+}
+.tile-stage-wrap .tile-stage{margin:0;z-index:2}
+.apparatus{
+  position:relative;
+  height:250px;
+  pointer-events:none;
+  z-index:1;
+  opacity:.96;
+  filter:drop-shadow(0 8px 20px rgba(0,0,0,.35));
+}
+.apparatus:before{
+  content:"";
+  position:absolute;
+  left:50%;bottom:0;
+  width:84px;height:18px;
+  transform:translateX(-50%);
+  border-radius:999px;
+  background:linear-gradient(180deg,rgba(33,42,52,.95),rgba(8,13,18,.98));
+  box-shadow:0 2px 0 rgba(255,255,255,.06) inset;
+}
+.reflux-column,.vigreux-column{
+  position:absolute;
+  left:50%;bottom:14px;
+  transform:translateX(-50%);
+  width:92px;height:220px;
+}
+.reflux-column .tube.outer{
+  position:absolute;left:31px;top:16px;width:30px;height:168px;
+  border:2px solid rgba(194,243,255,.95);border-radius:18px;
+  background:linear-gradient(90deg,rgba(255,255,255,.18),rgba(162,230,255,.08) 26%,rgba(71,185,226,.14) 55%,rgba(255,255,255,.08));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.16), 0 0 18px rgba(91,219,255,.16);
+}
+.reflux-column .tube.inner{
+  position:absolute;left:42px;top:25px;width:8px;height:150px;border-radius:999px;
+  background:linear-gradient(180deg,rgba(205,246,255,.76),rgba(119,222,255,.25));
+  box-shadow:0 0 10px rgba(112,223,255,.28);
+}
+.reflux-column .joint,.vigreux-column .joint{
+  position:absolute;border:2px solid rgba(194,243,255,.96);background:linear-gradient(90deg,rgba(255,255,255,.22),rgba(118,210,255,.10));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);
+}
+.reflux-column .joint.top{left:38px;top:0;width:16px;height:24px;border-radius:12px 12px 4px 4px}
+.reflux-column .joint.bottom{left:38px;bottom:18px;width:16px;height:24px;border-radius:4px 4px 12px 12px}
+.reflux-column .joint.side{width:24px;height:12px;border-radius:999px}
+.reflux-column .joint.side-a{left:15px;top:72px;transform:rotate(-30deg)}
+.reflux-column .joint.side-b{right:15px;top:118px;transform:rotate(30deg)}
+.reflux-column .liquid-flow{position:absolute;width:22px;height:6px;border-radius:999px;background:linear-gradient(90deg,rgba(59,226,145,.80),rgba(75,200,255,.72));filter:blur(.2px)}
+.reflux-column .flow-a{left:5px;top:77px;transform:rotate(-30deg)}
+.reflux-column .flow-b{right:5px;top:123px;transform:rotate(30deg)}
+.vigreux-column .tube.main{
+  position:absolute;left:34px;top:10px;width:24px;height:174px;
+  border:2px solid rgba(194,243,255,.95);border-radius:16px;
+  background:linear-gradient(90deg,rgba(255,255,255,.18),rgba(162,230,255,.08) 24%,rgba(71,185,226,.14) 55%,rgba(255,255,255,.08));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.16), 0 0 18px rgba(145,225,255,.14);
+}
+.vigreux-column .joint.top{left:38px;top:0;width:16px;height:18px;border-radius:10px 10px 4px 4px}
+.vigreux-column .joint.bottom{left:38px;bottom:18px;width:16px;height:22px;border-radius:4px 4px 10px 10px}
+.vigreux-column .joint.side{right:14px;top:74px;width:24px;height:12px;border-radius:999px;transform:rotate(32deg)}
+.vigreux-column .notches{
+  position:absolute;left:23px;width:46px;height:16px;
+}
+.vigreux-column .notches:before,.vigreux-column .notches:after{
+  content:"";position:absolute;top:6px;width:14px;height:6px;border:2px solid rgba(194,243,255,.92);border-radius:10px;background:rgba(133,225,255,.08)
+}
+.vigreux-column .notches:before{left:0;transform:rotate(22deg)}
+.vigreux-column .notches:after{right:0;transform:rotate(-22deg)}
+.vigreux-column .n1{top:34px}.vigreux-column .n2{top:62px}.vigreux-column .n3{top:90px}.vigreux-column .n4{top:118px}.vigreux-column .n5{top:146px}
+.tile-stage-wrap:after{
+  content:"";
+  position:absolute;left:115px;right:115px;bottom:8px;height:46px;z-index:0;
+  border-radius:18px;
+  background:linear-gradient(180deg,rgba(11,23,31,.85),rgba(4,10,14,.96));
+  box-shadow:0 -1px 0 rgba(160,225,245,.08) inset;
+}
+@media(max-width:1100px){
+  .tile-stage-wrap{grid-template-columns:92px minmax(0,1fr) 92px;max-width:840px;gap:10px}
+  .apparatus{height:220px}
+  .reflux-column,.vigreux-column{height:194px;width:78px}
+  .tile-stage-wrap:after{left:88px;right:88px}
+}
+@media(max-width:760px){
+  .tile-stage-wrap{grid-template-columns:1fr;max-width:620px}
+  .apparatus{display:none}
+  .tile-stage-wrap:after{left:0;right:0;height:34px;bottom:4px}
+}
+
 /* ===== Maskierung des eingebrannten unteren Bildrahmens ===== */
 .tile-stage{
   position:relative;
   z-index:6;
   max-width:930px;
-  margin:8px auto 14px;
-  padding:12px 16px 18px;
+  margin:0;
+  padding:14px 16px 20px;
   border-radius:28px;
-  background:linear-gradient(180deg,rgba(3,11,19,.97),rgba(4,14,23,.94));
+  background:linear-gradient(180deg,rgba(3,11,19,.985),rgba(4,14,23,.97));
   border:1px solid rgba(126,214,240,.16);
   box-shadow:0 18px 42px rgba(0,0,0,.46), inset 0 1px 0 rgba(255,255,255,.05);
   overflow:hidden;
@@ -682,9 +779,37 @@ body:after{
       </div>
     </div>
 
-    <div class="tile-stage">
-      <div id="unusedSummary" class="unused-summary"><span class="unused-dot"></span> Noch ungenutzt: 15 von 15 <span class="used-dot"></span> bereits benutzt</div>
-      <div id="tiles" class="tiles"></div>
+    <div class="tile-stage-wrap">
+      <div class="apparatus apparatus-left" aria-hidden="true">
+        <div class="apparatus-label"></div>
+        <div class="reflux-column">
+          <span class="joint top"></span>
+          <span class="tube outer"></span>
+          <span class="tube inner"></span>
+          <span class="joint side side-a"></span>
+          <span class="joint side side-b"></span>
+          <span class="liquid-flow flow-a"></span>
+          <span class="liquid-flow flow-b"></span>
+          <span class="joint bottom"></span>
+        </div>
+      </div>
+      <div class="tile-stage">
+        <div id="unusedSummary" class="unused-summary"><span class="unused-dot"></span> Noch ungenutzt: 15 von 15 <span class="used-dot"></span> bereits benutzt</div>
+        <div id="tiles" class="tiles"></div>
+      </div>
+      <div class="apparatus apparatus-right" aria-hidden="true">
+        <div class="vigreux-column">
+          <span class="joint top"></span>
+          <span class="tube main"></span>
+          <span class="notches n1"></span>
+          <span class="notches n2"></span>
+          <span class="notches n3"></span>
+          <span class="notches n4"></span>
+          <span class="notches n5"></span>
+          <span class="joint side"></span>
+          <span class="joint bottom"></span>
+        </div>
+      </div>
     </div>
 
     <div id="selectionBox" class="selection"><span class="small">Klicke die Elementsymbole in der richtigen Reihenfolge an.</span></div>
