@@ -101,6 +101,28 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(23,107,135,.12)
 .medal{font-size:18px}
 .footer{text-align:center;color:#6c7982;font-size:12px;margin-top:22px}
 @media(max-width:720px){.auth-grid{grid-template-columns:1fr}.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}.info-grid{grid-template-columns:1fr}.hero{padding:24px 20px 82px}.floating-element{width:46px;height:46px;font-size:19px}.brand{max-width:100%}}
+
+
+/* ---------- Version 2026: visuelles & akustisches Feintuning ---------- */
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background-image:radial-gradient(circle at 12% 18%,rgba(23,107,135,.08) 0 2px,transparent 3px),radial-gradient(circle at 82% 28%,rgba(228,161,27,.09) 0 2px,transparent 3px),radial-gradient(circle at 68% 78%,rgba(23,107,135,.06) 0 2px,transparent 3px);background-size:120px 120px,160px 160px,190px 190px}
+.hero{border:1px solid rgba(255,255,255,.13)}
+.hero:before{content:"";position:absolute;inset:auto -8% -70% 35%;height:260px;background:radial-gradient(ellipse,rgba(105,205,235,.22),transparent 67%);transform:rotate(-9deg);pointer-events:none}
+.sound-control{position:absolute;right:18px;bottom:17px;z-index:4;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.13);color:white;border-radius:999px;padding:8px 12px;font-weight:850;backdrop-filter:blur(5px);box-shadow:0 5px 18px rgba(0,0,0,.12)}
+.sound-control:hover{background:rgba(255,255,255,.21)}
+.card{transition:transform .18s ease,box-shadow .18s ease}.card:hover{box-shadow:0 18px 42px rgba(27,54,74,.14)}
+.primary,.secondary,.danger,.hint-btn{transition:transform .12s ease,filter .12s ease,box-shadow .12s ease}.primary:hover:not(:disabled),.secondary:hover:not(:disabled),.hint-btn:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.03)}
+.primary:active:not(:disabled),.secondary:active:not(:disabled),.hint-btn:active:not(:disabled){transform:translateY(1px)}
+.primary{box-shadow:0 6px 16px rgba(23,107,135,.18)}
+.element-tile{position:relative;overflow:hidden}.element-tile:after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 20%,rgba(255,255,255,.8) 48%,transparent 75%);transform:translateX(-130%);transition:transform .4s ease;pointer-events:none}.element-tile:hover:after{transform:translateX(130%)}
+.element-tile.tap{animation:tileTap .18s ease}@keyframes tileTap{50%{transform:scale(.93)}}
+.selection{transition:border-color .2s ease,background .2s ease,box-shadow .2s ease}.selection.active{border-color:#6f9caf;background:#f0f8fb;box-shadow:inset 0 0 0 2px rgba(23,107,135,.06)}
+.preview{background:linear-gradient(90deg,#164f67,#20819f);-webkit-background-clip:text;background-clip:text;color:transparent}
+.notice.bad{animation:noticeIn .22s ease}.notice.good{animation:noticeIn .3s ease}@keyframes noticeIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+.result-hero{position:relative}.result-hero.success-pop{animation:successPop .6s cubic-bezier(.2,.8,.2,1)}@keyframes successPop{0%{transform:scale(.92);opacity:.45}65%{transform:scale(1.035)}100%{transform:scale(1);opacity:1}}
+.celebration{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden}.confetti{position:absolute;top:-20px;width:10px;height:16px;border-radius:3px;opacity:.92;animation:confettiFall var(--d) cubic-bezier(.2,.7,.2,1) forwards;transform:translateX(var(--x)) rotate(var(--r))}.confetti:nth-child(3n){background:#e4a11b}.confetti:nth-child(3n+1){background:#176b87}.confetti:nth-child(3n+2){background:#53a36f}@keyframes confettiFall{to{top:105vh;transform:translateX(calc(var(--x) + var(--drift))) rotate(calc(var(--r) + 720deg));opacity:.25}}
+.status-strip{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:-2px 0 13px}.status-chip{font-size:12px;font-weight:850;color:#46606d;background:#edf4f7;border:1px solid #d4e1e7;border-radius:999px;padding:6px 10px}
+@media(max-width:720px){.sound-control{right:14px;bottom:14px}.hero{padding-bottom:76px}}
+
 </style>
 </head>
 <body>
@@ -113,6 +135,7 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(23,107,135,.12)
         <p>Jeden Tag dasselbe Rätsel für alle: Finde ein deutsches Wort aus Elementsymbolen. Entscheidend ist deine Zeit.</p>
       </div>
     </div>
+    <button id="soundToggle" class="sound-control" type="button" onclick="toggleSound()" title="Spielklänge ein- oder ausschalten">🔊 Sound an</button>
   </section>
 
   <section id="authCard" class="card">
@@ -156,6 +179,7 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(23,107,135,.12)
     </div>
     <div id="timer" class="timer">00:00.000</div>
     <div class="rule">Falsche Versuche kosten keine Punkte – aber die Uhr läuft weiter. Ab 5 Elementsymbolen sind bis zu drei Tipps möglich.</div>
+    <div class="status-strip"><span class="status-chip">🔊 akustische Rückmeldung</span><span class="status-chip">✨ Lösungseffekt</span><span class="status-chip">🧪 Element-Klicks</span></div>
 
     <div id="hintPanel" class="hint-panel hidden">
       <div><strong>💡 Element-Tipp</strong></div>
@@ -554,6 +578,64 @@ async function ladeElementfotos(syms){
   }
 }
 
+
+// ---------------- Sounds ohne externe Audiodateien ----------------
+let soundEnabled = localStorage.getItem("elementenpuzzle_sound") !== "off";
+let audioCtx = null;
+function getAudioCtx(){
+  if(!soundEnabled) return null;
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === "suspended") audioCtx.resume();
+    return audioCtx;
+  }catch(_e){ return null; }
+}
+function tone(freq,duration=0.08,type="sine",volume=0.035,delay=0){
+  const ctx=getAudioCtx(); if(!ctx) return;
+  const t=ctx.currentTime+delay;
+  const osc=ctx.createOscillator(), gain=ctx.createGain();
+  osc.type=type; osc.frequency.setValueAtTime(freq,t);
+  gain.gain.setValueAtTime(0.0001,t);
+  gain.gain.exponentialRampToValueAtTime(Math.max(volume,0.0002),t+0.008);
+  gain.gain.exponentialRampToValueAtTime(0.0001,t+duration);
+  osc.connect(gain); gain.connect(ctx.destination); osc.start(t); osc.stop(t+duration+0.02);
+}
+function playSound(kind){
+  if(!soundEnabled) return;
+  if(kind==="click"){ tone(420,.045,"sine",.022); }
+  else if(kind==="undo"){ tone(330,.055,"triangle",.022); }
+  else if(kind==="hint"){ tone(660,.08,"sine",.03); tone(880,.11,"sine",.026,.08); }
+  else if(kind==="wrong"){ tone(185,.12,"sawtooth",.028); tone(145,.16,"triangle",.025,.08); }
+  else if(kind==="error"){ tone(150,.14,"square",.018); }
+  else if(kind==="success"){
+    tone(523.25,.11,"sine",.04,0); tone(659.25,.12,"sine",.04,.10); tone(783.99,.14,"sine",.045,.20); tone(1046.5,.28,"triangle",.045,.31);
+  }
+}
+function updateSoundButton(){
+  const b=document.getElementById("soundToggle"); if(!b) return;
+  b.textContent=soundEnabled?"🔊 Sound an":"🔇 Sound aus";
+  b.setAttribute("aria-pressed",soundEnabled?"true":"false");
+}
+function toggleSound(){
+  soundEnabled=!soundEnabled;
+  localStorage.setItem("elementenpuzzle_sound",soundEnabled?"on":"off");
+  updateSoundButton();
+  if(soundEnabled) playSound("click");
+}
+function celebrate(){
+  const layer=document.createElement("div"); layer.className="celebration";
+  for(let i=0;i<52;i++){
+    const c=document.createElement("i"); c.className="confetti";
+    c.style.left=(Math.random()*100)+"vw";
+    c.style.setProperty("--d",(1.9+Math.random()*1.8).toFixed(2)+"s");
+    c.style.setProperty("--x",(-25+Math.random()*50).toFixed(0)+"px");
+    c.style.setProperty("--drift",(-80+Math.random()*160).toFixed(0)+"px");
+    c.style.setProperty("--r",(Math.random()*360).toFixed(0)+"deg");
+    layer.appendChild(c);
+  }
+  document.body.appendChild(layer); setTimeout(()=>layer.remove(),3900);
+}
+
 let session = null;
 let puzzle = null;
 let selected = [];
@@ -786,6 +868,7 @@ async function takeHint(){
     const e=BY_SYMBOL[r.new_hint]||[r.new_hint,r.new_hint];
     const pos=hintPositionText(r.new_hint,r.new_hint_slot,r.new_hint_char_start,r.new_hint_char_end);
     $("hintMsg").textContent=`Neuer Tipp: ${r.new_hint} (${e[1]})${pos?` — ${pos}`:" kommt im gesuchten Wort vor"}. +${fmtPenalty(r.added_penalty_ms)}.`;
+    playSound("hint");
     renderHintUI();
   }
 }
@@ -800,10 +883,14 @@ function renderTiles(choices){
 
 function chooseSymbol(sym){
   if(!puzzle || selected.length>=Number(puzzle.element_count)) return;
-  selected.push(sym); renderSelection();
+  selected.push(sym);
+  playSound("click");
+  const btn=[...document.querySelectorAll("#tiles .element-tile")].find(b=>b.dataset.symbol===sym);
+  if(btn){btn.classList.remove("tap"); void btn.offsetWidth; btn.classList.add("tap");}
+  renderSelection();
 }
-function undoSymbol(){ selected.pop(); renderSelection(); }
-function clearSelection(){ selected=[]; renderSelection(); }
+function undoSymbol(){ if(selected.length){selected.pop(); playSound("undo");} renderSelection(); }
+function clearSelection(){ if(selected.length) playSound("undo"); selected=[]; renderSelection(); }
 
 function updateTileUsage(){
   const counts={};
@@ -828,6 +915,7 @@ function renderSelection(){
   if(!selected.length) box.innerHTML='<span class="small">Klicke die Elementsymbole in der richtigen Reihenfolge an.</span>';
   else box.innerHTML=selected.map((s,i)=>`<span class="chip" title="${i+1}. Elementsymbol">${escapeHtml(s)}</span>`).join("");
   $("preview").textContent=selected.map(s=>s).join("");
+  box.classList.toggle("active",selected.length>0);
   $("submitBtn").disabled=!puzzle || selected.length!==Number(puzzle.element_count);
   updateTileUsage();
 }
@@ -839,14 +927,18 @@ async function submitGuess(){
   const {data,error}=await supabaseClient.rpc("elementenpuzzle_submit",{p_symbols:guess});
   if(error){
     $("submitBtn").disabled=false;
+    playSound("error");
     return msg("gameMsg",error.message,"bad");
   }
   const r=Array.isArray(data)?data[0]:data;
   if(r.correct){
     puzzle={...puzzle,...r,solved:true};
+    playSound("success");
+    celebrate();
     renderSolved(puzzle);
     loadLeaderboard();
   } else {
+    playSound("wrong");
     msg("gameMsg",`Noch nicht richtig. Versuch ${r.guesses} – die Uhr läuft weiter.`, "bad");
     $("selectionBox").classList.remove("shake"); void $("selectionBox").offsetWidth; $("selectionBox").classList.add("shake");
     selected=[]; renderSelection();
@@ -870,6 +962,8 @@ function renderSolved(st){
   $("solvedBreakdown").textContent=syms.join(" · ");
   $("finalTime").textContent=fmtTime(st.elapsed_ms);
   $("rankBig").textContent=st.rank ? `🏁 Platz ${st.rank} in der heutigen Rangliste` : "🏁 Ergebnis gespeichert";
+  const hero=document.querySelector("#resultCard .result-hero");
+  if(hero){hero.classList.remove("success-pop"); void hero.offsetWidth; hero.classList.add("success-pop");}
   renderInfo(syms);
 }
 
@@ -910,6 +1004,7 @@ async function loadLeaderboard(){
 function escapeHtml(v){ return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
 
 initElementCloud();
+updateSoundButton();
 
 supabaseClient.auth.onAuthStateChange((_event,newSession)=>{
   session=newSession;
