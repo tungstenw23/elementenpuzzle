@@ -273,8 +273,8 @@ body:after{
 .glow-column{right:19%;top:24%;width:10%;height:33%;border-radius:42%;background:linear-gradient(180deg,rgba(255,63,100,.24),rgba(255,176,35,.25),rgba(60,255,128,.20),rgba(50,180,255,.22),rgba(158,87,255,.24));animation-delay:-4.1s}
 .glow-red{right:8%;top:43%;width:12%;height:18%;background:radial-gradient(circle,#ff3c50 0,rgba(255,60,80,.32) 36%,transparent 72%);animation-delay:-1.2s}
 .photo-smoke{width:8%;height:26%;filter:blur(16px);opacity:.34;border-radius:50%;animation:photoSmoke 4.8s ease-in-out infinite}
-.smoke-green{left:26%;top:19%;background:radial-gradient(ellipse at 50% 100%,rgba(66,255,105,.96),rgba(44,220,86,.34) 45%,transparent 72%)}
-.smoke-red{right:13%;top:19%;background:radial-gradient(ellipse at 50% 100%,rgba(255,65,86,.96),rgba(255,58,88,.34) 45%,transparent 72%);animation-delay:-2.4s}
+.smoke-green{left:24%;top:18%;background:radial-gradient(ellipse at 50% 100%,rgba(66,255,105,.98),rgba(44,220,86,.42) 45%,transparent 72%);animation:photoSmokeGreen 3.4s ease-in-out infinite}
+.smoke-red{right:18%;top:18%;background:radial-gradient(ellipse at 50% 100%,rgba(255,65,86,.98),rgba(255,58,88,.40) 45%,transparent 72%);animation:photoSmokeRed 4.0s ease-in-out infinite;animation-delay:-1.8s}
 @keyframes photoGlow{0%{opacity:.18;transform:scale(.86);filter:blur(32px) hue-rotate(0deg)}100%{opacity:.42;transform:scale(1.12);filter:blur(24px) hue-rotate(28deg)}}
 @keyframes photoSmoke{0%{opacity:0;transform:translateY(34px) scale(.72)}20%{opacity:.34}70%{opacity:.22}100%{opacity:0;transform:translateY(-72px) translateX(15px) scale(1.42)}}
 
@@ -354,7 +354,7 @@ body:after{
 .fx-layer{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden}
 .fume-column{position:absolute;bottom:23%;width:11%;height:38%;z-index:5}
 .fume-column.left{left:26.5%}
-.fume-column.right{right:14%}
+.fume-column.right{right:19%}
 .fume-column span{position:absolute;left:50%;bottom:0;width:56px;height:56px;border-radius:50%;opacity:0;transform:translateX(-50%) scale(.48);filter:blur(12px);animation:bigFume 4.8s ease-in-out infinite}
 .fume-column.left span{background:radial-gradient(circle at 50% 60%,rgba(131,255,85,.95),rgba(74,255,126,.46) 46%,rgba(74,255,126,0) 76%)}
 .fume-column.right span{background:radial-gradient(circle at 50% 60%,rgba(255,86,104,.95),rgba(255,72,153,.40) 46%,rgba(255,72,153,0) 76%)}
@@ -383,11 +383,16 @@ body:after{
 @keyframes bigFume{0%{opacity:0;transform:translateX(-50%) translateY(22px) scale(.38)}12%{opacity:.96}52%{opacity:.74}100%{opacity:0;transform:translateX(calc(-50% + 8px)) translateY(-150px) scale(2.7)}}
 @keyframes bubbleRiseBig{0%{opacity:0;transform:translateY(0) scale(.35)}18%{opacity:1}100%{opacity:0;transform:translateY(-138px) translateX(12px) scale(1.26)}}
 @keyframes liquidPulse{0%{opacity:.26;transform:scale(.76)}100%{opacity:.58;transform:scale(1.16)}}
+.fume-column.left span:nth-child(odd){animation-duration:4.0s}
+.fume-column.left span:nth-child(even){animation-duration:3.6s}
+.fume-column.right span:nth-child(odd){animation-duration:4.4s}
+.fume-column.right span:nth-child(even){animation-duration:4.1s}
+
 @keyframes columnSweep{0%,100%{opacity:.28;transform:translateY(-12px)}50%{opacity:.88;transform:translateY(12px)}}
 @media(max-width:900px){
   .fume-column{height:31%;bottom:25%}
   .fume-column.left{left:23%}
-  .fume-column.right{right:10%}
+  .fume-column.right{right:14%}
   .bubble-stream.stream-mid{left:56.5%}
   .column-shimmer{right:17.5%;height:30%}
 }
