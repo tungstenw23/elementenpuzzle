@@ -251,7 +251,7 @@ body:after{background:linear-gradient(180deg,rgba(1,7,17,.00),rgba(1,8,17,.06));
 
 
 /* ===== 3D-LABOR V5 – fotografischer Laborhintergrund ===== */
-html{background:#02070c}
+html{background:#eaf4f8}
 body{background:transparent!important;}
 body:before{display:none!important}
 body:after{
@@ -266,7 +266,7 @@ body:after{
   background-position:center top;
   filter:saturate(1.10) contrast(1.01) brightness(1.08);
 }
-.lab-stage>svg{display:none!important}
+.lab-stage>svg{display:block!important}
 .photo-lab-fx{position:absolute;pointer-events:none;mix-blend-mode:screen}
 .photo-glow{border-radius:50%;filter:blur(24px);opacity:.34;animation:photoGlow 4.6s ease-in-out infinite alternate}
 .glow-blue{left:8%;top:45%;width:14%;height:18%;background:radial-gradient(circle,#1caaff 0,rgba(28,170,255,.34) 35%,transparent 70%)}
@@ -283,7 +283,7 @@ body:after{
 
 
 /* Bild soll wirken, die Bedienelemente bleiben im Vordergrund */
-.shell{max-width:1500px;padding:12px 18px 24px;position:relative;z-index:2}
+.shell{max-width:1500px;padding:12px 18px 24px;position:relative;z-index:3}
 .hero{
   max-width:1220px;margin:0 auto;padding:12px 22px 14px;border-radius:20px;
   background:linear-gradient(135deg,rgba(3,13,24,.84),rgba(7,36,56,.78));
@@ -577,15 +577,16 @@ body:after{
 
 /* ===== HELLES LABOR – weißer Labortisch, keine eingebrannte Spielgrafik ===== */
 html{background:#eaf4f8!important}
-body{background:linear-gradient(180deg,#f7fbfd 0%,#eef6fa 58%,#e3edf2 100%)!important;color:#153040}
-body:after{background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(210,230,240,.06))!important}
+body{background:transparent!important;color:#153040}
+body:after{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(210,230,240,.015))!important;z-index:1!important}
 .lab-stage{
   background:radial-gradient(circle at 16% 18%,rgba(119,211,247,.26),transparent 30%),
              radial-gradient(circle at 86% 27%,rgba(194,152,255,.18),transparent 31%),
              linear-gradient(180deg,#f8fcff 0%,#edf6fa 58%,#dfeaf0 100%)!important;
   filter:none!important;
+  opacity:1!important;visibility:visible!important;z-index:0!important;
 }
-.lab-stage>svg{display:block!important;width:100%!important;height:100%!important;filter:saturate(1.18) contrast(.98) brightness(1.10)!important}
+.lab-stage>svg{display:block!important;width:100%!important;height:100%!important;opacity:1!important;visibility:visible!important;filter:saturate(1.30) contrast(1.05) brightness(1.08)!important}
 .photo-lab-fx{display:none!important}
 /* Das alte Foto ist entfernt; nur die echten animierten SVG-Apparaturen bleiben. */
 #gameCard{background:rgba(242,249,252,.18)!important;color:#153040!important}
@@ -603,6 +604,17 @@ body:after{background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(210,230,
 .selection.active{background:rgba(238,250,255,.94)!important;border-color:#45b7db!important}
 /* heller weißer Labortisch bekommt eine dezente Reflexion */
 .lab-stage:after{content:"";position:absolute;left:0;right:0;bottom:0;height:40%;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.16) 35%,rgba(255,255,255,.30));mix-blend-mode:screen}
+
+
+/* ===== Hintergrund-Fix: Labor garantiert sichtbar ===== */
+html,body{min-height:100%;background:transparent!important}
+html{background:#eaf4f8!important}
+.lab-stage{display:block!important;position:fixed!important;inset:0!important;z-index:0!important;opacity:1!important;visibility:visible!important;overflow:hidden!important}
+.lab-stage>svg{display:block!important;position:absolute!important;inset:0!important;width:100%!important;height:100%!important;opacity:1!important;visibility:visible!important;filter:saturate(1.32) contrast(1.06) brightness(1.10)!important}
+body:after{z-index:1!important;background:linear-gradient(180deg,rgba(255,255,255,.015),rgba(255,255,255,.005))!important}
+.shell{position:relative!important;z-index:3!important}
+/* Apparaturen im hellen Labor etwas klarer */
+.lab-stage svg .glass{stroke-opacity:1!important}
 
 </style>
 </head>
