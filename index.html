@@ -682,6 +682,52 @@ body:before,body:after{display:none!important;content:none!important}
 #gameCard{position:relative!important;z-index:5!important}
 .hero{position:relative!important;z-index:6!important}
 
+
+/* ===== Nach dem Lösen: zurück zur Labor-Anfangsseite ===== */
+.solved-lobby-panel{
+  max-width:720px;
+  margin:14px auto 2px;
+  padding:18px 20px;
+  text-align:center;
+  border-radius:20px;
+  background:rgba(255,255,255,.84);
+  border:1px solid rgba(77,149,180,.28);
+  box-shadow:0 12px 30px rgba(25,70,90,.12);
+  backdrop-filter:blur(6px);
+  color:#173648;
+}
+.solved-lobby-panel .solved-lobby-label{
+  font-size:13px;
+  font-weight:850;
+  color:#55717f;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.solved-lobby-panel .solved-lobby-word{
+  margin:5px 0 3px;
+  font-size:clamp(34px,6vw,58px);
+  font-weight:950;
+  letter-spacing:.05em;
+  color:#126a87;
+  text-shadow:0 2px 12px rgba(255,255,255,.8);
+}
+.solved-lobby-panel .solved-lobby-symbols{
+  font-family:ui-monospace,monospace;
+  font-size:20px;
+  font-weight:850;
+  color:#6342a3;
+}
+.back-home-wrap{
+  display:flex;
+  justify-content:center;
+  margin:26px 0 6px;
+}
+.back-home-btn{
+  font-size:17px;
+  padding:13px 22px;
+  box-shadow:0 8px 20px rgba(23,107,135,.18);
+}
+
 </style>
 </head>
 <body>
@@ -834,6 +880,12 @@ body:before,body:after{display:none!important;content:none!important}
       <h2 style="font-size:30px;margin-bottom:6px">Tagesrätsel <span id="todayLabel"></span></h2>
       <p class="small" style="max-width:620px;margin:0 auto 16px">Nach dem Start erscheinen die Auswahl-Elemente langsam in 3D. Bis 5 gesuchte Elementsymbole gibt es 10 Auswahl-Elemente, ab 6 gibt es 15. Die Uhr startet erst, wenn alle Karten sichtbar sind; ein Neuladen setzt sie nicht zurück.</p>
       <button id="startBtn" class="primary" style="font-size:18px;padding:14px 22px" onclick="startPuzzle()">Tagesrätsel starten</button>
+      <div id="solvedLobbyPanel" class="solved-lobby-panel hidden">
+        <div class="solved-lobby-label">Heutiges Lösungswort</div>
+        <div id="lobbySolvedWord" class="solved-lobby-word">–</div>
+        <div id="lobbySolvedSymbols" class="solved-lobby-symbols"></div>
+        <div class="small" style="margin-top:8px;color:#55717f">Das heutige Rätsel ist bereits gelöst.</div>
+      </div>
     </div>
   </section>
 
@@ -969,6 +1021,9 @@ body:before,body:after{display:none!important;content:none!important}
     <h2 style="margin-top:24px">Chemie nebenbei</h2>
     <p class="small">Zu den Elementen, aus denen das heutige Wort besteht:</p>
     <div id="infoGrid" class="info-grid"></div>
+    <div class="back-home-wrap">
+      <button class="primary back-home-btn" onclick="returnToLobbyAfterSolve()">🧪 Zur Anfangsseite – Labor &amp; Lösungswort</button>
+    </div>
   </section>
 
   <section id="leaderCard" class="card hidden">
@@ -1455,6 +1510,7 @@ function renderAuth(){
   show("gameCard",false);
   show("resultCard",false);
   show("leaderCard",logged);
+  if($("solvedLobbyPanel")) show("solvedLobbyPanel",false);
   if(logged){
     $("userLabel").textContent=usernameFromSession();
     loadStatus();
@@ -1472,6 +1528,8 @@ async function loadStatus(){
   if(!st.started){
     show("lobbyCard",true); show("gameCard",false); show("resultCard",false);
     $("startBtn").disabled=false;
+    show("startBtn",true);
+    if($("solvedLobbyPanel")) show("solvedLobbyPanel",false);
   } else {
     puzzle=st;
     show("lobbyCard",false);
@@ -1838,7 +1896,24 @@ function startTimer(startIso){
 }
 function stopTimer(){ if(timerHandle) clearInterval(timerHandle); timerHandle=null; }
 
+function returnToLobbyAfterSolve(){
+  stopTimer();
+  if(!puzzle) return;
+  const word=puzzle.solved_word||"";
+  const syms=Array.isArray(puzzle.solved_symbols)?puzzle.solved_symbols:[];
+  $("lobbySolvedWord").textContent=word || "–";
+  $("lobbySolvedSymbols").textContent=syms.join(" · ");
+  show("startBtn",false);
+  show("solvedLobbyPanel",true);
+  show("gameCard",false);
+  show("resultCard",false);
+  show("lobbyCard",true);
+  show("leaderCard",true);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
 function renderSolved(st){
+  puzzle={...puzzle,...st,solved:true};
   stopTimer();
   if(revealHandle){clearTimeout(revealHandle);revealHandle=null;}
   show("gameCard",false); show("lobbyCard",false); show("resultCard",true); show("leaderCard",true);
@@ -1848,6 +1923,8 @@ function renderSolved(st){
   $("solvedBreakdown").textContent=syms.join(" · ");
   $("finalTime").textContent=fmtTime(st.elapsed_ms);
   $("rankBig").textContent=st.rank ? `🏁 Platz ${st.rank} in der heutigen Rangliste` : "🏁 Ergebnis gespeichert";
+  if($("lobbySolvedWord")) $("lobbySolvedWord").textContent=word || "–";
+  if($("lobbySolvedSymbols")) $("lobbySolvedSymbols").textContent=syms.join(" · ");
   const hero=document.querySelector("#resultCard .result-hero");
   if(hero){hero.classList.remove("success-pop"); void hero.offsetWidth; hero.classList.add("success-pop");}
   renderInfo(syms);
