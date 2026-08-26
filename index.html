@@ -1717,6 +1717,14 @@ function msg(id,text,type=""){
   if(id==="gameMsg" && type!=="valid") hideAltWordHint();
 }
 function clearMsg(id){ show(id,false); if(id==="gameMsg") hideAltWordHint(); }
+function setFloatingTestButtonsVisible(on){
+  for(const id of ["globalLongTestBtn","globalTestBtn"]){
+    const el=$(id);
+    if(!el) continue;
+    if(on) el.style.removeProperty("display");
+    else el.style.setProperty("display","none","important");
+  }
+}
 function renderAlternativeWordHint(word,guessSymbols,sharedSymbols,targetLabel="Tageswort"){
   const box=$("altWordHint"); if(!box) return;
   const counts={};
@@ -1854,6 +1862,7 @@ function renderGame(st, animateReveal=false){
   if(revealHandle){ clearTimeout(revealHandle); revealHandle=null; }
   show("gameCard",true); show("resultCard",false); show("leaderCard",true);
   show("testBanner",testMode);
+  setFloatingTestButtonsVisible(!testMode);
   $("elementCount").textContent=st.element_count;
   selected=[];
   hintState={hints_used:0,hint_penalty_ms:0,revealed_hints:[],revealed_hint_slots:[],revealed_hint_char_starts:[],revealed_hint_char_ends:[]};
@@ -2204,7 +2213,12 @@ function renderSelection(){
   else box.innerHTML=selected.map((s,i)=>`<span class="chip" title="${i+1}. Elementsymbol">${escapeHtml(s)}</span>`).join("");
   $("preview").textContent=selected.map(s=>s).join("");
   box.classList.toggle("active",selected.length>0);
-  $("submitBtn").disabled=!puzzle || selected.length!==Number(puzzle.element_count);
+  const needed=Number(puzzle?.element_count||0);
+  const ready=!!puzzle && selected.length===needed;
+  const submit=$("submitBtn");
+  submit.disabled=!ready;
+  submit.textContent=(testMode && longTestMode) ? `Wort prüfen (${selected.length}/${needed})` : "Wort prüfen";
+  submit.title=(testMode && longTestMode && !ready) ? `Für diesen Test müssen genau ${needed} Elementsymbole gewählt werden.` : "";
   updateTileUsage();
 }
 async function loadConfirmedSymbols(){
@@ -2263,12 +2277,67 @@ async function checkAlternativeWord(guess, guessNo=null){
   }
 }
 
+async function submitLongTestGuess(guess){
+  const targetNorm=String(longTestTargetWord||"").toLocaleLowerCase("de-DE");
+  try{
+    const {data,error}=await supabaseClient.rpc("elementenpuzzle_check_test_word",{
+      p_target_word:targetNorm,
+      p_symbols:guess
+    });
+    if(error) throw error;
+    const r=Array.isArray(data)?data[0]:data;
+    const guessNorm=guess.join("").toLocaleLowerCase("de-DE");
+
+    if(!r?.valid_word){
+      playSound("wrong");
+      msg("gameMsg",`Kein gültiges Referenzwort: ${guess.join("")} – Langwort-Test, nichts wird gespeichert.`,"bad");
+      return false;
+    }
+
+    const shared=Array.isArray(r.shared_symbols)?r.shared_symbols:[];
+    confirmedShared=[...new Set([...confirmedShared,...shared])];
+    updateTileUsage();
+
+    // Entscheidend ist der gebildete Worttext, nicht eine einzige feste Zerlegung.
+    // So gilt auch eine andere gültige Elementsymbol-Zerlegung des Zielwortes als richtig.
+    if(guessNorm===targetNorm){
+      const elapsed=Date.now()-new Date(testStartedAt).getTime()+Number(hintState.hint_penalty_ms||0);
+      playSound("success"); celebrate();
+      const testResult={...puzzle,solved:true,solved_word:longTestTargetWord,solved_symbols:guess.slice(),elapsed_ms:elapsed,rank:null};
+      renderSolved(testResult);
+      $("rankBig").textContent="🧪 Langes Testwort richtig – nicht gespeichert";
+      return true;
+    }
+
+    playSound("valid");
+    const word=(r.matched_word||guess.join("")).toLocaleUpperCase("de-DE");
+    const common=shared.length ? `Auch im langen Testwort: ${shared.join(" · ")}.` : "Keines der verwendeten Elementsymbole kommt im langen Testwort vor.";
+    msg("gameMsg",`✓ Gültiges Nebenwort: ${word}. ${common} Testmodus – nichts wird gespeichert.`,"valid");
+    renderAlternativeWordHint(word,guess,shared,"langen Testwort");
+    return false;
+  }catch(e){
+    playSound("error");
+    msg("gameMsg","Langwort-Testfehler: "+(e?.message||e),"bad");
+    return false;
+  }
+}
+
 async function submitGuess(){
   if(!puzzle || selected.length!==Number(puzzle.element_count)) return;
   $("submitBtn").disabled=true;
   clearMsg("gameMsg");
   const guess=selected.slice();
   if(testMode){
+    if(longTestMode){
+      testGuesses++;
+      const solved=await submitLongTestGuess(guess);
+      if(!solved){
+        $("selectionBox").classList.remove("shake"); void $("selectionBox").offsetWidth; $("selectionBox").classList.add("shake");
+        selected=[]; renderSelection();
+      }
+      return;
+    }
+
     const solution=Array.isArray(puzzle.solved_symbols)?puzzle.solved_symbols:[];
     const correct=guess.length===solution.length && guess.every((sym,i)=>sym===solution[i]);
     if(correct){
@@ -2366,6 +2435,7 @@ function returnToLobbyAfterSolve(){
 function renderSolved(st){
   puzzle={...puzzle,...st,solved:true};
   stopTimer();
+  setFloatingTestButtonsVisible(true);
   if(revealHandle){clearTimeout(revealHandle);revealHandle=null;}
   show("gameCard",false); show("lobbyCard",false); show("resultCard",true); show("leaderCard",true);
   $("leaderCard").classList.remove("solved-return-view");
@@ -2434,7 +2504,7 @@ supabaseClient.auth.onAuthStateChange((_event,newSession)=>{
 
 <button id="globalLongTestBtn" type="button" onclick="startLongWordTest()">🧪 TESTMODUS – langes Wort testen</button>
 <button id="globalTestBtn" type="button" onclick="startVisibleTest()">🧪 TESTMODUS – heutiges Rätsel nochmals testen</button>
-<div id="testBuildStamp">TESTBUTTON V3 LANGWORT</div>
+<div id="testBuildStamp">TESTBUTTON V4 LANGWORT FIX</div>
 
 
 <script id="global-test-button-script">
