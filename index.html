@@ -685,37 +685,99 @@ body:before,body:after{display:none!important;content:none!important}
 
 /* ===== Nach dem Lösen: zurück zur Labor-Anfangsseite ===== */
 .solved-lobby-panel{
-  max-width:720px;
-  margin:14px auto 2px;
-  padding:18px 20px;
+  width:min(360px,calc(100% - 24px));
+  max-width:360px;
+  margin:12px auto 2px;
+  padding:11px 14px 12px;
   text-align:center;
-  border-radius:20px;
-  background:rgba(255,255,255,.84);
-  border:1px solid rgba(77,149,180,.28);
-  box-shadow:0 12px 30px rgba(25,70,90,.12);
-  backdrop-filter:blur(6px);
+  border-radius:15px;
+  background:rgba(255,255,255,.82);
+  border:1px solid rgba(77,149,180,.30);
+  box-shadow:0 8px 22px rgba(25,70,90,.12);
+  backdrop-filter:blur(5px);
   color:#173648;
+  overflow:hidden;
+  position:relative;
 }
 .solved-lobby-panel .solved-lobby-label{
-  font-size:13px;
+  font-size:11px;
   font-weight:850;
   color:#55717f;
   text-transform:uppercase;
-  letter-spacing:.08em;
+  letter-spacing:.075em;
 }
 .solved-lobby-panel .solved-lobby-word{
-  margin:5px 0 3px;
-  font-size:clamp(34px,6vw,58px);
+  margin:3px 0 2px;
+  min-height:42px;
+  font-size:clamp(27px,4vw,40px);
+  line-height:1.08;
   font-weight:950;
-  letter-spacing:.05em;
+  letter-spacing:.035em;
   color:#126a87;
-  text-shadow:0 2px 12px rgba(255,255,255,.8);
+  text-shadow:0 2px 12px rgba(255,255,255,.9);
+  white-space:nowrap;
 }
 .solved-lobby-panel .solved-lobby-symbols{
   font-family:ui-monospace,monospace;
-  font-size:20px;
+  font-size:15px;
   font-weight:850;
   color:#6342a3;
+}
+.solved-lobby-panel .small{font-size:11px!important;margin-top:5px!important}
+.solved-lobby-word .solution-letter{
+  display:inline-block;
+  opacity:1;
+  transform:none;
+}
+.solved-lobby-panel.solution-return-animate{
+  animation:solutionFrameIn .68s cubic-bezier(.2,.8,.2,1) both,solutionFrameGlow 1.35s ease-out .35s 1;
+}
+.solved-lobby-panel.solution-return-animate .solution-letter{
+  opacity:0;
+  transform:translateY(12px) scale(.78) rotate(-4deg);
+  animation:solutionLetterIn .52s cubic-bezier(.2,.9,.2,1.25) forwards;
+  animation-delay:calc(.10s + (var(--i) * .065s));
+}
+.solved-lobby-panel.solution-return-animate .solved-lobby-symbols{
+  animation:solutionSymbolsIn .55s ease-out .58s both;
+}
+.solved-lobby-panel.solution-return-animate:after{
+  content:"";
+  position:absolute;
+  inset:-35% -80%;
+  background:linear-gradient(110deg,transparent 42%,rgba(255,255,255,.75) 50%,transparent 58%);
+  transform:translateX(-55%);
+  animation:solutionShine .95s ease-out .18s 1;
+  pointer-events:none;
+}
+@keyframes solutionFrameIn{
+  0%{opacity:0;transform:translateY(8px) scale(.92)}
+  70%{opacity:1;transform:translateY(-1px) scale(1.015)}
+  100%{opacity:1;transform:none}
+}
+@keyframes solutionFrameGlow{
+  0%{box-shadow:0 8px 22px rgba(25,70,90,.12)}
+  38%{box-shadow:0 8px 28px rgba(20,171,206,.30),0 0 0 3px rgba(106,224,255,.16)}
+  100%{box-shadow:0 8px 22px rgba(25,70,90,.12)}
+}
+@keyframes solutionLetterIn{
+  0%{opacity:0;transform:translateY(12px) scale(.78) rotate(-4deg);filter:blur(2px)}
+  70%{opacity:1;transform:translateY(-2px) scale(1.08) rotate(1deg);filter:blur(0)}
+  100%{opacity:1;transform:none;filter:none}
+}
+@keyframes solutionSymbolsIn{
+  0%{opacity:0;transform:translateY(5px)}
+  100%{opacity:1;transform:none}
+}
+@keyframes solutionShine{
+  0%{transform:translateX(-55%)}
+  100%{transform:translateX(55%)}
+}
+@media(prefers-reduced-motion:reduce){
+  .solved-lobby-panel.solution-return-animate,
+  .solved-lobby-panel.solution-return-animate .solution-letter,
+  .solved-lobby-panel.solution-return-animate .solved-lobby-symbols,
+  .solved-lobby-panel.solution-return-animate:after{animation:none!important;opacity:1!important;transform:none!important;filter:none!important}
 }
 .back-home-wrap{
   display:flex;
@@ -1896,12 +1958,30 @@ function startTimer(startIso){
 }
 function stopTimer(){ if(timerHandle) clearInterval(timerHandle); timerHandle=null; }
 
+function animateLobbySolution(word){
+  const el=$("lobbySolvedWord");
+  const panel=$("solvedLobbyPanel");
+  if(!el || !panel) return;
+  const text=word || "–";
+  el.textContent="";
+  el.setAttribute("aria-label",text);
+  [...text].forEach((ch,i)=>{
+    const span=document.createElement("span");
+    span.className="solution-letter";
+    span.textContent=ch;
+    span.style.setProperty("--i",String(i));
+    el.appendChild(span);
+  });
+  panel.classList.remove("solution-return-animate");
+  void panel.offsetWidth;
+  panel.classList.add("solution-return-animate");
+}
+
 function returnToLobbyAfterSolve(){
   stopTimer();
   if(!puzzle) return;
   const word=puzzle.solved_word||"";
   const syms=Array.isArray(puzzle.solved_symbols)?puzzle.solved_symbols:[];
-  $("lobbySolvedWord").textContent=word || "–";
   $("lobbySolvedSymbols").textContent=syms.join(" · ");
   show("startBtn",false);
   show("solvedLobbyPanel",true);
@@ -1909,6 +1989,7 @@ function returnToLobbyAfterSolve(){
   show("resultCard",false);
   show("lobbyCard",true);
   show("leaderCard",true);
+  animateLobbySolution(word);
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
