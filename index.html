@@ -685,10 +685,10 @@ body:before,body:after{display:none!important;content:none!important}
 
 /* ===== Nach dem Lösen: zurück zur Labor-Anfangsseite ===== */
 .solved-lobby-panel{
-  width:min(360px,calc(100% - 24px));
-  max-width:360px;
-  margin:12px auto 2px;
-  padding:11px 14px 12px;
+  width:min(280px,calc(100% - 12px));
+  max-width:280px;
+  margin:8px auto 2px;
+  padding:7px 9px 8px;
   text-align:center;
   border-radius:15px;
   background:rgba(255,255,255,.82);
@@ -708,8 +708,8 @@ body:before,body:after{display:none!important;content:none!important}
 }
 .solved-lobby-panel .solved-lobby-word{
   margin:3px 0 2px;
-  min-height:42px;
-  font-size:clamp(27px,4vw,40px);
+  min-height:31px;
+  font-size:clamp(21px,3vw,30px);
   line-height:1.08;
   font-weight:950;
   letter-spacing:.035em;
@@ -719,7 +719,7 @@ body:before,body:after{display:none!important;content:none!important}
 }
 .solved-lobby-panel .solved-lobby-symbols{
   font-family:ui-monospace,monospace;
-  font-size:15px;
+  font-size:12px;
   font-weight:850;
   color:#6342a3;
 }
@@ -778,6 +778,21 @@ body:before,body:after{display:none!important;content:none!important}
   .solved-lobby-panel.solution-return-animate .solution-letter,
   .solved-lobby-panel.solution-return-animate .solved-lobby-symbols,
   .solved-lobby-panel.solution-return-animate:after{animation:none!important;opacity:1!important;transform:none!important;filter:none!important}
+}
+#lobbyCard.solved-return-view{
+  width:min(520px,calc(100% - 20px))!important;
+  max-width:520px!important;
+  margin:18px auto 0!important;
+  padding:12px 14px!important;
+  border-radius:16px!important;
+}
+#lobbyCard.solved-return-view .topbar{margin-bottom:0!important}
+#lobbyCard.solved-return-view h2{font-size:24px!important;margin:3px 0 3px!important}
+#lobbyCard.solved-return-view p.small{display:none!important}
+#lobbyCard.solved-return-view>div[style*="text-align:center"]{padding:5px 0 1px!important}
+@media(max-width:620px){
+  #lobbyCard.solved-return-view{width:calc(100% - 12px)!important;max-width:none!important}
+  .solved-lobby-panel{width:min(260px,calc(100% - 8px));max-width:260px}
 }
 .back-home-wrap{
   display:flex;
@@ -1572,6 +1587,7 @@ function renderAuth(){
   show("gameCard",false);
   show("resultCard",false);
   show("leaderCard",logged);
+  if($("lobbyCard")) $("lobbyCard").classList.remove("solved-return-view");
   if($("solvedLobbyPanel")) show("solvedLobbyPanel",false);
   if(logged){
     $("userLabel").textContent=usernameFromSession();
@@ -1591,6 +1607,7 @@ async function loadStatus(){
     show("lobbyCard",true); show("gameCard",false); show("resultCard",false);
     $("startBtn").disabled=false;
     show("startBtn",true);
+    if($("lobbyCard")) $("lobbyCard").classList.remove("solved-return-view");
     if($("solvedLobbyPanel")) show("solvedLobbyPanel",false);
   } else {
     puzzle=st;
@@ -1988,6 +2005,7 @@ function returnToLobbyAfterSolve(){
   show("gameCard",false);
   show("resultCard",false);
   show("lobbyCard",true);
+  $("lobbyCard").classList.add("solved-return-view");
   show("leaderCard",true);
   animateLobbySolution(word);
   window.scrollTo({top:0,behavior:"smooth"});
