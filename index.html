@@ -224,6 +224,13 @@ input:focus{border-color:var(--lab-cyan);box-shadow:0 0 0 3px rgba(69,217,255,.1
 .leaderboard th{color:#8fb5c8}.leaderboard td{border-bottom-color:rgba(111,170,198,.18)}
 .footer{color:#7fa3b6}
 @media(max-width:900px){.lab-stage{background-size:auto 145%;background-position:center top}.tiles{grid-template-columns:repeat(3,minmax(92px,1fr));gap:18px 12px}.element-tile{min-height:102px}.shell{padding-left:12px;padding-right:12px}}
+
+/* Testwerkzeuge nur fuer den Testaccount "wolf" anzeigen. */
+.test-only-control{display:none!important;}
+body.test-account button.test-only-control{display:inline-flex!important;}
+body.test-account div.test-actions.test-only-control{display:flex!important;}
+body.test-account #testBuildStamp.test-only-control{display:block!important;}
+
 @media(max-width:520px){.lab-stage{background-size:auto 138%;background-position:center top}.tiles{grid-template-columns:repeat(2,minmax(0,1fr));max-width:380px}.element-tile{min-height:96px}.hero h1{font-size:36px}.card{padding:16px}.game-rule-strip{gap:7px}.game-rule-chip{font-size:11px}}
 .tiles.choice-20{gap:16px 14px}
 .tiles.choice-20 .element-tile{min-height:98px;padding-top:10px;padding-bottom:10px}
@@ -976,6 +983,13 @@ body:before,body:after{display:none!important;content:none!important}
   font:700 10px/1.2 system-ui,sans-serif!important;
   pointer-events:none!important;
 }
+/* Die fest eingebauten Testbuttons/Stempel bleiben fuer normale Konten unsichtbar. */
+#globalTestBtn.test-only-control,
+#globalLongTestBtn.test-only-control,
+#testBuildStamp.test-only-control{display:none!important;}
+body.test-account #globalTestBtn.test-only-control,
+body.test-account #globalLongTestBtn.test-only-control{display:block!important;}
+body.test-account #testBuildStamp.test-only-control{display:block!important;}
 @media(max-width:520px){
   #globalTestBtn,#globalLongTestBtn{min-width:0!important;width:calc(100vw - 24px)!important;font-size:14px!important}
 }
@@ -1137,7 +1151,7 @@ body:before,body:after{display:none!important;content:none!important}
         <div id="lobbySolvedWord" class="solved-lobby-word">–</div>
         <div id="lobbySolvedSymbols" class="solved-lobby-symbols"></div>
         <div class="small" style="margin-top:8px;color:#55717f">Das heutige Rätsel ist bereits gelöst.</div>
-        <div class="test-actions" style="margin-top:10px">
+        <div class="test-actions test-only-control" style="margin-top:10px">
           <button class="secondary" onclick="startLocalTest()">🧪 Heutiges Rätsel nochmals testen</button>
           <button class="secondary" onclick="startLongWordTest()">🧪 Langes Wort testen</button>
         </div>
@@ -1273,7 +1287,7 @@ body:before,body:after{display:none!important;content:none!important}
       <div id="solvedBreakdown" class="breakdown"></div>
       <div id="finalTime" class="timer" style="font-size:36px"></div>
       <div id="rankBig" class="rank-big"></div>
-      <div class="test-actions"><button class="secondary" onclick="startLocalTest()">🧪 Heutiges Rätsel nochmals testen</button><button class="secondary" onclick="startLongWordTest()">🧪 Langes Wort testen</button></div>
+      <div class="test-actions test-only-control"><button class="secondary" onclick="startLocalTest()">🧪 Heutiges Rätsel nochmals testen</button><button class="secondary" onclick="startLongWordTest()">🧪 Langes Wort testen</button></div>
     </div>
     <h2 style="margin-top:24px">Chemie nebenbei</h2>
     <p class="small">Zu den Elementen, aus denen das heutige Wort besteht:</p>
@@ -1772,6 +1786,10 @@ function fmtDate(s){
 function usernameFromSession(){
   return session?.user?.user_metadata?.username || session?.user?.email || "Spieler";
 }
+function isTestAccount(){
+  const username=session?.user?.user_metadata?.username;
+  return !!session && typeof username==="string" && username.trim().toLowerCase()==="wolf";
+}
 
 async function signup(){
   clearMsg("authMsg");
@@ -1805,6 +1823,7 @@ async function logout(){
 
 function renderAuth(){
   const logged=!!session;
+  document.body.classList.toggle("test-account", logged && isTestAccount());
   show("authCard",!logged);
   show("lobbyCard",logged);
   show("gameCard",false);
@@ -1924,6 +1943,10 @@ function buildTestChoices(st){
 }
 
 async function startLocalTest(){
+  if(!isTestAccount()){
+    alert("Dieser Testmodus ist nur fuer das Testkonto freigeschaltet.");
+    return;
+  }
   if(!puzzle || !Array.isArray(puzzle.solved_symbols) || !puzzle.solved_symbols.length){
     alert("Die heutige Lösung ist noch nicht vollständig geladen.");
     return;
@@ -1968,6 +1991,10 @@ async function startLocalTest(){
 }
 
 async function startLongWordTest(){
+  if(!isTestAccount()){
+    alert("Dieser Testmodus ist nur fuer das Testkonto freigeschaltet.");
+    return;
+  }
   testMode=true;
   longTestMode=true;
   longTestTargetWord=null;
@@ -2510,13 +2537,17 @@ supabaseClient.auth.onAuthStateChange((_event,newSession)=>{
 })();
 </script>
 
-<button id="globalLongTestBtn" type="button" onclick="startLongWordTest()">🧪 TESTMODUS – langes Wort testen</button>
-<button id="globalTestBtn" type="button" onclick="startVisibleTest()">🧪 TESTMODUS – heutiges Rätsel nochmals testen</button>
-<div id="testBuildStamp">TESTBUTTON V5 AUSWAHL 20</div>
+<button id="globalLongTestBtn" class="test-only-control" type="button" onclick="startLongWordTest()">🧪 TESTMODUS – langes Wort testen</button>
+<button id="globalTestBtn" class="test-only-control" type="button" onclick="startVisibleTest()">🧪 TESTMODUS – heutiges Rätsel nochmals testen</button>
+<div id="testBuildStamp" class="test-only-control">TESTBUTTON V6 NUR WOLF</div>
 
 
 <script id="global-test-button-script">
 async function startVisibleTest(){
+  if(!isTestAccount()){
+    alert("Dieser Testmodus ist nur fuer das Testkonto freigeschaltet.");
+    return;
+  }
   try{
     if(!puzzle || !Array.isArray(puzzle.solved_symbols) || !puzzle.solved_symbols.length){
       const res=await supabaseClient.rpc("elementenpuzzle_status");
