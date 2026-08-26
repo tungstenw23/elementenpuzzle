@@ -798,6 +798,22 @@ body:before,body:after{display:none!important;content:none!important}
   #lobbyCard.solved-return-view{width:auto!important;max-width:300px!important}
   .solved-lobby-panel{width:min(260px,calc(100% - 8px));max-width:260px}
 }
+#leaderCard.solved-return-view{
+  width:min(340px,calc(100% - 20px))!important;
+  max-width:340px!important;
+  margin:12px auto 0!important;
+  padding:12px 14px!important;
+  border-radius:16px!important;
+}
+#leaderCard.solved-return-view h2{font-size:18px!important}
+#leaderCard.solved-return-view .topbar,
+#leaderCard.solved-return-view .row.space{gap:8px!important}
+#leaderCard.solved-return-view table{font-size:12px!important}
+#leaderCard.solved-return-view th,
+#leaderCard.solved-return-view td{padding:6px 5px!important}
+@media(max-width:620px){
+  #leaderCard.solved-return-view{width:min(300px,calc(100% - 12px))!important;max-width:300px!important}
+}
 .back-home-wrap{
   display:flex;
   justify-content:center;
@@ -2011,6 +2027,7 @@ function returnToLobbyAfterSolve(){
   show("lobbyCard",true);
   $("lobbyCard").classList.add("solved-return-view");
   show("leaderCard",true);
+  $("leaderCard").classList.add("solved-return-view");
   animateLobbySolution(word);
   window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -2020,6 +2037,7 @@ function renderSolved(st){
   stopTimer();
   if(revealHandle){clearTimeout(revealHandle);revealHandle=null;}
   show("gameCard",false); show("lobbyCard",false); show("resultCard",true); show("leaderCard",true);
+  $("leaderCard").classList.remove("solved-return-view");
   const word=st.solved_word||"";
   const syms=st.solved_symbols||[];
   $("solvedWord").textContent=word;
