@@ -932,6 +932,32 @@ body:before,body:after{display:none!important;content:none!important}
   transform:translateX(-50%) translateY(-2px)!important;
   filter:brightness(1.04)!important;
 }
+#globalLongTestBtn{
+  position:fixed!important;
+  left:50%!important;
+  bottom:76px!important;
+  transform:translateX(-50%)!important;
+  z-index:999999!important;
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  width:auto!important;
+  min-width:290px!important;
+  max-width:calc(100vw - 24px)!important;
+  padding:11px 18px!important;
+  border:2px solid rgba(255,255,255,.95)!important;
+  border-radius:999px!important;
+  background:linear-gradient(135deg,#b8f4ff,#66d9ef)!important;
+  color:#13212a!important;
+  font-size:14px!important;
+  font-weight:950!important;
+  box-shadow:0 10px 30px rgba(0,0,0,.30),0 0 0 4px rgba(102,217,239,.18)!important;
+  cursor:pointer!important;
+}
+#globalLongTestBtn:hover{
+  transform:translateX(-50%) translateY(-2px)!important;
+  filter:brightness(1.04)!important;
+}
 #testBuildStamp{
   position:fixed!important;
   right:8px!important;
@@ -945,7 +971,7 @@ body:before,body:after{display:none!important;content:none!important}
   pointer-events:none!important;
 }
 @media(max-width:520px){
-  #globalTestBtn{min-width:0!important;width:calc(100vw - 24px)!important;font-size:14px!important}
+  #globalTestBtn,#globalLongTestBtn{min-width:0!important;width:calc(100vw - 24px)!important;font-size:14px!important}
 }
 </style>
 
@@ -1107,6 +1133,7 @@ body:before,body:after{display:none!important;content:none!important}
         <div class="small" style="margin-top:8px;color:#55717f">Das heutige Rätsel ist bereits gelöst.</div>
         <div class="test-actions" style="margin-top:10px">
           <button class="secondary" onclick="startLocalTest()">🧪 Heutiges Rätsel nochmals testen</button>
+          <button class="secondary" onclick="startLongWordTest()">🧪 Langes Wort testen</button>
         </div>
       </div>
     </div>
@@ -1240,7 +1267,7 @@ body:before,body:after{display:none!important;content:none!important}
       <div id="solvedBreakdown" class="breakdown"></div>
       <div id="finalTime" class="timer" style="font-size:36px"></div>
       <div id="rankBig" class="rank-big"></div>
-      <div class="test-actions"><button class="secondary" onclick="startLocalTest()">🧪 Heutiges Rätsel nochmals testen</button></div>
+      <div class="test-actions"><button class="secondary" onclick="startLocalTest()">🧪 Heutiges Rätsel nochmals testen</button><button class="secondary" onclick="startLongWordTest()">🧪 Langes Wort testen</button></div>
     </div>
     <h2 style="margin-top:24px">Chemie nebenbei</h2>
     <p class="small">Zu den Elementen, aus denen das heutige Wort besteht:</p>
@@ -1674,6 +1701,8 @@ let revealHandle = null;
 const TILE_REVEAL_STAGGER = 220;
 const TILE_REVEAL_MS = 800;
 let testMode = false;
+let longTestMode = false;
+let longTestTargetWord = null;
 let testStartedAt = null;
 let testSample = null;
 let testGuesses = 0;
@@ -1688,7 +1717,7 @@ function msg(id,text,type=""){
   if(id==="gameMsg" && type!=="valid") hideAltWordHint();
 }
 function clearMsg(id){ show(id,false); if(id==="gameMsg") hideAltWordHint(); }
-function renderAlternativeWordHint(word,guessSymbols,sharedSymbols){
+function renderAlternativeWordHint(word,guessSymbols,sharedSymbols,targetLabel="Tageswort"){
   const box=$("altWordHint"); if(!box) return;
   const counts={};
   (sharedSymbols||[]).forEach(sym=>counts[sym]=(counts[sym]||0)+1);
@@ -1701,7 +1730,7 @@ function renderAlternativeWordHint(word,guessSymbols,sharedSymbols){
   (sharedSymbols||[]).forEach(sym=>{ if(!seen[sym]){seen[sym]=1; uniqShared.push(sym);} });
   const sharedHtml=uniqShared.length
     ? uniqShared.map(sym=>`<span class="aw-chip shared small">${escapeHtml(sym)}</span>`).join("")
-    : `<span class="aw-empty">Kein Element dieses Nebenworts kommt im Tageswort vor.</span>`;
+    : `<span class="aw-empty">Kein Element dieses Nebenworts kommt im ${escapeHtml(targetLabel)} vor.</span>`;
   box.innerHTML=`
     <div class="aw-title">Nebenwort erkannt: <b>${escapeHtml(word)}</b></div>
     <div class="aw-row">
@@ -1709,10 +1738,10 @@ function renderAlternativeWordHint(word,guessSymbols,sharedSymbols){
       <div class="aw-chips">${main}</div>
     </div>
     <div class="aw-row">
-      <div class="aw-label">Im Tageswort</div>
+      <div class="aw-label">Im ${escapeHtml(targetLabel)}</div>
       <div class="aw-chips">${sharedHtml}</div>
     </div>
-    <div class="aw-note"><b>Grün markiert</b> = dieses Element kommt auch im gesuchten Tageswort vor.</div>`;
+    <div class="aw-note"><b>Grün markiert</b> = dieses Element kommt auch im ${escapeHtml(targetLabel)} vor.</div>`;
   show("altWordHint",true);
 }
 function fmtTime(ms){
@@ -1756,7 +1785,7 @@ async function logout(){
   stopTimer();
   if(revealHandle){clearTimeout(revealHandle);revealHandle=null;}
   await supabaseClient.auth.signOut();
-  session=null; puzzle=null; selected=[]; testMode=false; testStartedAt=null;
+  session=null; puzzle=null; selected=[]; testMode=false; longTestMode=false; longTestTargetWord=null; testStartedAt=null;
   renderAuth();
 }
 
@@ -1777,7 +1806,7 @@ function renderAuth(){
 }
 
 async function loadStatus(){
-  testMode=false; testStartedAt=null;
+  testMode=false; longTestMode=false; longTestTargetWord=null; testStartedAt=null;
   const {data,error}=await supabaseClient.rpc("elementenpuzzle_status");
   if(error) return msg("authMsg","Datenbank noch nicht eingerichtet oder Status konnte nicht geladen werden: "+error.message,"bad");
   const st=Array.isArray(data)?data[0]:data;
@@ -1886,6 +1915,8 @@ async function startLocalTest(){
   }
 
   testMode=true;
+  longTestMode=false;
+  longTestTargetWord=null;
   testGuesses=0;
   testSample=null;
   confirmedShared=[];
@@ -1917,6 +1948,56 @@ async function startLocalTest(){
     msg("gameMsg",`🧪 Testmodus aktiv. Zum Prüfen: ${testSample.word} = ${testSample.symbols.join(" · ")} ist ein gültiges Nebenwort. Lege diese Symbole und drücke „Wort prüfen“.`,"valid");
   }else{
     msg("gameMsg","Testmodus aktiv: Probiere falsche Versuche und die Lösung beliebig oft aus. Falls die Supabase-Erweiterung schon installiert ist, werden auch gültige Nebenwörter erkannt.","good");
+  }
+
+}
+
+async function startLongWordTest(){
+  testMode=true;
+  longTestMode=true;
+  longTestTargetWord=null;
+  testGuesses=0;
+  testSample=null;
+  confirmedShared=[];
+  selected=[];
+
+  try{
+    const {data,error}=await supabaseClient.rpc("elementenpuzzle_long_test_data");
+    if(error) throw error;
+    const td=Array.isArray(data)?data[0]:data;
+    if(!td || !Array.isArray(td.target_symbols) || !td.target_symbols.length){
+      throw new Error("Kein langes Testwort erhalten.");
+    }
+
+    longTestTargetWord=String(td.target_word||"");
+    testSample=(td.sample_word && Array.isArray(td.sample_symbols) && td.sample_symbols.length)
+      ? {word:td.sample_word,symbols:td.sample_symbols,shared:td.shared_symbols||[]}
+      : null;
+
+    puzzle={
+      ...(puzzle||{}),
+      solved_word:longTestTargetWord,
+      solved_symbols:td.target_symbols.slice(),
+      element_count:td.target_symbols.length,
+      choices:Array.isArray(td.choices)?td.choices:[],
+      solved:false
+    };
+
+    testStartedAt=new Date(Date.now()+revealDurationFor(puzzle.choices)).toISOString();
+    hintState={hints_used:0,hint_penalty_ms:0,revealed_hints:[],revealed_hint_slots:[],revealed_hint_char_starts:[],revealed_hint_char_ends:[]};
+    renderGame(puzzle,true);
+
+    const targetLine=`🧪 Langer Test: ${longTestTargetWord} = ${td.target_symbols.join(" · ")}.`;
+    if(testSample){
+      msg("gameMsg",`${targetLine} Nebenwort-Test: ${testSample.word} = ${testSample.symbols.join(" · ")}. Lege zuerst das Nebenwort und drücke „Wort prüfen“. Danach kannst du das lange Testwort lösen.`,"valid");
+    }else{
+      msg("gameMsg",`${targetLine} Lege die angezeigten Symbole des Testworts und prüfe Darstellung, Tipps und Lösung. Nichts wird gespeichert.`,"good");
+    }
+  }catch(e){
+    testMode=false;
+    longTestMode=false;
+    longTestTargetWord=null;
+    alert("Langer Testmodus konnte nicht gestartet werden: "+(e?.message||e));
   }
 }
 
@@ -2139,7 +2220,11 @@ async function loadConfirmedSymbols(){
 
 async function checkAlternativeWord(guess, guessNo=null){
   try{
-    const {data,error}=await supabaseClient.rpc("elementenpuzzle_check_word",{p_symbols:guess});
+    const rpcName=(testMode && longTestMode) ? "elementenpuzzle_check_test_word" : "elementenpuzzle_check_word";
+    const rpcArgs=(testMode && longTestMode)
+      ? {p_target_word:longTestTargetWord,p_symbols:guess}
+      : {p_symbols:guess};
+    const {data,error}=await supabaseClient.rpc(rpcName,rpcArgs);
     if(error){
       playSound("wrong");
       const suffix=testMode ? " – Testversuch, nichts wird gespeichert." : (guessNo!=null ? ` Versuch ${guessNo} – die Uhr läuft weiter.` : " Die Uhr läuft weiter.");
@@ -2157,10 +2242,13 @@ async function checkAlternativeWord(guess, guessNo=null){
       updateTileUsage();
       playSound("valid");
       const word=(r.matched_word||guess.join("")).toLocaleUpperCase("de-DE");
-      const common=shared.length ? `Auch im Tageswort: ${shared.join(" · ")}.` : "Keines der verwendeten Elementsymbole kommt im Tageswort vor.";
+      const isLongTest=(testMode && longTestMode);
+      const targetLabel=isLongTest ? "langen Testwort" : "Tageswort";
+      const notTargetText=isLongTest ? "das gesuchte lange Testwort" : "das gesuchte Tageswort";
+      const common=shared.length ? `Auch im ${targetLabel}: ${shared.join(" · ")}.` : `Keines der verwendeten Elementsymbole kommt im ${targetLabel} vor.`;
       const suffix=testMode ? " Testmodus – nichts wird gespeichert." : (guessNo!=null ? ` Versuch ${guessNo} – die Uhr läuft weiter.` : " Die Uhr läuft weiter.");
-      msg("gameMsg",`✓ Gültiges Wort: ${word} – aber nicht das gesuchte Tageswort. ${common}${suffix}`,"valid");
-      renderAlternativeWordHint(word, guess, shared);
+      msg("gameMsg",`✓ Gültiges Wort: ${word} – aber nicht ${notTargetText}. ${common}${suffix}`,"valid");
+      renderAlternativeWordHint(word, guess, shared, targetLabel);
       return true;
     }
     playSound("wrong");
@@ -2344,8 +2432,9 @@ supabaseClient.auth.onAuthStateChange((_event,newSession)=>{
 })();
 </script>
 
+<button id="globalLongTestBtn" type="button" onclick="startLongWordTest()">🧪 TESTMODUS – langes Wort testen</button>
 <button id="globalTestBtn" type="button" onclick="startVisibleTest()">🧪 TESTMODUS – heutiges Rätsel nochmals testen</button>
-<div id="testBuildStamp">TESTBUTTON V2</div>
+<div id="testBuildStamp">TESTBUTTON V3 LANGWORT</div>
 
 
 <script id="global-test-button-script">
