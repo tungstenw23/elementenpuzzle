@@ -225,6 +225,12 @@ input:focus{border-color:var(--lab-cyan);box-shadow:0 0 0 3px rgba(69,217,255,.1
 .footer{color:#7fa3b6}
 @media(max-width:900px){.lab-stage{background-size:auto 145%;background-position:center top}.tiles{grid-template-columns:repeat(3,minmax(92px,1fr));gap:18px 12px}.element-tile{min-height:102px}.shell{padding-left:12px;padding-right:12px}}
 @media(max-width:520px){.lab-stage{background-size:auto 138%;background-position:center top}.tiles{grid-template-columns:repeat(2,minmax(0,1fr));max-width:380px}.element-tile{min-height:96px}.hero h1{font-size:36px}.card{padding:16px}.game-rule-strip{gap:7px}.game-rule-chip{font-size:11px}}
+.tiles.choice-20{gap:16px 14px}
+.tiles.choice-20 .element-tile{min-height:98px;padding-top:10px;padding-bottom:10px}
+.tiles.choice-20 .element-tile .sym{font-size:30px;margin-top:8px}
+@media(max-width:900px){.tiles.choice-20{grid-template-columns:repeat(4,minmax(86px,1fr));max-width:620px;gap:14px 10px}.tiles.choice-20 .element-tile{min-height:92px}}
+@media(max-width:560px){.tiles.choice-20{grid-template-columns:repeat(2,minmax(0,1fr));max-width:390px}.tiles.choice-20 .element-tile{min-height:88px}}
+
 @media(prefers-reduced-motion:reduce){.element-tile.reveal-in{animation:none;opacity:1;transform:none}.smoke-puff,.lab-solution-a,.lab-solution-b,.lab-solution-c,.chrom-band,.lab-bubble{animation-duration:1ms;animation-iteration-count:1}}
 
 
@@ -1124,7 +1130,7 @@ body:before,body:after{display:none!important;content:none!important}
     </div>
     <div style="text-align:center;padding:16px 0 4px">
       <h2 style="font-size:30px;margin-bottom:6px">Tagesrätsel <span id="todayLabel"></span></h2>
-      <p class="small" style="max-width:620px;margin:0 auto 16px">Nach dem Start erscheinen die Auswahl-Elemente langsam in 3D. Bis 5 gesuchte Elementsymbole gibt es 10 Auswahl-Elemente, ab 6 gibt es 15. Die Uhr startet erst, wenn alle Karten sichtbar sind; ein Neuladen setzt sie nicht zurück.</p>
+      <p class="small" style="max-width:620px;margin:0 auto 16px">Nach dem Start erscheinen die Auswahl-Elemente langsam in 3D. Bis 5 gesuchte Elementsymbole gibt es 10 Auswahl-Elemente, bei 6–10 Symbolen 15 und bei 11–15 Symbolen 20. Die zusätzlichen Karten werden so gewählt, dass möglichst mehrere gültige Nebenwörter spielbar werden. Die Uhr startet erst, wenn alle Karten sichtbar sind; ein Neuladen setzt sie nicht zurück.</p>
       <button id="startBtn" class="primary" style="font-size:18px;padding:14px 22px" onclick="startPuzzle()">Tagesrätsel starten</button>
       <div id="solvedLobbyPanel" class="solved-lobby-panel hidden">
         <div class="solved-lobby-label">Heutiges Lösungswort</div>
@@ -1883,7 +1889,7 @@ function renderGame(st, animateReveal=false){
     setTilesInteractive(false);
     const remaining=Math.max(250,startMs-Date.now());
     const localReveal=revealDurationFor(choices);
-    const wait=Math.max(remaining,Math.min(localReveal,4400));
+    const wait=Math.max(remaining,localReveal);
     if($("timerNote")) $("timerNote").textContent="Die Elemente erscheinen – die Uhr startet danach.";
     revealHandle=setTimeout(()=>{
       setTilesInteractive(true);
@@ -1906,7 +1912,7 @@ function buildTestChoices(st){
   const solution=Array.isArray(st.solved_symbols)?st.solved_symbols.filter(Boolean):[];
   const out=[...new Set(solution)];
   const pool=ELEMENTS.map(e=>e[0]).filter(sym=>!out.includes(sym));
-  const targetCount=solution.length<=5 ? 10 : 15;
+  const targetCount=solution.length<=5 ? 10 : (solution.length<=10 ? 15 : 20);
   while(out.length<targetCount && pool.length){
     const i=Math.floor(Math.random()*pool.length);
     out.push(pool.splice(i,1)[0]);
@@ -2162,7 +2168,9 @@ async function takeHint(){
 }
 
 function renderTiles(choices,animateReveal=false){
-  $("tiles").innerHTML=choices.map((sym,i)=>{
+  const tilesEl=$("tiles");
+  tilesEl.classList.toggle("choice-20", choices.length>=20);
+  tilesEl.innerHTML=choices.map((sym,i)=>{
     const e=BY_SYMBOL[sym]||[sym,sym,0];
     const atomic=Number(e[2]||0);
     const hue=((atomic||i+1)*37 + i*19)%360;
@@ -2504,7 +2512,7 @@ supabaseClient.auth.onAuthStateChange((_event,newSession)=>{
 
 <button id="globalLongTestBtn" type="button" onclick="startLongWordTest()">🧪 TESTMODUS – langes Wort testen</button>
 <button id="globalTestBtn" type="button" onclick="startVisibleTest()">🧪 TESTMODUS – heutiges Rätsel nochmals testen</button>
-<div id="testBuildStamp">TESTBUTTON V4 LANGWORT FIX</div>
+<div id="testBuildStamp">TESTBUTTON V5 AUSWAHL 20</div>
 
 
 <script id="global-test-button-script">
