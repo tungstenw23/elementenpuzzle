@@ -123,6 +123,19 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;bac
 .preview{background:linear-gradient(90deg,#164f67,#20819f);-webkit-background-clip:text;background-clip:text;color:transparent}
 .notice.bad{animation:noticeIn .22s ease}.notice.good{animation:noticeIn .3s ease}@keyframes noticeIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
 .notice.valid{background:rgba(116,88,10,.84);color:#fff5bf;border:1px solid rgba(255,224,92,.38)}
+.altword-hint{margin:10px 0 14px;padding:12px 14px;border-radius:16px;background:linear-gradient(180deg,rgba(247,251,253,.98),rgba(237,245,248,.98));border:1px solid #cfe0e7;box-shadow:0 10px 22px rgba(0,0,0,.10);color:#21404d}
+.altword-hint .aw-title{font-size:13px;font-weight:950;color:#24566a;margin:0 0 8px;letter-spacing:.02em}
+.altword-hint .aw-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:7px 0}
+.altword-hint .aw-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:#607985;min-width:110px}
+.altword-hint .aw-chips{display:flex;flex-wrap:wrap;gap:8px}
+.altword-hint .aw-chip{display:inline-flex;align-items:center;justify-content:center;min-width:42px;padding:8px 10px;border-radius:12px;border:1px solid #cfd9de;background:#f7fbfd;color:#395361;font-size:19px;font-weight:950;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+.altword-hint .aw-chip.shared{background:linear-gradient(180deg,#e8fff1,#c9f7db);border-color:#66c98a;color:#11653b;box-shadow:0 0 0 2px rgba(67,201,117,.14), inset 0 1px 0 rgba(255,255,255,.85)}
+.altword-hint .aw-chip.notshared{background:linear-gradient(180deg,#f7fafc,#e8eef2);border-color:#d5e0e6;color:#738a96;opacity:.9}
+.altword-hint .aw-chip.small{min-width:36px;padding:6px 9px;font-size:17px}
+.altword-hint .aw-chip .tick{font-size:11px;font-weight:900;margin-left:6px;opacity:.88}
+.altword-hint .aw-note{margin-top:8px;font-size:12px;line-height:1.4;color:#48606c}
+.altword-hint .aw-empty{font-size:12px;font-weight:800;color:#7d5d13;background:#fff4d6;border:1px solid #ead18a;padding:7px 10px;border-radius:10px;display:inline-block}
+@media(max-width:560px){.altword-hint{padding:10px 11px}.altword-hint .aw-label{min-width:100%;margin-bottom:2px}.altword-hint .aw-chip{min-width:38px;font-size:17px;padding:7px 8px}}
 .element-tile.confirmed-target{outline:3px solid rgba(86,255,157,.96);outline-offset:2px;box-shadow:0 18px 30px rgba(0,0,0,.32),0 0 28px rgba(73,255,145,.70),inset 0 1px 0 rgba(255,255,255,.58)!important;filter:saturate(1.12) brightness(1.08)}
 .element-tile .target-badge{display:none;position:absolute;left:50%;top:4px;transform:translateX(-50%);z-index:4;width:max-content;max-width:92%;padding:2px 6px;border-radius:999px;background:rgba(7,87,48,.90);border:1px solid rgba(168,255,205,.65);color:#e8fff1;font-size:8px;font-weight:950;line-height:1.15;box-shadow:0 3px 9px rgba(0,0,0,.22)}
 .element-tile.confirmed-target .target-badge{display:block}
@@ -1217,6 +1230,7 @@ body:before,body:after{display:none!important;content:none!important}
       <button id="submitBtn" class="primary" onclick="submitGuess()" disabled>Wort prüfen</button>
     </div>
     <div id="gameMsg" class="notice hidden"></div>
+    <div id="altWordHint" class="altword-hint hidden"></div>
   </section>
 
   <section id="resultCard" class="card hidden">
@@ -1668,10 +1682,39 @@ let hintState = {hints_used:0, hint_penalty_ms:0, revealed_hints:[], revealed_hi
 
 function $(id){ return document.getElementById(id); }
 function show(id,on=true){ $(id).classList.toggle("hidden",!on); }
+function hideAltWordHint(){ const el=$("altWordHint"); if(!el) return; el.innerHTML=""; show("altWordHint",false); }
 function msg(id,text,type=""){
   const el=$(id); el.textContent=text; el.className="notice"+(type ? " "+type : ""); show(id,true);
+  if(id==="gameMsg" && type!=="valid") hideAltWordHint();
 }
-function clearMsg(id){ show(id,false); }
+function clearMsg(id){ show(id,false); if(id==="gameMsg") hideAltWordHint(); }
+function renderAlternativeWordHint(word,guessSymbols,sharedSymbols){
+  const box=$("altWordHint"); if(!box) return;
+  const counts={};
+  (sharedSymbols||[]).forEach(sym=>counts[sym]=(counts[sym]||0)+1);
+  const main=(guessSymbols||[]).map(sym=>{
+    const ok=(counts[sym]||0)>0;
+    if(ok) counts[sym]--;
+    return `<span class="aw-chip ${ok?"shared":"notshared"}">${escapeHtml(sym)}${ok?'<span class="tick">✓</span>':''}</span>`;
+  }).join("");
+  const uniqShared=[]; const seen={};
+  (sharedSymbols||[]).forEach(sym=>{ if(!seen[sym]){seen[sym]=1; uniqShared.push(sym);} });
+  const sharedHtml=uniqShared.length
+    ? uniqShared.map(sym=>`<span class="aw-chip shared small">${escapeHtml(sym)}</span>`).join("")
+    : `<span class="aw-empty">Kein Element dieses Nebenworts kommt im Tageswort vor.</span>`;
+  box.innerHTML=`
+    <div class="aw-title">Nebenwort erkannt: <b>${escapeHtml(word)}</b></div>
+    <div class="aw-row">
+      <div class="aw-label">Nebenwort</div>
+      <div class="aw-chips">${main}</div>
+    </div>
+    <div class="aw-row">
+      <div class="aw-label">Im Tageswort</div>
+      <div class="aw-chips">${sharedHtml}</div>
+    </div>
+    <div class="aw-note"><b>Grün markiert</b> = dieses Element kommt auch im gesuchten Tageswort vor.</div>`;
+  show("altWordHint",true);
+}
 function fmtTime(ms){
   if(ms==null) return "–";
   ms=Math.max(0,Number(ms));
@@ -2117,6 +2160,7 @@ async function checkAlternativeWord(guess, guessNo=null){
       const common=shared.length ? `Auch im Tageswort: ${shared.join(" · ")}.` : "Keines der verwendeten Elementsymbole kommt im Tageswort vor.";
       const suffix=testMode ? " Testmodus – nichts wird gespeichert." : (guessNo!=null ? ` Versuch ${guessNo} – die Uhr läuft weiter.` : " Die Uhr läuft weiter.");
       msg("gameMsg",`✓ Gültiges Wort: ${word} – aber nicht das gesuchte Tageswort. ${common}${suffix}`,"valid");
+      renderAlternativeWordHint(word, guess, shared);
       return true;
     }
     playSound("wrong");
