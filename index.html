@@ -136,8 +136,8 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;bac
 .altword-hint .aw-note{margin-top:8px;font-size:12px;line-height:1.4;color:#48606c}
 .altword-hint .aw-empty{font-size:12px;font-weight:800;color:#7d5d13;background:#fff4d6;border:1px solid #ead18a;padding:7px 10px;border-radius:10px;display:inline-block}
 @media(max-width:560px){.altword-hint{padding:10px 11px}.altword-hint .aw-label{min-width:100%;margin-bottom:2px}.altword-hint .aw-chip{min-width:38px;font-size:17px;padding:7px 8px}}
-.element-tile.confirmed-target{outline:3px solid rgba(86,255,157,.96);outline-offset:2px;box-shadow:0 18px 30px rgba(0,0,0,.32),0 0 28px rgba(73,255,145,.70),inset 0 1px 0 rgba(255,255,255,.58)!important;filter:saturate(1.12) brightness(1.08)}
-.element-tile .target-badge{display:none;position:absolute;left:50%;top:4px;transform:translateX(-50%);z-index:4;width:max-content;max-width:92%;padding:2px 6px;border-radius:999px;background:rgba(7,87,48,.90);border:1px solid rgba(168,255,205,.65);color:#e8fff1;font-size:8px;font-weight:950;line-height:1.15;box-shadow:0 3px 9px rgba(0,0,0,.22)}
+.element-tile.confirmed-target{outline:3px solid rgba(244,207,88,.98);outline-offset:2px;box-shadow:0 18px 30px rgba(0,0,0,.32),0 0 26px rgba(244,207,88,.52),inset 0 1px 0 rgba(255,255,255,.58)!important;filter:saturate(1.08) brightness(1.05)}
+.element-tile .target-badge{display:none;position:absolute;left:50%;top:4px;transform:translateX(-50%);z-index:4;width:max-content;max-width:92%;padding:2px 6px;border-radius:999px;background:rgba(126,92,0,.94);border:1px solid rgba(255,225,131,.78);color:#fff6cf;font-size:8px;font-weight:950;line-height:1.15;box-shadow:0 3px 9px rgba(0,0,0,.22)}
 .element-tile.confirmed-target .target-badge{display:block}
 
 .result-hero{position:relative}.result-hero.success-pop{animation:successPop .6s cubic-bezier(.2,.8,.2,1)}@keyframes successPop{0%{transform:scale(.92);opacity:.45}65%{transform:scale(1.035)}100%{transform:scale(1);opacity:1}}
@@ -944,6 +944,41 @@ body:before,body:after{display:none!important;content:none!important}
   .start-count-number{min-width:82px;height:82px;font-size:44px;margin-top:14px}
 }
 
+
+/* ===== Neues Nebenwort-Feedback ===== */
+.guess-history{
+  max-width:900px;margin:14px auto 4px;padding:14px;border-radius:18px;
+  background:rgba(15,25,30,.86);border:1px solid rgba(185,220,235,.28);
+  box-shadow:0 12px 30px rgba(0,0,0,.18)
+}
+.guess-history-head{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+.guess-history-head strong{font-size:15px;color:#eefaff}
+.guess-history-head .small{color:#c5d5dc}
+.guess-history-rows{display:flex;flex-direction:column;gap:9px}
+.feedback-row{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:9px 10px;
+  border-radius:14px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.09)
+}
+.feedback-row-no{min-width:28px;color:#9fb3bd;font-size:12px;font-weight:900;text-align:right}
+.feedback-word{min-width:120px;color:#eefaff;font-size:13px;font-weight:900}
+.feedback-chips{display:flex;gap:6px;flex-wrap:wrap}
+.feedback-chip{
+  min-width:44px;height:42px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;
+  border-radius:10px;font-family:ui-monospace,monospace;font-size:18px;font-weight:950;
+  border:2px solid rgba(255,255,255,.25);box-sizing:border-box;color:#152027
+}
+.feedback-chip.green{background:#62d88b;border-color:#8ff0ae}
+.feedback-chip.yellow{background:#f2cf58;border-color:#ffe183}
+.feedback-chip.gray{background:#aab4ba;border-color:#c8d0d4;color:#253138}
+@media(max-width:560px){
+  .guess-history{padding:10px 8px;margin-top:10px}
+  .feedback-row{gap:7px;padding:8px}
+  .feedback-row-no{min-width:20px}
+  .feedback-word{min-width:100%;font-size:12px}
+  .feedback-chips{gap:4px}
+  .feedback-chip{min-width:36px;height:36px;padding:0 6px;font-size:16px;border-radius:8px}
+}
+
 </style>
 
 <style id="global-test-button-style">
@@ -1359,21 +1394,8 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
       </svg>
     </div>
 
-    <div class="rule">Falsche Versuche kosten keine Punkte – die Uhr läuft weiter. Ab 5 Elementsymbolen sind bis zu drei Tipps möglich.</div>
+    <div class="rule">Die Uhr läuft ohne Unterbrechung. Gültige Nebenwörter geben Hinweise: Grün = richtige Stelle, Gelb = im Zielwort aber andere Stelle, Grau = nicht im Zielwort.</div>
     <div class="status-strip"><span class="status-chip">🔊 akustische Rückmeldung</span><span class="status-chip">✨ Lösungseffekt</span><span class="status-chip">🧪 Element-Klicks</span></div>
-
-    <div id="hintPanel" class="hint-panel hidden">
-      <div><strong>💡 Element-Tipp</strong></div>
-      <div class="small">Der Tipp nennt ein Element und zeigt zusätzlich seine genaue Stelle im gesuchten Wort. 1. Tipp: +1 Min · 2. Tipp: +2 Min · 3. Tipp: +5 Min.</div>
-      <button id="hintBtn" class="hint-btn" onclick="takeHint()">Tipp verwenden</button>
-      <div id="hintPenalty" class="hint-penalty"></div>
-      <div id="hintHistory" class="hint-history"></div>
-      <div id="hintMsg" class="small" style="margin-top:8px"></div>
-      <div id="hintMap" class="hint-map hidden">
-        <div class="hint-map-title">Positionen der verratenen Elemente im Lösungswort</div>
-        <div id="hintMapSlots" class="hint-map-slots"></div>
-      </div>
-    </div>
 
     <div class="tile-stage-wrap">
       <div class="apparatus apparatus-left" aria-hidden="true">
@@ -1390,7 +1412,7 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
         </div>
       </div>
       <div class="tile-stage">
-        <div id="unusedSummary" class="unused-summary"><span class="unused-dot"></span> Noch ungenutzt: 15 von 15 <span class="used-dot"></span> bereits benutzt</div>
+        <div id="unusedSummary" class="unused-summary"><span class="unused-dot"></span> Noch ungenutzt: – <span class="used-dot"></span> bereits benutzt</div>
         <div id="tiles" class="tiles"></div>
       </div>
       <div class="apparatus apparatus-right" aria-hidden="true">
@@ -1417,7 +1439,13 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
       <button id="submitBtn" class="primary" onclick="submitGuess()" disabled>Wort prüfen</button>
     </div>
     <div id="gameMsg" class="notice hidden"></div>
-    <div id="altWordHint" class="altword-hint hidden"></div>
+    <div id="guessHistoryPanel" class="guess-history hidden">
+      <div class="guess-history-head">
+        <strong>Gefundene Nebenwörter</strong>
+        <span class="small">🟩 richtige Stelle · 🟨 im Zielwort, andere Stelle · ⬜ nicht im Zielwort</span>
+      </div>
+      <div id="guessHistoryRows" class="guess-history-rows"></div>
+    </div>
   </section>
 
   <section id="resultCard" class="card hidden">
@@ -1820,7 +1848,6 @@ function playSound(kind){
   if(!soundEnabled) return;
   if(kind==="click"){ tone(420,.045,"sine",.022); }
   else if(kind==="undo"){ tone(330,.055,"triangle",.022); }
-  else if(kind==="hint"){ tone(660,.08,"sine",.03); tone(880,.11,"sine",.026,.08); }
   else if(kind==="wrong"){ tone(185,.12,"sawtooth",.028); tone(145,.16,"triangle",.025,.08); }
   else if(kind==="valid"){ tone(440,.07,"sine",.028); tone(659.25,.11,"triangle",.032,.07); }
   else if(kind==="error"){ tone(150,.14,"square",.018); }
@@ -1867,16 +1894,15 @@ let testStartedAt = null;
 let testSample = null;
 let testGuesses = 0;
 let confirmedShared = [];
-let hintState = {hints_used:0, hint_penalty_ms:0, revealed_hints:[], revealed_hint_slots:[], revealed_hint_char_starts:[], revealed_hint_char_ends:[]};
+let guessHistory = [];
 
 function $(id){ return document.getElementById(id); }
 function show(id,on=true){ $(id).classList.toggle("hidden",!on); }
 function hideAltWordHint(){ const el=$("altWordHint"); if(!el) return; el.innerHTML=""; show("altWordHint",false); }
 function msg(id,text,type=""){
   const el=$(id); el.textContent=text; el.className="notice"+(type ? " "+type : ""); show(id,true);
-  if(id==="gameMsg" && type!=="valid") hideAltWordHint();
 }
-function clearMsg(id){ show(id,false); if(id==="gameMsg") hideAltWordHint(); }
+function clearMsg(id){ show(id,false); }
 function setFloatingTestButtonsVisible(on){
   for(const id of ["globalLongTestBtn","globalTestBtn"]){
     const el=$(id);
@@ -1885,33 +1911,50 @@ function setFloatingTestButtonsVisible(on){
     else el.style.setProperty("display","none","important");
   }
 }
-function renderAlternativeWordHint(word,guessSymbols,sharedSymbols,targetLabel="Tageswort"){
-  const box=$("altWordHint"); if(!box) return;
-  const counts={};
-  (sharedSymbols||[]).forEach(sym=>counts[sym]=(counts[sym]||0)+1);
-  const main=(guessSymbols||[]).map(sym=>{
-    const ok=(counts[sym]||0)>0;
-    if(ok) counts[sym]--;
-    return `<span class="aw-chip ${ok?"shared":"notshared"}">${escapeHtml(sym)}${ok?'<span class="tick">✓</span>':''}</span>`;
-  }).join("");
-  const uniqShared=[]; const seen={};
-  (sharedSymbols||[]).forEach(sym=>{ if(!seen[sym]){seen[sym]=1; uniqShared.push(sym);} });
-  const sharedHtml=uniqShared.length
-    ? uniqShared.map(sym=>`<span class="aw-chip shared small">${escapeHtml(sym)}</span>`).join("")
-    : `<span class="aw-empty">Kein Element dieses Nebenworts kommt im ${escapeHtml(targetLabel)} vor.</span>`;
-  box.innerHTML=`
-    <div class="aw-title">Nebenwort erkannt: <b>${escapeHtml(word)}</b></div>
-    <div class="aw-row">
-      <div class="aw-label">Nebenwort</div>
-      <div class="aw-chips">${main}</div>
-    </div>
-    <div class="aw-row">
-      <div class="aw-label">Im ${escapeHtml(targetLabel)}</div>
-      <div class="aw-chips">${sharedHtml}</div>
-    </div>
-    <div class="aw-note"><b>Grün markiert</b> = dieses Element kommt auch im ${escapeHtml(targetLabel)} vor.</div>`;
-  show("altWordHint",true);
+
+function feedbackClass(value){
+  const v=String(value||"").toLowerCase();
+  return v==="green" || v==="yellow" ? v : "gray";
 }
+function renderGuessHistory(){
+  const panel=$("guessHistoryPanel"), rows=$("guessHistoryRows");
+  if(!panel || !rows) return;
+  if(!guessHistory.length){
+    rows.innerHTML="";
+    show("guessHistoryPanel",false);
+    return;
+  }
+  rows.innerHTML=guessHistory.map((item,idx)=>{
+    const syms=Array.isArray(item.symbols)?item.symbols:[];
+    const fb=Array.isArray(item.feedback)?item.feedback:[];
+    const chips=syms.map((sym,i)=>`<span class="feedback-chip ${feedbackClass(fb[i])}" title="${feedbackClass(fb[i])}">${escapeHtml(sym)}</span>`).join("");
+    return `<div class="feedback-row">
+      <div class="feedback-row-no">${idx+1}.</div>
+      <div class="feedback-word">${escapeHtml(String(item.word||syms.join("")).toLocaleUpperCase("de-DE"))}</div>
+      <div class="feedback-chips">${chips}</div>
+    </div>`;
+  }).join("");
+  show("guessHistoryPanel",true);
+}
+function addGuessHistory(word,symbols,feedback,guessNo=null){
+  guessHistory.push({word, symbols:Array.isArray(symbols)?symbols.slice():[], feedback:Array.isArray(feedback)?feedback.slice():[], guessNo});
+  renderGuessHistory();
+}
+async function loadGuessHistory(){
+  if(testMode || !puzzle) return;
+  try{
+    const {data,error}=await supabaseClient.rpc("elementenpuzzle_feedback_history");
+    if(error) return;
+    guessHistory=(Array.isArray(data)?data:[]).map(r=>({
+      word:r.matched_word,
+      symbols:r.symbols||[],
+      feedback:r.feedback||[],
+      guessNo:r.guess_no
+    }));
+    renderGuessHistory();
+  }catch(_e){}
+}
+
 function fmtTime(ms){
   if(ms==null) return "–";
   ms=Math.max(0,Number(ms));
@@ -2060,8 +2103,9 @@ function renderGame(st, animateReveal=false){
   $("elementCount").textContent=st.element_count;
   // Startfenster wird nach dem Rendern explizit eingeblendet, damit es auch im Testmodus sicher sichtbar ist.
   selected=[];
-  hintState={hints_used:0,hint_penalty_ms:0,revealed_hints:[],revealed_hint_slots:[],revealed_hint_char_starts:[],revealed_hint_char_ends:[]};
   confirmedShared=[];
+  guessHistory=[];
+  renderGuessHistory();
 
   const choices=Array.isArray(st.choices)?st.choices:[];
   const startIso=testMode ? testStartedAt : st.started_at;
@@ -2071,7 +2115,6 @@ function renderGame(st, animateReveal=false){
 
   renderTiles(choices,doReveal);
   renderSelection();
-  renderHintUI();
   startTimer(startIso);
 
   if(doReveal){
@@ -2090,8 +2133,8 @@ function renderGame(st, animateReveal=false){
   }
 
   if(!testMode){
-    loadHintState();
     loadConfirmedSymbols();
+    loadGuessHistory();
   }
 }
 
@@ -2101,7 +2144,7 @@ function buildTestChoices(st){
   const solution=Array.isArray(st.solved_symbols)?st.solved_symbols.filter(Boolean):[];
   const out=[...new Set(solution)];
   const pool=ELEMENTS.map(e=>e[0]).filter(sym=>!out.includes(sym));
-  const targetCount=solution.length<=5 ? 10 : (solution.length<=10 ? 15 : 20);
+  const targetCount=Math.min(30,Math.max(15,Math.ceil(solution.length*2.5)));
   while(out.length<targetCount && pool.length){
     const i=Math.floor(Math.random()*pool.length);
     out.push(pool.splice(i,1)[0]);
@@ -2149,7 +2192,6 @@ async function startLocalTest(){
 
   puzzle={...puzzle, element_count:solution.length, choices:testChoices||buildTestChoices(puzzle)};
   testStartedAt=new Date(Date.now()+revealDurationFor(puzzle.choices)).toISOString();
-  hintState={hints_used:0,hint_penalty_ms:0,revealed_hints:[],revealed_hint_slots:[],revealed_hint_char_starts:[],revealed_hint_char_ends:[]};
   renderGame(puzzle,true);
   setTimeout(()=>showStartCountOverlay(puzzle.element_count),100);
 
@@ -2197,7 +2239,6 @@ async function startLongWordTest(){
     };
 
     testStartedAt=new Date(Date.now()+revealDurationFor(puzzle.choices)).toISOString();
-    hintState={hints_used:0,hint_penalty_ms:0,revealed_hints:[],revealed_hint_slots:[],revealed_hint_char_starts:[],revealed_hint_char_ends:[]};
     renderGame(puzzle,true);
     setTimeout(()=>showStartCountOverlay(puzzle.element_count),100);
 
@@ -2205,164 +2246,13 @@ async function startLongWordTest(){
     if(testSample){
       msg("gameMsg",`${targetLine} Nebenwort-Test: ${testSample.word} = ${testSample.symbols.join(" · ")}. Lege zuerst das Nebenwort und drücke „Wort prüfen“. Danach kannst du das lange Testwort lösen.`,"valid");
     }else{
-      msg("gameMsg",`${targetLine} Lege die angezeigten Symbole des Testworts und prüfe Darstellung, Tipps und Lösung. Nichts wird gespeichert.`,"good");
+      msg("gameMsg",`${targetLine} Lege die angezeigten Symbole des Testworts und prüfe Darstellung, Nebenwort-Markierungen und Lösung. Nichts wird gespeichert.`,"good");
     }
   }catch(e){
     testMode=false;
     longTestMode=false;
     longTestTargetWord=null;
     alert("Langer Testmodus konnte nicht gestartet werden: "+(e?.message||e));
-  }
-}
-
-function localHint(){
-  const solution=Array.isArray(puzzle?.solved_symbols)?puzzle.solved_symbols:[];
-  const used=Number(hintState.hints_used||0);
-  if(used>=3 || !solution.length) return;
-  const already=new Set((hintState.revealed_hint_slots||[]).map(Number));
-  let slot=solution.findIndex((_s,i)=>!already.has(i+1))+1;
-  if(slot<=0) slot=Math.min(used+1,solution.length);
-  const sym=solution[slot-1];
-  let charStart=1;
-  for(let i=0;i<slot-1;i++) charStart+=String(solution[i]).length;
-  const charEnd=charStart+String(sym).length-1;
-  const add=HINT_PENALTIES[used]||0;
-  hintState.hints_used=used+1;
-  hintState.hint_penalty_ms=Number(hintState.hint_penalty_ms||0)+add;
-  hintState.revealed_hints=[...(hintState.revealed_hints||[]),sym];
-  hintState.revealed_hint_slots=[...(hintState.revealed_hint_slots||[]),slot];
-  hintState.revealed_hint_char_starts=[...(hintState.revealed_hint_char_starts||[]),charStart];
-  hintState.revealed_hint_char_ends=[...(hintState.revealed_hint_char_ends||[]),charEnd];
-  const e=BY_SYMBOL[sym]||[sym,sym];
-  $("hintMsg").textContent=`Test-Tipp: ${sym} (${e[1]}) — ${hintPositionText(sym,slot,charStart,charEnd)}. +${fmtPenalty(add)}.`;
-  playSound("hint");
-  renderHintUI();
-}
-
-const HINT_PENALTIES=[60000,120000,300000];
-
-function hintPositionText(sym, slot, charStart, charEnd){
-  const parts=[];
-  const slotNo=Number(slot||0);
-  const cs=Number(charStart||0), ce=Number(charEnd||0);
-  if(slotNo>0) parts.push(`${slotNo}. Elementsymbol`);
-  if(cs>0 && ce>0){
-    parts.push(cs===ce ? `Buchstabenstelle ${cs}` : `Buchstabenstellen ${cs}–${ce}`);
-  }
-  return parts.join(" · ");
-}
-
-function renderHintMap(){
-  const map=$("hintMap");
-  const box=$("hintMapSlots");
-  if(!map || !box || !puzzle){ return; }
-
-  const count=Number(puzzle.element_count||0);
-  const revealed=Array.isArray(hintState.revealed_hints)?hintState.revealed_hints:[];
-  const slots=Array.isArray(hintState.revealed_hint_slots)?hintState.revealed_hint_slots:[];
-  const known={};
-  revealed.forEach((sym,i)=>{
-    const pos=Number(slots[i]||0);
-    if(pos>=1 && pos<=count) known[pos]=sym;
-  });
-
-  const hasKnown=Object.keys(known).length>0;
-  show("hintMap",hasKnown);
-  if(!hasKnown){ box.innerHTML=""; return; }
-
-  box.innerHTML=Array.from({length:count},(_,i)=>{
-    const pos=i+1;
-    const sym=known[pos]||"";
-    return `<span class="hint-slot${sym?" revealed":""}" title="${pos}. Elementsymbol${sym?`: ${escapeHtml(sym)}`:" – noch unbekannt"}"><span class="hint-slot-no">${pos}</span>${sym?escapeHtml(sym):"&nbsp;"}</span>`;
-  }).join("");
-}
-
-function renderHintUI(){
-  const eligible=!!puzzle && Number(puzzle.element_count)>=5;
-  show("hintPanel",eligible);
-  if(!eligible) return;
-
-  const used=Number(hintState.hints_used||0);
-  const penalty=Number(hintState.hint_penalty_ms||0);
-  const revealed=Array.isArray(hintState.revealed_hints)?hintState.revealed_hints:[];
-  const slots=Array.isArray(hintState.revealed_hint_slots)?hintState.revealed_hint_slots:[];
-  const starts=Array.isArray(hintState.revealed_hint_char_starts)?hintState.revealed_hint_char_starts:[];
-  const ends=Array.isArray(hintState.revealed_hint_char_ends)?hintState.revealed_hint_char_ends:[];
-  const btn=$("hintBtn");
-
-  if(used>=3){
-    btn.textContent="Alle 3 Tipps verwendet";
-    btn.disabled=true;
-  }else{
-    const plus=HINT_PENALTIES[used];
-    btn.textContent=`Tipp ${used+1} verwenden (+${Math.round(plus/60000)} Min)`;
-    btn.disabled=false;
-  }
-
-  $("hintPenalty").textContent=penalty>0 ? `Bisheriger Zeitzuschlag: +${fmtPenalty(penalty)}` : "Noch kein Zeitzuschlag.";
-  $("hintHistory").innerHTML=revealed.map((sym,i)=>{
-    const e=BY_SYMBOL[sym]||[sym,sym];
-    const pos=hintPositionText(sym,slots[i],starts[i],ends[i]);
-    return `<span class="hint-chip">Tipp ${i+1}: ${escapeHtml(sym)} · ${escapeHtml(e[1])}${pos?` — ${escapeHtml(pos)}`:""}</span>`;
-  }).join("");
-  renderHintMap();
-}
-function fmtPenalty(ms){
-  const total=Math.round(Number(ms||0)/1000);
-  const min=Math.floor(total/60), sec=total%60;
-  return sec ? `${min}:${String(sec).padStart(2,"0")} Min` : `${min} Min`;
-}
-
-async function loadHintState(){
-  if(!puzzle || Number(puzzle.element_count)<5) return;
-  $("hintMsg").textContent="";
-  const {data,error}=await supabaseClient.rpc("elementenpuzzle_hint",{p_take:false});
-  if(error){
-    $("hintMsg").textContent="Tippfunktion ist in Supabase noch nicht eingerichtet: "+error.message;
-    $("hintBtn").disabled=true;
-    return;
-  }
-  const r=Array.isArray(data)?data[0]:data;
-  if(r){
-    hintState={
-      hints_used:Number(r.hints_used||0),
-      hint_penalty_ms:Number(r.hint_penalty_ms||0),
-      revealed_hints:r.revealed_hints||[],
-      revealed_hint_slots:r.revealed_hint_slots||[],
-      revealed_hint_char_starts:r.revealed_hint_char_starts||[],
-      revealed_hint_char_ends:r.revealed_hint_char_ends||[]
-    };
-    renderHintUI();
-  }
-}
-
-async function takeHint(){
-  if(!puzzle || Number(puzzle.element_count)<5 || Number(hintState.hints_used||0)>=3) return;
-  if(testMode){ localHint(); return; }
-  const btn=$("hintBtn");
-  btn.disabled=true;
-  $("hintMsg").textContent="Tipp wird geladen …";
-  const {data,error}=await supabaseClient.rpc("elementenpuzzle_hint",{p_take:true});
-  if(error){
-    $("hintMsg").textContent=error.message;
-    renderHintUI();
-    return;
-  }
-  const r=Array.isArray(data)?data[0]:data;
-  if(r){
-    hintState={
-      hints_used:Number(r.hints_used||0),
-      hint_penalty_ms:Number(r.hint_penalty_ms||0),
-      revealed_hints:r.revealed_hints||[],
-      revealed_hint_slots:r.revealed_hint_slots||[],
-      revealed_hint_char_starts:r.revealed_hint_char_starts||[],
-      revealed_hint_char_ends:r.revealed_hint_char_ends||[]
-    };
-    const e=BY_SYMBOL[r.new_hint]||[r.new_hint,r.new_hint];
-    const pos=hintPositionText(r.new_hint,r.new_hint_slot,r.new_hint_char_start,r.new_hint_char_end);
-    $("hintMsg").textContent=`Neuer Tipp: ${r.new_hint} (${e[1]})${pos?` — ${pos}`:" kommt im gesuchten Wort vor"}. +${fmtPenalty(r.added_penalty_ms)}.`;
-    playSound("hint");
-    renderHintUI();
   }
 }
 
@@ -2375,7 +2265,7 @@ function renderTiles(choices,animateReveal=false){
     const hue=((atomic||i+1)*37 + i*19)%360;
     const center=(choices.length-1)/2;
     const tilt=((i-center)*-1.7).toFixed(1)+"deg";
-    return `<button class="element-tile${animateReveal?" reveal-in":""}" style="--i:${i};--tile-hue:${hue};--tilt:${tilt}" data-symbol="${escapeHtml(sym)}" onclick="chooseSymbol('${sym}')"><div class="target-badge">✓ im Tageswort</div><div class="sym">${escapeHtml(sym)}</div><div class="ename">${escapeHtml(e[1]||sym)}</div><div class="usage-badge"></div></button>`;
+    return `<button class="element-tile${animateReveal?" reveal-in":""}" style="--i:${i};--tile-hue:${hue};--tilt:${tilt}" data-symbol="${escapeHtml(sym)}" onclick="chooseSymbol('${sym}')"><div class="target-badge">im Tageswort</div><div class="sym">${escapeHtml(sym)}</div><div class="ename">${escapeHtml(e[1]||sym)}</div><div class="usage-badge"></div></button>`;
   }).join("");
   updateTileUsage();
 }
@@ -2439,22 +2329,27 @@ async function loadConfirmedSymbols(){
   }catch(_e){}
 }
 
+
 async function checkAlternativeWord(guess, guessNo=null){
   try{
-    const rpcName=(testMode && longTestMode) ? "elementenpuzzle_check_test_word" : "elementenpuzzle_check_word";
+    const rpcName=(testMode && longTestMode) ? "elementenpuzzle_check_test_word_feedback" : "elementenpuzzle_check_word_feedback";
     const rpcArgs=(testMode && longTestMode)
       ? {p_target_word:longTestTargetWord,p_symbols:guess}
       : {p_symbols:guess};
     const {data,error}=await supabaseClient.rpc(rpcName,rpcArgs);
     if(error){
       playSound("wrong");
+      const setupHint=String(error.message||"").includes("Could not find the function")
+        ? " Bitte zuerst die neue SQL-Datei für das Grün/Gelb/Grau-System in Supabase ausführen."
+        : "";
       const suffix=testMode ? " – Testversuch, nichts wird gespeichert." : (guessNo!=null ? ` Versuch ${guessNo} – die Uhr läuft weiter.` : " Die Uhr läuft weiter.");
-      msg("gameMsg","Noch nicht richtig"+suffix,"bad");
+      msg("gameMsg","Noch nicht richtig"+suffix+setupHint,"bad");
       return false;
     }
     const r=Array.isArray(data)?data[0]:data;
     if(r?.valid_word){
       const shared=Array.isArray(r.shared_symbols)?r.shared_symbols:[];
+      const feedback=Array.isArray(r.feedback)?r.feedback:[];
       if(testMode){
         confirmedShared=[...new Set([...confirmedShared,...shared])];
       }else{
@@ -2464,12 +2359,10 @@ async function checkAlternativeWord(guess, guessNo=null){
       playSound("valid");
       const word=(r.matched_word||guess.join("")).toLocaleUpperCase("de-DE");
       const isLongTest=(testMode && longTestMode);
-      const targetLabel=isLongTest ? "langen Testwort" : "Tageswort";
       const notTargetText=isLongTest ? "das gesuchte lange Testwort" : "das gesuchte Tageswort";
-      const common=shared.length ? `Auch im ${targetLabel}: ${shared.join(" · ")}.` : `Keines der verwendeten Elementsymbole kommt im ${targetLabel} vor.`;
       const suffix=testMode ? " Testmodus – nichts wird gespeichert." : (guessNo!=null ? ` Versuch ${guessNo} – die Uhr läuft weiter.` : " Die Uhr läuft weiter.");
-      msg("gameMsg",`✓ Gültiges Wort: ${word} – aber nicht ${notTargetText}. ${common}${suffix}`,"valid");
-      renderAlternativeWordHint(word, guess, shared, targetLabel);
+      msg("gameMsg",`✓ Gültiges Nebenwort: ${word} – aber nicht ${notTargetText}.${suffix}`,"valid");
+      addGuessHistory(word,guess,feedback,guessNo);
       return true;
     }
     playSound("wrong");
@@ -2487,7 +2380,7 @@ async function checkAlternativeWord(guess, guessNo=null){
 async function submitLongTestGuess(guess){
   const targetNorm=String(longTestTargetWord||"").toLocaleLowerCase("de-DE");
   try{
-    const {data,error}=await supabaseClient.rpc("elementenpuzzle_check_test_word",{
+    const {data,error}=await supabaseClient.rpc("elementenpuzzle_check_test_word_feedback",{
       p_target_word:targetNorm,
       p_symbols:guess
     });
@@ -2502,13 +2395,14 @@ async function submitLongTestGuess(guess){
     }
 
     const shared=Array.isArray(r.shared_symbols)?r.shared_symbols:[];
+    const feedback=Array.isArray(r.feedback)?r.feedback:[];
     confirmedShared=[...new Set([...confirmedShared,...shared])];
     updateTileUsage();
 
     // Entscheidend ist der gebildete Worttext, nicht eine einzige feste Zerlegung.
     // So gilt auch eine andere gültige Elementsymbol-Zerlegung des Zielwortes als richtig.
     if(guessNorm===targetNorm){
-      const elapsed=Date.now()-new Date(testStartedAt).getTime()+Number(hintState.hint_penalty_ms||0);
+      const elapsed=Date.now()-new Date(testStartedAt).getTime();
       playSound("success"); celebrate();
       const testResult={...puzzle,solved:true,solved_word:longTestTargetWord,solved_symbols:guess.slice(),elapsed_ms:elapsed,rank:null};
       renderSolved(testResult);
@@ -2518,9 +2412,8 @@ async function submitLongTestGuess(guess){
 
     playSound("valid");
     const word=(r.matched_word||guess.join("")).toLocaleUpperCase("de-DE");
-    const common=shared.length ? `Auch im langen Testwort: ${shared.join(" · ")}.` : "Keines der verwendeten Elementsymbole kommt im langen Testwort vor.";
-    msg("gameMsg",`✓ Gültiges Nebenwort: ${word}. ${common} Testmodus – nichts wird gespeichert.`,"valid");
-    renderAlternativeWordHint(word,guess,shared,"langen Testwort");
+    msg("gameMsg",`✓ Gültiges Nebenwort: ${word}. Testmodus – nichts wird gespeichert.`,"valid");
+    addGuessHistory(word,guess,feedback,null);
     return false;
   }catch(e){
     playSound("error");
@@ -2548,7 +2441,7 @@ async function submitGuess(){
     const solution=Array.isArray(puzzle.solved_symbols)?puzzle.solved_symbols:[];
     const correct=guess.length===solution.length && guess.every((sym,i)=>sym===solution[i]);
     if(correct){
-      const elapsed=Date.now()-new Date(testStartedAt).getTime()+Number(hintState.hint_penalty_ms||0);
+      const elapsed=Date.now()-new Date(testStartedAt).getTime();
       playSound("success"); celebrate();
       const testResult={...puzzle,solved:true,elapsed_ms:elapsed,rank:null};
       renderSolved(testResult);
@@ -2593,7 +2486,7 @@ function startTimer(startIso){
       timer.classList.add("armed");
       if($("timerNote") && !$("tiles")?.classList.contains("reveal-lock")) $("timerNote").textContent="Startet, sobald alle Elemente sichtbar sind.";
     }else{
-      timer.textContent=fmtTime(base+Number(hintState.hint_penalty_ms||0));
+      timer.textContent=fmtTime(base);
       timer.classList.remove("armed");
       if($("timerNote") && !$("tiles")?.classList.contains("reveal-lock")) $("timerNote").textContent="Zeit läuft.";
     }
