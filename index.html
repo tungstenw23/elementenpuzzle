@@ -2035,7 +2035,10 @@ function showStartCountOverlay(count){
   const n=Number(count||0);
   if(!n) return;
   if($("startCountBig")) $("startCountBig").textContent=String(n);
-  if($("startCountText")) $("startCountText").textContent=`Das heutige Wort setzt sich aus ${n} Elementsymbolen zusammen.`;
+  if($("startCountText")) {
+    const label=(testMode && longTestMode) ? "Das Testwort" : "Das heutige Wort";
+    $("startCountText").textContent=`${label} setzt sich aus ${n} Elementsymbolen zusammen.`;
+  }
   const el=$("startCountOverlay");
   if(!el) return;
   el.classList.remove("hidden");
@@ -2050,7 +2053,7 @@ function renderGame(st, animateReveal=false){
   show("testBanner",testMode);
   setFloatingTestButtonsVisible(!testMode);
   $("elementCount").textContent=st.element_count;
-  if(animateReveal && !testMode) showStartCountOverlay(st.element_count);
+  if(animateReveal) showStartCountOverlay(st.element_count);
   selected=[];
   hintState={hints_used:0,hint_penalty_ms:0,revealed_hints:[],revealed_hint_slots:[],revealed_hint_char_starts:[],revealed_hint_char_ends:[]};
   confirmedShared=[];
