@@ -993,6 +993,106 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
 @media(max-width:520px){
   #globalTestBtn,#globalLongTestBtn{min-width:0!important;width:calc(100vw - 24px)!important;font-size:14px!important}
 }
+
+
+/* ===== SMARTPHONE-OPTIMIERUNG 2026-09-01 =====
+   Ziel: alle Elementsymbole kompakt gleichzeitig sichtbar halten.
+   15 Karten = 5 x 3, 20 Karten = 5 x 4. Desktop bleibt unverändert. */
+@media (max-width: 560px){
+  .shell{padding:6px 5px 14px!important}
+  .hero{padding:7px 10px 8px!important;border-radius:14px!important}
+  .hero h1{font-size:25px!important;line-height:1.05!important}
+  .hero p{display:none!important}
+  .sound-control{right:8px!important;bottom:7px!important;padding:5px 8px!important;font-size:11px!important}
+
+  #gameCard{margin-top:5px!important;padding:5px 3px 10px!important}
+  #gameCard>.topbar{padding:5px 7px!important;margin-bottom:1px!important;gap:5px!important}
+  .topbar .small{font-size:10px!important}
+  .timer{font-size:34px!important;line-height:1!important;margin:1px 0!important}
+  .timer-note{font-size:10px!important;min-height:14px!important;margin:0 0 2px!important}
+  .rule{font-size:11px!important;line-height:1.25!important;margin:2px auto 4px!important;padding:5px 7px!important}
+  .status-strip{gap:4px!important;margin:0 0 3px!important}
+  .status-chip{font-size:9px!important;padding:3px 6px!important}
+  .count-pill{font-size:11px!important;padding:5px 8px!important}
+  .game-rule-strip{display:none!important}
+
+  #hintPanel{margin:3px auto 5px!important;padding:7px 8px!important}
+  .hint-btn{padding:7px 10px!important;font-size:12px!important;margin-top:5px!important}
+  .hint-history{margin-top:5px!important;gap:4px!important}
+  .hint-chip{padding:4px 7px!important;font-size:10px!important}
+  .hint-map{margin-top:6px!important;padding-top:6px!important}
+  .hint-map-slots{gap:3px!important}
+  .hint-slot{min-width:32px!important;height:31px!important;padding:0 4px!important;font-size:14px!important;border-radius:8px!important}
+
+  .tile-stage-wrap{margin:3px auto 6px!important}
+  .tile-stage{width:100%!important;max-width:100%!important;padding:6px 5px 7px!important;border-radius:15px!important}
+  .tile-stage .unused-summary,
+  .unused-summary{font-size:10px!important;line-height:1.15!important;margin:0 0 5px!important;padding:3px 6px!important;gap:4px!important}
+  .unused-dot,.used-dot{width:7px!important;height:7px!important}
+
+  /* Entscheidende Änderung: auf Smartphones immer fünf Karten pro Reihe. */
+  .tiles,
+  .tiles.choice-20,
+  .tile-stage .tiles,
+  .tile-stage .tiles.choice-20{
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    gap:5px 4px!important;
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  .element-tile,
+  .tiles.choice-20 .element-tile{
+    min-width:0!important;
+    min-height:54px!important;
+    height:54px!important;
+    padding:4px 2px 3px!important;
+    border-radius:9px!important;
+    transform:rotateX(3deg) rotateY(var(--tilt)) translateZ(0)!important;
+  }
+  .element-tile:before{left:5px!important;right:5px!important;bottom:-5px!important;height:7px!important;border-radius:0 0 7px 7px!important}
+  .element-tile .sym,
+  .tiles.choice-20 .element-tile .sym{font-size:21px!important;line-height:1!important;margin-top:1px!important}
+  .element-tile .ename{font-size:7px!important;line-height:1.05!important;margin-top:2px!important;letter-spacing:-.02em!important}
+  .element-tile .usage-badge{display:none!important}
+  .element-tile .target-badge{top:1px!important;font-size:6px!important;padding:1px 3px!important}
+  .element-tile:hover:not(:disabled){transform:rotateX(3deg) rotateY(var(--tilt)) translateZ(0)!important}
+
+  .selection{min-height:43px!important;padding:5px!important;gap:4px!important;border-radius:11px!important}
+  .chip{height:34px!important;min-width:35px!important;padding:0 7px!important;font-size:16px!important;border-radius:8px!important}
+  .preview{font-size:18px!important;min-height:20px!important;margin:2px 0!important}
+  .actions{gap:6px!important;margin-top:4px!important}
+  .actions button{padding:8px 10px!important;font-size:12px!important}
+  #gameMsg{font-size:11px!important;margin-top:4px!important;padding:6px 8px!important}
+
+  /* Animationen etwas ruhiger, damit die kleinen Karten klar bedienbar bleiben. */
+  .element-tile.reveal-in{animation-duration:.45s!important;animation-delay:calc(var(--i) * 70ms)!important}
+  .fx-layer{opacity:.55!important}
+}
+
+/* Sehr schmale Telefone: weiterhin 5 Spalten, aber Namen ausblenden. */
+@media (max-width: 360px){
+  .element-tile,
+  .tiles.choice-20 .element-tile{min-height:50px!important;height:50px!important}
+  .element-tile .sym,
+  .tiles.choice-20 .element-tile .sym{font-size:20px!important;margin-top:5px!important}
+  .element-tile .ename{display:none!important}
+  .tiles,.tiles.choice-20,.tile-stage .tiles,.tile-stage .tiles.choice-20{gap:4px 3px!important}
+}
+
+/* Querformat auf kleinen Geräten: Bedienbereich noch kompakter. */
+@media (max-height: 520px) and (max-width: 900px) and (orientation: landscape){
+  .hero{display:none!important}
+  #gameCard{margin-top:0!important}
+  .timer{font-size:28px!important}
+  .rule{margin:1px auto 3px!important}
+  .tile-stage-wrap{margin:2px auto 4px!important}
+  .element-tile,.tiles.choice-20 .element-tile{min-height:46px!important;height:46px!important}
+  .element-tile .sym,.tiles.choice-20 .element-tile .sym{font-size:19px!important}
+  .element-tile .ename{display:none!important}
+}
+
 </style>
 
 </head>
