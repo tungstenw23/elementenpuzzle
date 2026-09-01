@@ -2009,7 +2009,12 @@ async function startPuzzle(){
   }
   puzzle=Array.isArray(data)?data[0]:data;
   show("lobbyCard",false);
-  if(puzzle.solved) renderSolved(puzzle); else renderGame(puzzle,true);
+  if(puzzle.solved){
+    renderSolved(puzzle);
+  }else{
+    renderGame(puzzle,true);
+    setTimeout(()=>showStartCountOverlay(puzzle.element_count),100);
+  }
 }
 
 function revealDurationFor(choices){
@@ -2043,8 +2048,8 @@ function showStartCountOverlay(count){
   if(!el) return;
   el.classList.remove("hidden");
   if(startCountOverlayTimer) clearTimeout(startCountOverlayTimer);
-  // Bleibt deutlich sichtbar, verschwindet aber noch während der Karten-Einblendung.
-  startCountOverlayTimer=setTimeout(hideStartCountOverlay,2200);
+  // Das Fenster bleibt sichtbar, bis der Spieler auf „Verstanden“ klickt.
+  // So ist es auch im Testmodus und auf langsamen Smartphones sicher zu sehen.
 }
 
 function renderGame(st, animateReveal=false){
@@ -2053,7 +2058,7 @@ function renderGame(st, animateReveal=false){
   show("testBanner",testMode);
   setFloatingTestButtonsVisible(!testMode);
   $("elementCount").textContent=st.element_count;
-  if(animateReveal) showStartCountOverlay(st.element_count);
+  // Startfenster wird nach dem Rendern explizit eingeblendet, damit es auch im Testmodus sicher sichtbar ist.
   selected=[];
   hintState={hints_used:0,hint_penalty_ms:0,revealed_hints:[],revealed_hint_slots:[],revealed_hint_char_starts:[],revealed_hint_char_ends:[]};
   confirmedShared=[];
@@ -2146,6 +2151,7 @@ async function startLocalTest(){
   testStartedAt=new Date(Date.now()+revealDurationFor(puzzle.choices)).toISOString();
   hintState={hints_used:0,hint_penalty_ms:0,revealed_hints:[],revealed_hint_slots:[],revealed_hint_char_starts:[],revealed_hint_char_ends:[]};
   renderGame(puzzle,true);
+  setTimeout(()=>showStartCountOverlay(puzzle.element_count),100);
 
   if(testSample){
     msg("gameMsg",`🧪 Testmodus aktiv. Zum Prüfen: ${testSample.word} = ${testSample.symbols.join(" · ")} ist ein gültiges Nebenwort. Lege diese Symbole und drücke „Wort prüfen“.`,"valid");
@@ -2193,6 +2199,7 @@ async function startLongWordTest(){
     testStartedAt=new Date(Date.now()+revealDurationFor(puzzle.choices)).toISOString();
     hintState={hints_used:0,hint_penalty_ms:0,revealed_hints:[],revealed_hint_slots:[],revealed_hint_char_starts:[],revealed_hint_char_ends:[]};
     renderGame(puzzle,true);
+    setTimeout(()=>showStartCountOverlay(puzzle.element_count),100);
 
     const targetLine=`🧪 Langer Test: ${longTestTargetWord} = ${td.target_symbols.join(" · ")}.`;
     if(testSample){
