@@ -1008,6 +1008,73 @@ body:before,body:after{display:none!important;content:none!important}
   .element-photo-gallery img{height:165px}
 }
 
+
+/* --- Gastmodus V11 --- */
+.guest-entry{
+  margin-top:18px;
+  padding:18px;
+  border:1px solid rgba(80,150,180,.28);
+  border-radius:18px;
+  background:linear-gradient(135deg,rgba(238,249,255,.96),rgba(247,244,255,.96));
+  text-align:center;
+}
+.guest-entry h2{margin:0 0 7px}
+.guest-entry p{max-width:760px;margin:7px auto;color:#476273}
+.guest-benefits{
+  display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
+  margin:12px auto 14px;
+}
+.guest-benefits span{
+  padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.82);
+  border:1px solid rgba(80,150,180,.22);font-size:12px;color:#294b5e;
+}
+.guest-banner{
+  margin-bottom:12px;padding:10px 12px;border-radius:12px;
+  background:#fff7dc;border:1px solid #ecd16e;color:#624f12;
+  font-size:13px;font-weight:650;text-align:center;
+}
+.guest-result-cta{
+  margin:15px auto 2px;max-width:620px;padding:13px 15px;border-radius:14px;
+  background:#f1f8ff;border:1px solid #a9cce7;color:#274c63;
+}
+.guest-result-cta button{margin-top:10px}
+
+
+/* --- Persönliche Statistik V13: nur angemeldete Spieler --- */
+.personal-stats-card{
+  border:1px solid rgba(69,145,177,.28);
+  background:linear-gradient(135deg,rgba(244,251,255,.97),rgba(249,247,255,.97));
+}
+.personal-stats-head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  margin-bottom:14px;
+}
+.personal-stats-head h2{margin:0}
+.personal-stats-sub{font-size:12px;color:#607986}
+.personal-stats-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+}
+.personal-stat{
+  min-height:88px;
+  padding:13px 10px;
+  border-radius:14px;
+  background:rgba(255,255,255,.88);
+  border:1px solid rgba(70,130,160,.18);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;
+}
+.personal-stat-value{
+  font-size:27px;font-weight:850;line-height:1.1;color:#173e54;
+  font-variant-numeric:tabular-nums;
+}
+.personal-stat-label{margin-top:7px;font-size:12px;color:#627986}
+@media(max-width:720px){
+  .personal-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .personal-stat-value{font-size:23px}
+}
+
 </style>
 
 <style id="global-test-button-style">
@@ -1324,15 +1391,27 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
       </div>
     </div>
     <div id="authMsg" class="notice hidden"></div>
+
+    <div class="guest-entry">
+      <h2>Ohne Anmeldung spielen</h2>
+      <p>Du kannst das heutige Rätsel sofort als Gast spielen. Deine Zeit und deine Versuche werden dabei nicht dauerhaft gespeichert.</p>
+      <div class="guest-benefits">
+        <span>👤 Gast: Tagesrätsel spielen</span>
+        <span>⏱ Eigene Zeit direkt sehen</span>
+        <span>🔐 Mit Konto: Zeit speichern</span>
+        <span>🏆 Mit Konto: Tagesrangliste</span>
+      </div>
+      <button class="secondary" type="button" style="font-size:17px;padding:12px 20px" onclick="enterGuestMode()">Als Gast spielen</button>
+    </div>
   </section>
 
   <section id="lobbyCard" class="card hidden">
     <div class="topbar">
       <div>
-        <div class="small">Angemeldet als</div>
+        <div id="playerModeLabel" class="small">Angemeldet als</div>
         <strong id="userLabel">–</strong>
       </div>
-      <button class="secondary" onclick="logout()">Abmelden</button>
+      <button id="sessionExitBtn" class="secondary" onclick="leaveCurrentMode()">Abmelden</button>
     </div>
     <div style="text-align:center;padding:16px 0 4px">
       <h2 style="font-size:30px;margin-bottom:6px">Tagesrätsel <span id="todayLabel"></span></h2>
@@ -1351,6 +1430,36 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
     </div>
   </section>
 
+  <section id="statsCard" class="card personal-stats-card hidden">
+    <div class="personal-stats-head">
+      <div>
+        <h2>📊 Meine Statistik</h2>
+        <div class="personal-stats-sub">Nur für angemeldete Spieler · deine bisherigen Tagesrätsel</div>
+      </div>
+      <button class="secondary" type="button" onclick="loadMyStats()">Aktualisieren</button>
+    </div>
+    <div class="personal-stats-grid">
+      <div class="personal-stat">
+        <div id="statPlayed" class="personal-stat-value">–</div>
+        <div class="personal-stat-label">gespielte Tagesrätsel</div>
+      </div>
+      <div class="personal-stat">
+        <div id="statSolved" class="personal-stat-value">–</div>
+        <div class="personal-stat-label">gelöste Tagesrätsel</div>
+      </div>
+      <div class="personal-stat">
+        <div id="statBest" class="personal-stat-value">–</div>
+        <div class="personal-stat-label">persönliche Bestzeit</div>
+      </div>
+      <div class="personal-stat">
+        <div id="statAverage" class="personal-stat-value">–</div>
+        <div class="personal-stat-label">Durchschnittszeit</div>
+        <div style="font-size:10px;color:#7a8c95;margin-top:4px">ohne Zeiten über 60 Min.</div>
+      </div>
+    </div>
+    <div id="statsMsg" class="notice hidden" style="margin-top:12px"></div>
+  </section>
+
 
   <div id="startCountOverlay" class="start-count-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="startCountTitle">
     <div class="start-count-dialog">
@@ -1364,6 +1473,7 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
   </div>
 
   <section id="gameCard" class="card hidden">
+    <div id="guestBanner" class="guest-banner hidden">👤 Gastmodus – deine Zeit und deine Versuche werden nicht gespeichert und erscheinen nicht in der Rangliste.</div>
     <div id="testBanner" class="test-banner hidden">🧪 Testmodus – dieses Ergebnis wird nicht gespeichert und verändert die Rangliste nicht.</div>
     <div class="topbar">
       <span class="count-pill">🧩 Gesucht: <b id="elementCount">–</b> Elementsymbole</span>
@@ -1484,6 +1594,15 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
       <div id="solvedBreakdown" class="breakdown"></div>
       <div id="finalTime" class="timer" style="font-size:36px"></div>
       <div id="rankBig" class="rank-big"></div>
+      <div id="guestResultCta" class="guest-result-cta hidden">
+        <strong>Du hast als Gast gespielt.</strong><br>
+        Deine heutige Zeit wird nicht gespeichert. Mit einem Konto werden deine Ergebnisse gespeichert und du kannst an der Tagesrangliste teilnehmen.
+        <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:14px">
+          <button class="primary" type="button" onclick="endGuestMode()">Gastspiel beenden</button>
+          <button class="secondary" type="button" onclick="restartGuestPuzzle()">Tagesrätsel als Gast neu starten</button>
+          <button class="secondary" type="button" onclick="leaveGuestToRegistration()">Jetzt anmelden oder registrieren</button>
+        </div>
+      </div>
       <div class="test-actions test-only-control"><button class="secondary" onclick="startLocalTest()">🧪 Heutiges Rätsel nochmals testen</button><button class="secondary" onclick="startLongWordTest()">🧪 Langes Wort testen</button></div>
     </div>
     <h2 style="margin-top:24px">Chemie nebenbei</h2>
@@ -1499,7 +1618,7 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
     <div id="leaderWrap"></div>
   </section>
 
-  <div class="footer">Elementenpuzzle · Bildsystem V10 · Tageswechsel nach deutscher Zeit · kuratierte Wikimedia-Commons-Bilder mit Lizenznachweis · eigene Darstellung falls kein sinnvolles Foto existiert</div>
+  <div class="footer">Elementenpuzzle · Bildsystem V14 · Gastmodus · persönliche Statistik V2 · Tageswechsel nach deutscher Zeit · kuratierte Wikimedia-Commons-Bilder mit Lizenznachweis · eigene Darstellung falls kein sinnvolles Foto existiert</div>
 </div>
 
 <script id="approved-element-image-service">
@@ -2176,6 +2295,9 @@ function celebrate(){
 }
 
 let session = null;
+let guestMode = false;
+let guestPreview = null;
+let guestGuesses = 0;
 let puzzle = null;
 let selected = [];
 let timerHandle = null;
@@ -2236,7 +2358,7 @@ function addGuessHistory(word,symbols,feedback,guessNo=null){
   renderGuessHistory();
 }
 async function loadGuessHistory(){
-  if(testMode || !puzzle) return;
+  if(testMode || guestMode || !puzzle) return;
   try{
     const {data,error}=await supabaseClient.rpc("elementenpuzzle_feedback_history");
     if(error) return;
@@ -2269,6 +2391,98 @@ function isTestAccount(){
   return !!session && typeof username==="string" && username.trim().toLowerCase()==="wolf";
 }
 
+
+async function enterGuestMode(){
+  stopTimer();
+  hideStartCountOverlay();
+  if(revealHandle){clearTimeout(revealHandle);revealHandle=null;}
+  guestMode=true;
+  guestPreview=null;
+  guestGuesses=0;
+  puzzle=null;
+  selected=[];
+  testMode=false;
+  longTestMode=false;
+  longTestTargetWord=null;
+  testStartedAt=null;
+
+  const {data,error}=await supabaseClient.rpc("elementenpuzzle_guest_start");
+  if(error){
+    guestMode=false;
+    alert("Gastmodus konnte nicht gestartet werden: "+error.message);
+    renderAuth();
+    return;
+  }
+  guestPreview=Array.isArray(data)?data[0]:data;
+  renderAuth();
+}
+
+async function leaveCurrentMode(){
+  if(guestMode && !session){
+    stopTimer();
+    if(revealHandle){clearTimeout(revealHandle);revealHandle=null;}
+    guestMode=false;
+    guestPreview=null;
+    guestGuesses=0;
+    puzzle=null;
+    selected=[];
+    testMode=false;
+    longTestMode=false;
+    longTestTargetWord=null;
+    testStartedAt=null;
+    renderAuth();
+    window.scrollTo({top:0,behavior:"smooth"});
+    return;
+  }
+  await logout();
+}
+
+
+function endGuestMode(){
+  leaveGuestToRegistration();
+}
+
+async function restartGuestPuzzle(){
+  stopTimer();
+  hideStartCountOverlay();
+  if(revealHandle){clearTimeout(revealHandle);revealHandle=null;}
+
+  guestMode=true;
+  guestPreview=null;
+  guestGuesses=0;
+  puzzle=null;
+  selected=[];
+  confirmedShared=[];
+  guessHistory=[];
+  testMode=false;
+  longTestMode=false;
+  longTestTargetWord=null;
+  testStartedAt=null;
+
+  const {data,error}=await supabaseClient.rpc("elementenpuzzle_guest_start");
+  if(error){
+    alert("Gastspiel konnte nicht neu gestartet werden: "+error.message);
+    return;
+  }
+
+  guestPreview=Array.isArray(data)?data[0]:data;
+  renderAuth();
+  await startPuzzle();
+}
+
+function leaveGuestToRegistration(){
+  if(!guestMode) return;
+  stopTimer();
+  if(revealHandle){clearTimeout(revealHandle);revealHandle=null;}
+  guestMode=false;
+  guestPreview=null;
+  guestGuesses=0;
+  puzzle=null;
+  selected=[];
+  renderAuth();
+  setTimeout(()=>document.getElementById("authCard")?.scrollIntoView({behavior:"smooth",block:"start"}),50);
+}
+
 async function signup(){
   clearMsg("authMsg");
   const username=$("signupName").value.trim();
@@ -2295,25 +2509,49 @@ async function logout(){
   stopTimer();
   if(revealHandle){clearTimeout(revealHandle);revealHandle=null;}
   await supabaseClient.auth.signOut();
-  session=null; puzzle=null; selected=[]; testMode=false; longTestMode=false; longTestTargetWord=null; testStartedAt=null;
+  session=null; guestMode=false; guestPreview=null; guestGuesses=0; puzzle=null; selected=[]; testMode=false; longTestMode=false; longTestTargetWord=null; testStartedAt=null;
   renderAuth();
 }
 
 function renderAuth(){
   hideStartCountOverlay();
   const logged=!!session;
+  const active=logged || guestMode;
   document.body.classList.toggle("test-account", logged && isTestAccount());
-  show("authCard",!logged);
-  show("lobbyCard",logged);
+
+  show("authCard",!active);
+  show("lobbyCard",active);
   show("gameCard",false);
   show("resultCard",false);
   show("leaderCard",logged);
+  show("statsCard",logged);
+
   if($("lobbyCard")) $("lobbyCard").classList.remove("solved-return-view");
   if($("solvedLobbyPanel")) show("solvedLobbyPanel",false);
+  if($("guestResultCta")) show("guestResultCta",false);
+
   if(logged){
+    guestMode=false;
+    guestPreview=null;
+    if($("playerModeLabel")) $("playerModeLabel").textContent="Angemeldet als";
     $("userLabel").textContent=usernameFromSession();
+    if($("sessionExitBtn")) $("sessionExitBtn").textContent="Abmelden";
     loadStatus();
     loadLeaderboard();
+    loadMyStats();
+    return;
+  }
+
+  if(guestMode){
+    if($("playerModeLabel")) $("playerModeLabel").textContent="Spielmodus";
+    $("userLabel").textContent="Gast";
+    if($("sessionExitBtn")) $("sessionExitBtn").textContent="Gastmodus beenden";
+    if(guestPreview?.puzzle_date) $("todayLabel").textContent=fmtDate(guestPreview.puzzle_date);
+    $("startBtn").disabled=false;
+    show("startBtn",true);
+    show("lobbyCard",true);
+    show("leaderCard",false);
+    show("statsCard",false);
   }
 }
 
@@ -2340,6 +2578,37 @@ async function loadStatus(){
 
 async function startPuzzle(){
   $("startBtn").disabled=true;
+
+  if(guestMode && !session){
+    let gp=guestPreview;
+    if(!gp){
+      const res=await supabaseClient.rpc("elementenpuzzle_guest_start");
+      if(res.error){
+        $("startBtn").disabled=false;
+        return alert("Gaststart fehlgeschlagen: "+res.error.message);
+      }
+      gp=Array.isArray(res.data)?res.data[0]:res.data;
+      guestPreview=gp;
+    }
+
+    guestGuesses=0;
+    const choices=Array.isArray(gp?.choices)?gp.choices:[];
+    const delay=revealDurationFor(choices);
+    puzzle={
+      puzzle_date:gp.puzzle_date,
+      element_count:gp.element_count,
+      choices,
+      started_at:new Date(Date.now()+delay).toISOString(),
+      solved:false,
+      elapsed_ms:null,
+      guesses:0
+    };
+    show("lobbyCard",false);
+    renderGame(puzzle,true);
+    setTimeout(()=>showStartCountOverlay(puzzle.element_count),100);
+    return;
+  }
+
   const {data,error}=await supabaseClient.rpc("elementenpuzzle_start");
   if(error){
     $("startBtn").disabled=false;
@@ -2392,11 +2661,15 @@ function showStartCountOverlay(count){
 
 function renderGame(st, animateReveal=false){
   if(revealHandle){ clearTimeout(revealHandle); revealHandle=null; }
-  show("gameCard",true); show("resultCard",false); show("leaderCard",true);
+  show("gameCard",true);
+  show("resultCard",false);
+  show("leaderCard",!!session && !guestMode);
+  show("statsCard",false);
+  show("guestBanner",guestMode && !session);
   show("testBanner",testMode);
-  setFloatingTestButtonsVisible(!testMode);
+  setFloatingTestButtonsVisible(!testMode && !!session);
+
   $("elementCount").textContent=st.element_count;
-  // Startfenster wird nach dem Rendern explizit eingeblendet, damit es auch im Testmodus sicher sichtbar ist.
   selected=[];
   confirmedShared=[];
   guessHistory=[];
@@ -2427,7 +2700,7 @@ function renderGame(st, animateReveal=false){
     setTilesInteractive(true);
   }
 
-  if(!testMode){
+  if(!testMode && !guestMode){
     loadConfirmedSymbols();
     loadGuessHistory();
   }
@@ -2614,7 +2887,7 @@ function renderSelection(){
   updateTileUsage();
 }
 async function loadConfirmedSymbols(){
-  if(testMode || !puzzle) return;
+  if(testMode || guestMode || !puzzle) return;
   try{
     const {data,error}=await supabaseClient.rpc("elementenpuzzle_confirmed_symbols");
     if(error) return;
@@ -2717,11 +2990,74 @@ async function submitLongTestGuess(guess){
   }
 }
 
+
+async function submitGuestGuess(guess){
+  guestGuesses++;
+  const {data,error}=await supabaseClient.rpc("elementenpuzzle_guest_guess",{p_symbols:guess});
+  if(error){
+    $("submitBtn").disabled=false;
+    playSound("error");
+    msg("gameMsg","Gastprüfung fehlgeschlagen: "+error.message,"bad");
+    return;
+  }
+
+  const r=Array.isArray(data)?data[0]:data;
+  const feedback=Array.isArray(r?.feedback)?r.feedback:[];
+
+  if(r?.correct){
+    const startMs=new Date(puzzle.started_at).getTime();
+    const elapsed=Math.max(0,Date.now()-startMs);
+    puzzle={
+      ...puzzle,
+      solved:true,
+      solved_word:r.solved_word,
+      solved_symbols:r.solved_symbols,
+      elapsed_ms:elapsed,
+      guesses:guestGuesses,
+      rank:null
+    };
+    playSound("success");
+    celebrate();
+    renderSolved(puzzle);
+    return;
+  }
+
+  const shared=guess.filter((sym,i)=>{
+    const state=String(feedback[i]||"").toLowerCase();
+    return state==="green" || state==="yellow";
+  });
+  confirmedShared=[...new Set([...confirmedShared,...shared])];
+  updateTileUsage();
+
+  if(r?.valid_word){
+    playSound("valid");
+    const word=(r.matched_word||guess.join("")).toLocaleUpperCase("de-DE");
+    msg("gameMsg",`✓ Gültiges Nebenwort: ${word} – aber nicht das gesuchte Tageswort. Gastversuch ${guestGuesses} – die Uhr läuft weiter.`,"valid");
+    addGuessHistory(word,guess,feedback,guestGuesses);
+  }else{
+    playSound("wrong");
+    msg("gameMsg",`Kein gültiges Referenzwort – Gastversuch ${guestGuesses}. Die Uhr läuft weiter.`,"bad");
+  }
+
+  $("selectionBox").classList.remove("shake");
+  void $("selectionBox").offsetWidth;
+  $("selectionBox").classList.add("shake");
+  selected=[];
+  renderSelection();
+  $("submitBtn").disabled=false;
+}
+
 async function submitGuess(){
   if(!puzzle || selected.length!==Number(puzzle.element_count)) return;
   $("submitBtn").disabled=true;
   clearMsg("gameMsg");
   const guess=selected.slice();
+
+  if(guestMode && !session){
+    await submitGuestGuess(guess);
+    return;
+  }
+
   if(testMode){
     if(longTestMode){
       testGuesses++;
@@ -2821,8 +3157,16 @@ function returnToLobbyAfterSolve(){
   show("resultCard",false);
   show("lobbyCard",true);
   $("lobbyCard").classList.add("solved-return-view");
-  show("leaderCard",true);
-  $("leaderCard").classList.add("solved-return-view");
+
+  const registered=!!session && !guestMode;
+  show("leaderCard",registered);
+  show("statsCard",registered);
+  if(registered) $("leaderCard").classList.add("solved-return-view");
+
+  if($("playerModeLabel")) $("playerModeLabel").textContent=guestMode ? "Spielmodus" : "Angemeldet als";
+  if($("userLabel")) $("userLabel").textContent=guestMode ? "Gast" : usernameFromSession();
+  if($("sessionExitBtn")) $("sessionExitBtn").textContent=guestMode ? "Gastmodus beenden" : "Abmelden";
+
   animateLobbySolution(word);
   window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -2830,20 +3174,34 @@ function returnToLobbyAfterSolve(){
 function renderSolved(st){
   puzzle={...puzzle,...st,solved:true};
   stopTimer();
-  setFloatingTestButtonsVisible(true);
+  setFloatingTestButtonsVisible(!guestMode && !!session);
   if(revealHandle){clearTimeout(revealHandle);revealHandle=null;}
-  show("gameCard",false); show("lobbyCard",false); show("resultCard",true); show("leaderCard",true);
-  $("leaderCard").classList.remove("solved-return-view");
+
+  show("gameCard",false);
+  show("lobbyCard",false);
+  show("resultCard",true);
+  show("leaderCard",!!session && !guestMode);
+  show("statsCard",!!session && !guestMode);
+  if($("guestResultCta")) show("guestResultCta",guestMode && !session);
+  if($("leaderCard")) $("leaderCard").classList.remove("solved-return-view");
+
   const word=st.solved_word||"";
   const syms=st.solved_symbols||[];
   $("solvedWord").textContent=word;
   $("solvedBreakdown").textContent=syms.join(" · ");
   $("finalTime").textContent=fmtTime(st.elapsed_ms);
-  $("rankBig").textContent=st.rank ? `🏁 Platz ${st.rank} in der heutigen Rangliste` : "🏁 Ergebnis gespeichert";
+
+  if(guestMode && !session){
+    $("rankBig").textContent="👤 Gastmodus – diese Zeit wird nicht gespeichert";
+  }else{
+    $("rankBig").textContent=st.rank ? `🏁 Platz ${st.rank} in der heutigen Rangliste` : "🏁 Ergebnis gespeichert";
+  }
+
   if($("lobbySolvedWord")) $("lobbySolvedWord").textContent=word || "–";
   if($("lobbySolvedSymbols")) $("lobbySolvedSymbols").textContent=syms.join(" · ");
   const hero=document.querySelector("#resultCard .result-hero");
   if(hero){hero.classList.remove("success-pop"); void hero.offsetWidth; hero.classList.add("success-pop");}
+  if(session && !guestMode) loadMyStats();
   renderInfo(syms);
 }
 
@@ -2873,6 +3231,40 @@ function renderInfo(syms){
   ladeElementfotos(unique);
 }
 
+
+async function loadMyStats(){
+  if(!session || guestMode){
+    show("statsCard",false);
+    return;
+  }
+
+  show("statsCard",true);
+  clearMsg("statsMsg");
+
+  const {data,error}=await supabaseClient.rpc("elementenpuzzle_my_stats_v2");
+  if(error){
+    $("statPlayed").textContent="–";
+    $("statSolved").textContent="–";
+    $("statBest").textContent="–";
+    $("statAverage").textContent="–";
+    return msg("statsMsg","Statistik konnte nicht geladen werden: "+error.message,"bad");
+  }
+
+  const st=Array.isArray(data)?data[0]:data;
+  if(!st){
+    $("statPlayed").textContent="0";
+    $("statSolved").textContent="0";
+    $("statBest").textContent="–";
+    $("statAverage").textContent="–";
+    return;
+  }
+
+  $("statPlayed").textContent=Number(st.played_count||0);
+  $("statSolved").textContent=Number(st.solved_count||0);
+  $("statBest").textContent=st.best_time_ms==null ? "–" : fmtTime(st.best_time_ms);
+  $("statAverage").textContent=st.average_time_ms==null ? "–" : fmtTime(st.average_time_ms);
+}
+
 async function loadLeaderboard(){
   if(!session) return;
   const {data,error}=await supabaseClient.rpc("elementenpuzzle_leaderboard");
@@ -2891,6 +3283,10 @@ updateSoundButton();
 
 supabaseClient.auth.onAuthStateChange((_event,newSession)=>{
   session=newSession;
+  if(newSession){
+    guestMode=false;
+    guestPreview=null;
+  }
   renderAuth();
 });
 (async()=>{
