@@ -990,6 +990,24 @@ body:before,body:after{display:none!important;content:none!important}
   .feedback-chip{min-width:36px;height:36px;padding:0 6px;font-size:16px;border-radius:8px}
 }
 
+
+/* ===== Kuratierte Elementbilder + Erzeugungswege ===== */
+.element-photo-box.gallery-photo-box{justify-content:flex-start}
+.element-photo-gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:8px;background:#eef3f6}
+.element-photo-gallery figure{margin:0;background:#fff;border:1px solid #dfe8ed;border-radius:9px;padding:5px;text-align:center;min-width:0}
+.element-photo-gallery img{display:block;width:100%;height:125px;object-fit:contain;background:#f8fafb;border-radius:6px}
+.element-photo-gallery figcaption{font-size:10px;font-weight:900;color:#30434e;margin-top:4px;line-height:1.25}
+.element-photo-gallery .gallery-license{font-size:8.5px;color:#71808a;line-height:1.25;margin-top:3px;overflow-wrap:anywhere}
+.element-photo-gallery .gallery-license a{color:#176b87;text-decoration:none;font-weight:800}
+.element-photo-note{padding:7px 9px;background:#eef7fb;color:#365866;font-size:10px;line-height:1.4;border-top:1px solid #d8e8ef}
+.synth-box{margin:10px 0 4px;padding:10px 11px;background:#eef6ff;border-left:4px solid #3b82f6;border-radius:9px;color:#344b59;font-size:12px;line-height:1.48}
+.synth-box b{color:#163f66}.synth-type{font-weight:900;color:#245f91}
+.synth-reaction{margin-top:5px;padding:5px 7px;background:#fff;border-radius:6px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:11px;color:#263b47;overflow-wrap:anywhere}
+@media(max-width:620px){
+  .element-photo-gallery{grid-template-columns:1fr}
+  .element-photo-gallery img{height:165px}
+}
+
 </style>
 
 <style id="global-test-button-style">
@@ -1481,10 +1499,304 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
     <div id="leaderWrap"></div>
   </section>
 
-  <div class="footer">Elementenpuzzle · Bildsystem PD/CC0 · Tageswechsel nach deutscher Zeit · Elementfotos nur Public Domain/CC0 · eigene Ersatzdarstellung falls kein geeignetes Bild vorhanden</div>
+  <div class="footer">Elementenpuzzle · Bildsystem V10 · Tageswechsel nach deutscher Zeit · kuratierte Wikimedia-Commons-Bilder mit Lizenznachweis · eigene Darstellung falls kein sinnvolles Foto existiert</div>
 </div>
 
-<script src="elementbilder.js"></script>
+<script id="approved-element-image-service">
+(function(global) {
+"use strict";
+
+const API = "https://commons.wikimedia.org/w/api.php";
+
+const ELEMENTE = [{"z": 1, "symbol": "H", "nameDe": "Wasserstoff", "nameEn": "Hydrogen"}, {"z": 2, "symbol": "He", "nameDe": "Helium", "nameEn": "Helium"}, {"z": 3, "symbol": "Li", "nameDe": "Lithium", "nameEn": "Lithium"}, {"z": 4, "symbol": "Be", "nameDe": "Beryllium", "nameEn": "Beryllium"}, {"z": 5, "symbol": "B", "nameDe": "Bor", "nameEn": "Boron"}, {"z": 6, "symbol": "C", "nameDe": "Kohlenstoff", "nameEn": "Carbon"}, {"z": 7, "symbol": "N", "nameDe": "Stickstoff", "nameEn": "Nitrogen"}, {"z": 8, "symbol": "O", "nameDe": "Sauerstoff", "nameEn": "Oxygen"}, {"z": 9, "symbol": "F", "nameDe": "Fluor", "nameEn": "Fluorine"}, {"z": 10, "symbol": "Ne", "nameDe": "Neon", "nameEn": "Neon"}, {"z": 11, "symbol": "Na", "nameDe": "Natrium", "nameEn": "Sodium"}, {"z": 12, "symbol": "Mg", "nameDe": "Magnesium", "nameEn": "Magnesium"}, {"z": 13, "symbol": "Al", "nameDe": "Aluminium", "nameEn": "Aluminium"}, {"z": 14, "symbol": "Si", "nameDe": "Silicium", "nameEn": "Silicon"}, {"z": 15, "symbol": "P", "nameDe": "Phosphor", "nameEn": "Phosphorus"}, {"z": 16, "symbol": "S", "nameDe": "Schwefel", "nameEn": "Sulfur"}, {"z": 17, "symbol": "Cl", "nameDe": "Chlor", "nameEn": "Chlorine"}, {"z": 18, "symbol": "Ar", "nameDe": "Argon", "nameEn": "Argon"}, {"z": 19, "symbol": "K", "nameDe": "Kalium", "nameEn": "Potassium"}, {"z": 20, "symbol": "Ca", "nameDe": "Calcium", "nameEn": "Calcium"}, {"z": 21, "symbol": "Sc", "nameDe": "Scandium", "nameEn": "Scandium"}, {"z": 22, "symbol": "Ti", "nameDe": "Titan", "nameEn": "Titanium"}, {"z": 23, "symbol": "V", "nameDe": "Vanadium", "nameEn": "Vanadium"}, {"z": 24, "symbol": "Cr", "nameDe": "Chrom", "nameEn": "Chromium"}, {"z": 25, "symbol": "Mn", "nameDe": "Mangan", "nameEn": "Manganese"}, {"z": 26, "symbol": "Fe", "nameDe": "Eisen", "nameEn": "Iron"}, {"z": 27, "symbol": "Co", "nameDe": "Cobalt", "nameEn": "Cobalt"}, {"z": 28, "symbol": "Ni", "nameDe": "Nickel", "nameEn": "Nickel"}, {"z": 29, "symbol": "Cu", "nameDe": "Kupfer", "nameEn": "Copper"}, {"z": 30, "symbol": "Zn", "nameDe": "Zink", "nameEn": "Zinc"}, {"z": 31, "symbol": "Ga", "nameDe": "Gallium", "nameEn": "Gallium"}, {"z": 32, "symbol": "Ge", "nameDe": "Germanium", "nameEn": "Germanium"}, {"z": 33, "symbol": "As", "nameDe": "Arsen", "nameEn": "Arsenic"}, {"z": 34, "symbol": "Se", "nameDe": "Selen", "nameEn": "Selenium"}, {"z": 35, "symbol": "Br", "nameDe": "Brom", "nameEn": "Bromine"}, {"z": 36, "symbol": "Kr", "nameDe": "Krypton", "nameEn": "Krypton"}, {"z": 37, "symbol": "Rb", "nameDe": "Rubidium", "nameEn": "Rubidium"}, {"z": 38, "symbol": "Sr", "nameDe": "Strontium", "nameEn": "Strontium"}, {"z": 39, "symbol": "Y", "nameDe": "Yttrium", "nameEn": "Yttrium"}, {"z": 40, "symbol": "Zr", "nameDe": "Zirconium", "nameEn": "Zirconium"}, {"z": 41, "symbol": "Nb", "nameDe": "Niob", "nameEn": "Niobium"}, {"z": 42, "symbol": "Mo", "nameDe": "Molybdän", "nameEn": "Molybdenum"}, {"z": 43, "symbol": "Tc", "nameDe": "Technetium", "nameEn": "Technetium"}, {"z": 44, "symbol": "Ru", "nameDe": "Ruthenium", "nameEn": "Ruthenium"}, {"z": 45, "symbol": "Rh", "nameDe": "Rhodium", "nameEn": "Rhodium"}, {"z": 46, "symbol": "Pd", "nameDe": "Palladium", "nameEn": "Palladium"}, {"z": 47, "symbol": "Ag", "nameDe": "Silber", "nameEn": "Silver"}, {"z": 48, "symbol": "Cd", "nameDe": "Cadmium", "nameEn": "Cadmium"}, {"z": 49, "symbol": "In", "nameDe": "Indium", "nameEn": "Indium"}, {"z": 50, "symbol": "Sn", "nameDe": "Zinn", "nameEn": "Tin"}, {"z": 51, "symbol": "Sb", "nameDe": "Antimon", "nameEn": "Antimony"}, {"z": 52, "symbol": "Te", "nameDe": "Tellur", "nameEn": "Tellurium"}, {"z": 53, "symbol": "I", "nameDe": "Iod", "nameEn": "Iodine"}, {"z": 54, "symbol": "Xe", "nameDe": "Xenon", "nameEn": "Xenon"}, {"z": 55, "symbol": "Cs", "nameDe": "Cäsium", "nameEn": "Caesium"}, {"z": 56, "symbol": "Ba", "nameDe": "Barium", "nameEn": "Barium"}, {"z": 57, "symbol": "La", "nameDe": "Lanthan", "nameEn": "Lanthanum"}, {"z": 58, "symbol": "Ce", "nameDe": "Cer", "nameEn": "Cerium"}, {"z": 59, "symbol": "Pr", "nameDe": "Praseodym", "nameEn": "Praseodymium"}, {"z": 60, "symbol": "Nd", "nameDe": "Neodym", "nameEn": "Neodymium"}, {"z": 61, "symbol": "Pm", "nameDe": "Promethium", "nameEn": "Promethium"}, {"z": 62, "symbol": "Sm", "nameDe": "Samarium", "nameEn": "Samarium"}, {"z": 63, "symbol": "Eu", "nameDe": "Europium", "nameEn": "Europium"}, {"z": 64, "symbol": "Gd", "nameDe": "Gadolinium", "nameEn": "Gadolinium"}, {"z": 65, "symbol": "Tb", "nameDe": "Terbium", "nameEn": "Terbium"}, {"z": 66, "symbol": "Dy", "nameDe": "Dysprosium", "nameEn": "Dysprosium"}, {"z": 67, "symbol": "Ho", "nameDe": "Holmium", "nameEn": "Holmium"}, {"z": 68, "symbol": "Er", "nameDe": "Erbium", "nameEn": "Erbium"}, {"z": 69, "symbol": "Tm", "nameDe": "Thulium", "nameEn": "Thulium"}, {"z": 70, "symbol": "Yb", "nameDe": "Ytterbium", "nameEn": "Ytterbium"}, {"z": 71, "symbol": "Lu", "nameDe": "Lutetium", "nameEn": "Lutetium"}, {"z": 72, "symbol": "Hf", "nameDe": "Hafnium", "nameEn": "Hafnium"}, {"z": 73, "symbol": "Ta", "nameDe": "Tantal", "nameEn": "Tantalum"}, {"z": 74, "symbol": "W", "nameDe": "Wolfram", "nameEn": "Tungsten"}, {"z": 75, "symbol": "Re", "nameDe": "Rhenium", "nameEn": "Rhenium"}, {"z": 76, "symbol": "Os", "nameDe": "Osmium", "nameEn": "Osmium"}, {"z": 77, "symbol": "Ir", "nameDe": "Iridium", "nameEn": "Iridium"}, {"z": 78, "symbol": "Pt", "nameDe": "Platin", "nameEn": "Platinum"}, {"z": 79, "symbol": "Au", "nameDe": "Gold", "nameEn": "Gold"}, {"z": 80, "symbol": "Hg", "nameDe": "Quecksilber", "nameEn": "Mercury"}, {"z": 81, "symbol": "Tl", "nameDe": "Thallium", "nameEn": "Thallium"}, {"z": 82, "symbol": "Pb", "nameDe": "Blei", "nameEn": "Lead"}, {"z": 83, "symbol": "Bi", "nameDe": "Bismut", "nameEn": "Bismuth"}, {"z": 84, "symbol": "Po", "nameDe": "Polonium", "nameEn": "Polonium"}, {"z": 85, "symbol": "At", "nameDe": "Astat", "nameEn": "Astatine"}, {"z": 86, "symbol": "Rn", "nameDe": "Radon", "nameEn": "Radon"}, {"z": 87, "symbol": "Fr", "nameDe": "Francium", "nameEn": "Francium"}, {"z": 88, "symbol": "Ra", "nameDe": "Radium", "nameEn": "Radium"}, {"z": 89, "symbol": "Ac", "nameDe": "Actinium", "nameEn": "Actinium"}, {"z": 90, "symbol": "Th", "nameDe": "Thorium", "nameEn": "Thorium"}, {"z": 91, "symbol": "Pa", "nameDe": "Protactinium", "nameEn": "Protactinium"}, {"z": 92, "symbol": "U", "nameDe": "Uran", "nameEn": "Uranium"}, {"z": 93, "symbol": "Np", "nameDe": "Neptunium", "nameEn": "Neptunium"}, {"z": 94, "symbol": "Pu", "nameDe": "Plutonium", "nameEn": "Plutonium"}, {"z": 95, "symbol": "Am", "nameDe": "Americium", "nameEn": "Americium"}, {"z": 96, "symbol": "Cm", "nameDe": "Curium", "nameEn": "Curium"}, {"z": 97, "symbol": "Bk", "nameDe": "Berkelium", "nameEn": "Berkelium"}, {"z": 98, "symbol": "Cf", "nameDe": "Californium", "nameEn": "Californium"}, {"z": 99, "symbol": "Es", "nameDe": "Einsteinium", "nameEn": "Einsteinium"}, {"z": 100, "symbol": "Fm", "nameDe": "Fermium", "nameEn": "Fermium"}, {"z": 101, "symbol": "Md", "nameDe": "Mendelevium", "nameEn": "Mendelevium"}, {"z": 102, "symbol": "No", "nameDe": "Nobelium", "nameEn": "Nobelium"}, {"z": 103, "symbol": "Lr", "nameDe": "Lawrencium", "nameEn": "Lawrencium"}, {"z": 104, "symbol": "Rf", "nameDe": "Rutherfordium", "nameEn": "Rutherfordium"}, {"z": 105, "symbol": "Db", "nameDe": "Dubnium", "nameEn": "Dubnium"}, {"z": 106, "symbol": "Sg", "nameDe": "Seaborgium", "nameEn": "Seaborgium"}, {"z": 107, "symbol": "Bh", "nameDe": "Bohrium", "nameEn": "Bohrium"}, {"z": 108, "symbol": "Hs", "nameDe": "Hassium", "nameEn": "Hassium"}, {"z": 109, "symbol": "Mt", "nameDe": "Meitnerium", "nameEn": "Meitnerium"}, {"z": 110, "symbol": "Ds", "nameDe": "Darmstadtium", "nameEn": "Darmstadtium"}, {"z": 111, "symbol": "Rg", "nameDe": "Röntgenium", "nameEn": "Roentgenium"}, {"z": 112, "symbol": "Cn", "nameDe": "Copernicium", "nameEn": "Copernicium"}, {"z": 113, "symbol": "Nh", "nameDe": "Nihonium", "nameEn": "Nihonium"}, {"z": 114, "symbol": "Fl", "nameDe": "Flerovium", "nameEn": "Flerovium"}, {"z": 115, "symbol": "Mc", "nameDe": "Moscovium", "nameEn": "Moscovium"}, {"z": 116, "symbol": "Lv", "nameDe": "Livermorium", "nameEn": "Livermorium"}, {"z": 117, "symbol": "Ts", "nameDe": "Tenness", "nameEn": "Tennessine"}, {"z": 118, "symbol": "Og", "nameDe": "Oganesson", "nameEn": "Oganesson"}];
+
+const CURATED = {
+  "Li": "File:Limetal.JPG",
+  "Si": "File:Silicon (14 Si).jpg",
+  "Ca": "File:Calcium (20 Ca).jpg",
+  "V": "File:Vanadium (V).jpg",
+  "Ni": "File:Electrolytic nickel section.jpg",
+  "Zn": "File:Zinc (30 Zn).jpg",
+  "Se": "File:Selenium.jpg",
+  "Br": "File:Pure liquid bromine.jpg",
+  "Pd": "File:Palladium (46 Pd).jpg",
+  "In": "File:Indium (49 In).jpg",
+  "Ba": "File:1.5 grams barium.jpg",
+  "Hg": "File:Hydrargyrum.jpg",
+  "H": "File:Vial of glowing ultrapure hydrogen.jpg",
+  "He": "File:Vial of glowing ultrapure helium.jpg",
+  "Sc": "File:21 Sc.jpg",
+  "Co": "File:Cobalt (27 Co).jpg",
+  "Sn": "File:Tin.jpg",
+  "O": "File:Liquid oxygen in a beaker.jpg",
+  "F": "File:Fluorine liquid -196 °C.jpg",
+  "Cu": "File:Copper plate.jpg",
+  "Mn": "File:Small pieces of manganese, 2-5 mm each.jpg",
+  "Nd": "File:Ultrapure neodymium under argon, 5 grams.jpg",
+  "Fe": "File:Iron, electrolytic.jpg",
+  "U": "File:Metallic Uranium.jpg",
+  "Ra": "File:Radium 2.jpg",
+  "Al": "File:Aluminum foil.jpg",
+  "Au": "File:Gold bullion bars.jpg",
+  "Tb": "File:Terbium element.jpg",
+  "Ho": "File:Holmium piece.jpg",
+  "At": "File:First Image of Astatine - English Label.jpg"
+};
+
+const FORCE_FALLBACK = new Set(["Bh", "Cn", "Db", "Ds", "Es", "Fl", "Fm", "Fr", "Hs", "Lr", "Lv", "Mc", "Md", "Mt", "Nh", "No", "Og", "Pm", "Po", "Rf", "Rg", "Rn", "Sg", "Ts"]);
+
+const CURATED_GALLERY = {
+  P: [
+    {label:"Weißer, roter und violetter Phosphor", file:"File:PhosphComby.jpg"}
+  ],
+  C: [
+    {label:"Diamant – geschliffen", file:"File:Faceted diamond.jpg"},
+    {label:"Graphit", file:"File:Graphite.jpg"},
+    {label:"Graphen – Strukturmodell", file:"File:Graphene structure.svg"},
+    {label:"Fulleren C₆₀ – Strukturmodell", file:"File:Fullerene.png"}
+  ]
+};
+
+
+const CURATED_NOTE = {O: "Flüssiger elementarer Sauerstoff (O₂).",
+  F: "Elementares Fluor, bei −196 °C verflüssigt; bei Raumtemperatur ist Fluor gasförmig.",
+  Cu: "Metallisches Kupfer als Kupferblech / Kupferplatte.",
+  Mn: "Metallische Manganstücke.",
+  Nd: "Hochreines Neodym unter Argon.",
+  Fe: "Metallisches, elektrolytisch gewonnenes Eisen.",
+  U: "Metallisches Uran in einer mit Argon gefüllten Ampulle.",
+  Ra: "Historische radiumhaltige Leuchtzeiger im Dunkeln; dargestellt wird Radiolumineszenz, nicht reines Radiummetall.",
+  Po: "Keine irreführende Leuchtdarstellung; neutrale Eigendarstellung.",
+  Es: "Nur in sehr kleinen Mengen verfügbar; neutrale Eigendarstellung statt Atompilz.",
+
+  At: "Etwa 40 ng Astat-211, 2026 am Forschungszentrum Jülich hergestellt und isoliert. Das blaue Leuchten entsteht durch Ionisation der Umgebung durch die Strahlung.",
+  Rn: "Radon ist bei Raumtemperatur ein farbloses radioaktives Edelgas und daher auf einem normalen Foto praktisch nicht sichtbar; deshalb wird eine eigene Elementdarstellung verwendet.",
+};
+
+
+const BAD_WORDS = [
+  "oxide","dioxide","trioxide","monoxide","chloride","fluoride","bromide","iodide",
+  "sulfate","sulphate","sulfide","sulphide","nitrate","carbonate","phosphate",
+  "mineral","ore","compound","crystal structure","electron","shell","bohr",
+  "periodic","diagram","icon","symbol","orbital","isotope chart","map","logo",
+  "coat of arms","flag","ghs","hazard"
+];
+
+const GOOD_WORDS = [
+  "sample","pure","ultrapure","chunk","piece","pieces","crystal","crystals","bar",
+  "pellet","ampoule","vial","metal","element","liquid","electrolytic"
+];
+
+function cleanHtml(s) {
+  const d = document.createElement("textarea");
+  d.innerHTML = String(s || "").replace(/<[^>]*>/g, " ");
+  return d.value.replace(/\s+/g, " ").trim();
+}
+
+function licenseAllowed(name) {
+  const s = String(name || "").toLowerCase();
+  return s.includes("public domain") || s.includes("cc0") || s.startsWith("pd-") ||
+         s.includes("cc by ") || s.includes("cc-by-") ||
+         s.includes("cc by-sa") || s.includes("cc-by-sa");
+}
+
+function apiUrl(params) {
+  const u = new URL(API);
+  Object.entries({action:"query",format:"json",origin:"*",...params})
+    .forEach(([k,v]) => u.searchParams.set(k,String(v)));
+  return u.toString();
+}
+
+async function getJson(url) {
+  const r = await fetch(url, {mode:"cors"});
+  if(!r.ok) throw new Error("Wikimedia Commons HTTP " + r.status);
+  return r.json();
+}
+
+async function exactInfo(fileTitle) {
+  const d = await getJson(apiUrl({
+    prop:"imageinfo",
+    titles:fileTitle,
+    iiprop:"url|mime|size|extmetadata",
+    iiurlwidth:1200
+  }));
+  const page = Object.values(d?.query?.pages || {})[0];
+  const info = page?.imageinfo?.[0];
+  if(!page || !info) return null;
+  return {title:page.title, info};
+}
+
+function scoreCandidate(c, element) {
+  const title = String(c.title || "").toLowerCase();
+  const info = c.info || {};
+  const meta = info.extmetadata || {};
+  const lic = cleanHtml(meta.LicenseShortName?.value);
+  if(!licenseAllowed(lic)) return -100000;
+
+  const desc = cleanHtml(meta.ImageDescription?.value).toLowerCase();
+  const artist = cleanHtml(meta.Artist?.value || meta.Credit?.value).toLowerCase();
+  const source = cleanHtml(meta.Credit?.value || "") + " " + cleanHtml(meta.Source?.value || "");
+  const hay = title + " " + desc;
+
+  let score = 0;
+
+  // Bevorzugte, bereits qualitativ bewährte Sammlung.
+  if(artist.includes("hi-res images of chemical elements")) score += 180;
+  if(artist.includes("alchemist-hp") || artist.includes("heinrich pniok")) score += 150;
+  if(source.toLowerCase().includes("images-of-elements.com")) score += 180;
+
+  if(title.includes(element.nameEn.toLowerCase())) score += 45;
+  GOOD_WORDS.forEach(w => { if(hay.includes(w)) score += 12; });
+  BAD_WORDS.forEach(w => { if(hay.includes(w)) score -= 90; });
+
+  const w = Number(info.width || 0), h = Number(info.height || 0);
+  const px = w*h;
+  if(px >= 12_000_000) score += 45;
+  else if(px >= 4_000_000) score += 35;
+  else if(px >= 1_000_000) score += 22;
+  else if(px > 0 && px < 300_000) score -= 35;
+
+  const mime = info.mime || "";
+  if(["image/jpeg","image/png","image/webp"].includes(mime)) score += 15;
+  if(mime === "image/svg+xml") score -= 70;
+
+  return score;
+}
+
+async function preferredSearch(element) {
+  // Suche zuerst nach der bevorzugten Bildsammlung über den Quelltext-Hinweis.
+  const slug = element.nameEn.toLowerCase().replace(/ /g,"-");
+  const queries = [
+    `insource:"images-of-elements.com/${slug}.php"`,
+    `"${element.nameEn}" "element sample"`,
+    `"${element.nameEn}" pure element sample`
+  ];
+
+  let all = [];
+  for(const q of queries) {
+    const d = await getJson(apiUrl({
+      generator:"search",
+      gsrnamespace:6,
+      gsrsearch:q,
+      gsrlimit:20,
+      prop:"imageinfo",
+      iiprop:"url|mime|size|extmetadata",
+      iiurlwidth:1200
+    }));
+    const pages = Object.values(d?.query?.pages || {});
+    for(const p of pages) {
+      const info = p?.imageinfo?.[0];
+      if(info) all.push({title:p.title,info});
+    }
+    if(all.length >= 5) break;
+  }
+
+  // Doppelte Dateinamen entfernen.
+  const seen = new Set();
+  all = all.filter(x => !seen.has(x.title) && seen.add(x.title));
+  all.forEach(x => x.score = scoreCandidate(x, element));
+  all = all.filter(x => x.score > 0).sort((a,b)=>b.score-a.score);
+  return all[0] || null;
+}
+
+function normalize(element, c, curated=false) {
+  const meta = c.info.extmetadata || {};
+  const license = cleanHtml(meta.LicenseShortName?.value);
+  const artist = cleanHtml(meta.Artist?.value || meta.Credit?.value);
+  const desc = cleanHtml(meta.ImageDescription?.value);
+  return {
+    z:element.z,
+    symbol:element.symbol,
+    nameDe:element.nameDe,
+    nameEn:element.nameEn,
+    imageUrl:c.info.thumburl || c.info.url,
+    originalUrl:c.info.url,
+    fileTitle:c.title,
+    filePage:"https://commons.wikimedia.org/wiki/" + encodeURIComponent(c.title.replace(/ /g,"_")),
+    license,
+    licenseUrl:meta.LicenseUrl?.value || "",
+    artist,
+    description:desc,
+    width:c.info.width || null,
+    height:c.info.height || null,
+    curated,
+    source:"Wikimedia Commons",
+    note:CURATED_NOTE[element.symbol] || ""
+  };
+}
+
+
+async function galleryInfo(element, items) {
+  const out = [];
+  for (const item of items) {
+    const c = await exactInfo(item.file);
+    if (!c) continue;
+    const lic = cleanHtml(c.info?.extmetadata?.LicenseShortName?.value);
+    if (!licenseAllowed(lic)) continue;
+    const b = normalize(element, c, true);
+    b.label = item.label;
+    out.push(b);
+  }
+  return out;
+}
+
+async function getElementBild(symbol) {
+  const e = ELEMENTE.find(x => x.symbol === symbol);
+  if(!e) throw new Error("Unbekanntes Elementsymbol: " + symbol);
+
+  if(CURATED_GALLERY[symbol]) {
+    const gallery = await galleryInfo(e, CURATED_GALLERY[symbol]);
+    if (gallery.length) {
+      return {
+        z:e.z, symbol:e.symbol, nameDe:e.nameDe, nameEn:e.nameEn,
+        gallery,
+        imageUrl:gallery[0].imageUrl,
+        curated:true,
+        source:"Wikimedia Commons",
+        description:symbol === "C"
+          ? "Diamant und Graphit als reale Aufnahmen; Graphen und C₆₀ als Strukturmodelle."
+          : "Verschiedene Modifikationen des Elements."
+      };
+    }
+  }
+
+  if(FORCE_FALLBACK.has(symbol)) {
+    return {
+      z:e.z,symbol:e.symbol,nameDe:e.nameDe,nameEn:e.nameEn,imageUrl:null,
+      description:CURATED_NOTE[symbol] || "Keine sinnvolle makroskopische Elementprobe als Foto vorgesehen.",
+      fallback:true
+    };
+  }
+
+  if(CURATED[symbol]) {
+    const c = await exactInfo(CURATED[symbol]);
+    if(c) {
+      const lic = cleanHtml(c.info?.extmetadata?.LicenseShortName?.value);
+      if(licenseAllowed(lic)) return normalize(e,c,true);
+    }
+  }
+
+  const c = await preferredSearch(e);
+  if(c) return normalize(e,c,false);
+
+  return {
+    z:e.z,symbol:e.symbol,nameDe:e.nameDe,nameEn:e.nameEn,imageUrl:null,
+    description:"Kein qualitativ geeignetes, frei lizenziertes Elementfoto automatisch gefunden.",
+    fallback:true
+  };
+}
+
+function bildNachweis(b) {
+  if(!b?.imageUrl) return "Eigene Elementdarstellung";
+  return [b.artist,"Wikimedia Commons",b.license].filter(Boolean).join(" · ");
+}
+
+global.ELEMENT_BILD_SERVICE = {
+  ELEMENTE, CURATED, CURATED_GALLERY, CURATED_NOTE, FORCE_FALLBACK, getElementBild, bildNachweis
+};
+
+})(window);
+</script>
 <script>
 const SUPABASE_URL = "https://tcobolbwkmvlfjinelsu.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_DYpVDxbcOgYst7wkYL2sbQ_B1GWS735";
@@ -1711,12 +2023,9 @@ Og:"2002 in Dubna erzeugt \u2013 nach Juri Oganessian benannt, der noch lebt! \u
 };
 const COMPOUNDS = {"H":"Wichtige Verbindungen: Wasser H₂O, Chlorwasserstoff HCl und Ammoniak NH₃.","He":"Helium ist sehr reaktionsträge; unter normalen Bedingungen gibt es keine praktisch wichtigen stabilen Heliumverbindungen.","Li":"Wichtig sind Lithiumcarbonat Li₂CO₃ sowie Kathodenmaterialien wie Lithiumeisenphosphat LiFePO₄.","Be":"Berylliumoxid BeO und Berylliumchlorid BeCl₂ sind wichtige Verbindungen; Berylliumverbindungen sind giftig.","B":"Borsäure H₃BO₃, Borate und Boroxid B₂O₃ sind technisch wichtig.","C":"Kohlenstoffdioxid CO₂, Kohlenstoffmonoxid CO, Methan CH₄ und Carbonate gehören zu den wichtigsten Kohlenstoffverbindungen.","N":"Ammoniak NH₃, Salpetersäure HNO₃ und Nitrate sind zentral für Dünger und chemische Industrie.","O":"Wasser H₂O, Metalloxide und Ozon O₃ sind besonders wichtige Sauerstoffverbindungen bzw. -formen.","F":"Fluorwasserstoff HF und Fluoride wie NaF sind wichtig; Fluor steckt außerdem in Fluorpolymeren wie PTFE.","Ne":"Neon ist ein Edelgas und bildet unter normalen Bedingungen keine praktisch wichtigen stabilen Verbindungen.","Na":"Natriumchlorid NaCl, Natriumhydroxid NaOH und Natriumcarbonat Na₂CO₃ sind sehr wichtige Alltags- und Industriechemikalien.","Mg":"Magnesiumoxid MgO, Magnesiumhydroxid Mg(OH)₂ und Magnesiumsulfat MgSO₄ sind wichtige Verbindungen.","Al":"Aluminiumoxid Al₂O₃, Aluminiumhydroxid Al(OH)₃ und Aluminiumchlorid AlCl₃ sind wichtig.","Si":"Siliciumdioxid SiO₂, Silicate und Silicone gehören zu den wichtigsten Siliciumverbindungen.","P":"Phosphorsäure H₃PO₄, Phosphate und Phosphoroxide sind für Dünger, Lebensmittel und Technik wichtig.","S":"Schwefelsäure H₂SO₄, Schwefeldioxid SO₂ und Sulfate gehören zu den wichtigsten Schwefelverbindungen.","Cl":"Natriumchlorid NaCl, Salzsäure HCl und Hypochlorite sind wichtige Chlorverbindungen.","Ar":"Argon ist sehr reaktionsträge; praktisch wichtige Argonverbindungen gibt es unter normalen Bedingungen kaum.","K":"Kaliumchlorid KCl, Kaliumhydroxid KOH und Kaliumnitrat KNO₃ sind wichtige Verbindungen.","Ca":"Calciumcarbonat CaCO₃, Calciumoxid CaO und Calciumsulfat CaSO₄ sind besonders wichtig.","Sc":"Scandiumoxid Sc₂O₃ und Scandiumfluorid ScF₃ werden in Spezialanwendungen eingesetzt.","Ti":"Titandioxid TiO₂ ist ein wichtiges Weißpigment; Titantetrachlorid TiCl₄ dient zur Titanherstellung.","V":"Vanadiumpentoxid V₂O₅ und Vanadate sind wichtige Katalysator- und Werkstoffverbindungen.","Cr":"Chrom(III)-oxid Cr₂O₃ ist ein Pigment; Chromate/Dichromate enthalten Cr(VI) und sind giftig.","Mn":"Mangandioxid MnO₂ und Kaliumpermanganat KMnO₄ sind wichtige Oxidationsmittel bzw. Batteriematerialien.","Fe":"Eisenoxide Fe₂O₃ und Fe₃O₄ sowie Eisensulfate gehören zu den wichtigsten Eisenverbindungen.","Co":"Cobaltoxide, Cobaltchlorid CoCl₂ und Lithiumcobaltoxid LiCoO₂ sind technisch wichtig.","Ni":"Nickeloxid NiO und Nickelsulfat NiSO₄ werden technisch genutzt; Nickelcarbonyl Ni(CO)₄ ist hochgiftig.","Cu":"Kupfersulfat CuSO₄, Kupfer(II)-oxid CuO und Kupfer(I)-oxid Cu₂O sind wichtige Kupferverbindungen.","Zn":"Zinkoxid ZnO, Zinksulfid ZnS und Zinkchlorid ZnCl₂ sind technisch wichtig.","Ga":"Galliumarsenid GaAs und Galliumnitrid GaN sind wichtige Halbleiter für LEDs und Hochfrequenztechnik.","Ge":"Germaniumdioxid GeO₂ und Germaniumtetrachlorid GeCl₄ spielen unter anderem in Glasfasertechnik eine Rolle.","As":"Arsen(III)-oxid As₂O₃ und Galliumarsenid GaAs sind bekannte Arsenverbindungen; viele Arsenverbindungen sind giftig.","Se":"Selendioxid SeO₂ sowie Selenite und Selenate sind wichtige Selenverbindungen.","Br":"Bromwasserstoff HBr, Bromide und Silberbromid AgBr sind wichtige Bromverbindungen.","Kr":"Krypton ist sehr reaktionsträge; Kryptondifluorid KrF₂ ist eine der wenigen bekannten stabilen Kryptonverbindungen.","Rb":"Rubidiumchlorid RbCl und Rubidiumcarbonat Rb₂CO₃ sind typische Rubidiumverbindungen.","Sr":"Strontiumcarbonat SrCO₃ und Strontiumnitrat Sr(NO₃)₂ werden unter anderem für Keramik und rote Flammenfarben genutzt.","Y":"Yttriumoxid Y₂O₃ und YAG (Y₃Al₅O₁₂) sind wichtig für Leuchtstoffe und Laser.","Zr":"Zirconiumdioxid ZrO₂ ist ein wichtiger Hochleistungskeramikstoff; ZrCl₄ dient als Ausgangsstoff.","Nb":"Niobpentoxid Nb₂O₅ und Niobcarbid NbC sind wichtige technische Verbindungen.","Mo":"Molybdändisulfid MoS₂ ist ein Schmierstoff; Molybdäntrioxid MoO₃ und Molybdate sind technisch wichtig.","Tc":"Pertechnetat TcO₄⁻, besonders mit Tc-99m, ist für die Nuklearmedizin wichtig.","Ru":"Rutheniumdioxid RuO₂ und Rutheniumchlorid RuCl₃ werden in Elektroden und Katalyse eingesetzt.","Rh":"Rhodiumchlorid RhCl₃ und Rhodium-Komplexe sind wichtige Katalysatoren.","Pd":"Palladiumchlorid PdCl₂ und Palladium-Komplexe sind bedeutende Katalysatoren.","Ag":"Silbernitrat AgNO₃, Silberchlorid AgCl und Silberbromid AgBr sind wichtige Silberverbindungen.","Cd":"Cadmiumsulfid CdS und Cadmiumtellurid CdTe sind Halbleitermaterialien; Cadmiumverbindungen sind giftig.","In":"Indiumoxid In₂O₃ und Indiumzinnoxid (ITO) sind für transparente leitfähige Schichten wichtig.","Sn":"Zinn(IV)-oxid SnO₂ sowie Zinn(II)- und Zinn(IV)-chlorid sind technisch wichtige Verbindungen.","Sb":"Antimon(III)-oxid Sb₂O₃ und Antimonsulfid Sb₂S₃ sind wichtige Antimonverbindungen.","Te":"Cadmiumtellurid CdTe wird in Solarzellen verwendet; Tellurdioxid TeO₂ ist ein wichtiges Tellurmaterial.","I":"Kaliumiodid KI, Iodate und iodierte organische Verbindungen sind für Ernährung, Medizin und Analytik wichtig.","Xe":"Xenondifluorid XeF₂ und Xenontetrafluorid XeF₄ zeigen, dass selbst Edelgase Verbindungen bilden können.","Cs":"Caesiumchlorid CsCl, Caesiumiodid CsI und Caesiumformiat werden technisch genutzt.","Ba":"Bariumsulfat BaSO₄ wird als Röntgenkontrastmittel eingesetzt; Bariumcarbonat und Bariumnitrat sind technisch wichtig.","La":"Lanthanoxid La₂O₃ und Lanthanverbindungen werden in Optik, Katalyse und Spezialwerkstoffen eingesetzt.","Ce":"Ceroxid CeO₂ ist wichtig für Katalysatoren und Poliermittel; Cer(IV)-salze sind starke Oxidationsmittel.","Pr":"Praseodymoxide wie Pr₆O₁₁ und Praseodymchlorid PrCl₃ werden in Spezialgläsern und Keramik eingesetzt.","Nd":"Neodymoxid Nd₂O₃ und die Magnetphase Nd₂Fe₁₄B sind für starke Permanentmagnete wichtig.","Pm":"Promethiumverbindungen wie PmCl₃ sind nur in kleinsten Mengen für Forschung und Spezialanwendungen relevant.","Sm":"Samariumoxid Sm₂O₃ und Samarium-Cobalt-Magnetwerkstoffe wie SmCo₅ sind technisch wichtig.","Eu":"Europiumoxid Eu₂O₃ und Europium-dotierte Leuchtstoffe erzeugen intensive rote und blaue Lumineszenz.","Gd":"Gadoliniumoxid Gd₂O₃ und Gadolinium-Komplexe werden unter anderem in Magnetresonanztechnik verwendet.","Tb":"Terbiumoxide, besonders Tb₄O₇, und terbiumhaltige Leuchtstoffe sind technisch wichtig.","Dy":"Dysprosiumoxid Dy₂O₃ und dysprosiumhaltige Magnetwerkstoffe verbessern Hochtemperaturmagnete.","Ho":"Holmiumoxid Ho₂O₃ und holmiumdotierte Lasermaterialien werden in Speziallasern eingesetzt.","Er":"Erbiumoxid Er₂O₃ und erbiumdotierte Glasfasern sind für optische Verstärker in Telekommunikation wichtig.","Tm":"Thuliumoxid Tm₂O₃ und thuliumdotierte Lasermaterialien werden für Speziallaser genutzt.","Yb":"Ytterbiumoxid Yb₂O₃ und ytterbiumdotierte Fasern sind für leistungsstarke Faserlaser wichtig.","Lu":"Lutetiumoxid Lu₂O₃ und Lutetium-Aluminium-Granat werden in Detektoren und Spezialoptik eingesetzt.","Hf":"Hafniumdioxid HfO₂ ist ein wichtiges High-k-Dielektrikum in modernen Chips; HfCl₄ ist ein Ausgangsstoff.","Ta":"Tantalpentoxid Ta₂O₅ ist für Kondensatoren und Optik wichtig; Tantalcarbid TaC ist sehr hart.","W":"Wolframcarbid WC ist ein extrem harter Werkstoff; Wolframtrioxid WO₃ wird in Elektrochromie und Katalyse genutzt.","Re":"Rhenium(VII)-oxid Re₂O₇ und Perrhenate sind wichtige Rheniumverbindungen in Forschung und Katalyse.","Os":"Osmiumtetroxid OsO₄ ist eine wichtige, aber sehr giftige Verbindung für Mikroskopie und organische Chemie.","Ir":"Iridiumdioxid IrO₂ und Iridiumchloride werden in Elektrochemie und Katalyse verwendet.","Pt":"Chloroplatinsäure H₂PtCl₆ und Cisplatin Pt(NH₃)₂Cl₂ sind wichtige Platinverbindungen.","Au":"Tetrachlorogoldsäure HAuCl₄ ist ein wichtiger Ausgangsstoff für Goldbeschichtungen und Nanogold.","Hg":"Quecksilbersulfid HgS und Quecksilberchloride sind bekannte Verbindungen; viele Quecksilberverbindungen sind hochgiftig.","Tl":"Thalliumchlorid TlCl und Thalliumoxide sind bekannt; Thalliumverbindungen sind sehr giftig.","Pb":"Blei(II)-oxid PbO, Bleidioxid PbO₂ und Bleisulfat PbSO₄ sind besonders für Bleiakkus wichtig.","Bi":"Bismutoxid Bi₂O₃ und Bismutoxychlorid BiOCl werden in Keramik, Medizin und Kosmetik eingesetzt.","Po":"Poloniumdioxid PoO₂ ist bekannt; wegen der starken Radioaktivität haben Poloniumverbindungen praktisch keine Alltagsanwendung.","At":"Astat bildet in Spuren Astatide und weitere Verbindungen; wegen der extrem kleinen Mengen ist dies vor allem Forschungschemie.","Rn":"Radon ist ein radioaktives Edelgas; praktisch wichtige stabile Radonverbindungen gibt es nicht.","Fr":"Francium existiert nur in winzigen Mengen und sehr kurzlebig; praktisch wichtige Verbindungen gibt es nicht.","Ra":"Radiumchlorid RaCl₂ und Radiumsulfat RaSO₄ sind bekannte Verbindungen; Radium ist stark radioaktiv.","Ac":"Actiniumchlorid AcCl₃ und Actiniumfluorid AcF₃ sind Forschungsverbindungen; Ac-225 ist medizinisch interessant.","Th":"Thoriumdioxid ThO₂ und Thoriumsalze wurden technisch untersucht; Thorium spielt vor allem in Kernforschung eine Rolle.","Pa":"Protactiniumoxide und -fluoride sind bekannt, aber wegen Seltenheit und Radioaktivität nur Forschungsstoffe.","U":"Urandioxid UO₂ ist Reaktorbrennstoff; Uranhexafluorid UF₆ dient zur Urananreicherung.","Np":"Neptuniumdioxid NpO₂ und Neptunyl-Verbindungen sind vor allem für Kernchemie und Forschung relevant.","Pu":"Plutoniumdioxid PuO₂ ist ein wichtiger Kernbrennstoff und wird auch in Radioisotopen-Energiequellen eingesetzt.","Am":"Americiumdioxid AmO₂ und Americiumsalze sind bekannt; Am-241 wird in manchen Rauchmeldern genutzt.","Cm":"Curiumoxide und Curiumchlorid CmCl₃ sind vor allem Forschungs- und Radioisotopenmaterialien.","Bk":"Berkeliumchlorid BkCl₃ und Berkeliumoxide wurden in winzigen Mengen untersucht.","Cf":"Californiumoxide und -halogenide sind Forschungsverbindungen; Cf-252 ist eine starke Neutronenquelle.","Es":"Einsteiniumchlorid EsCl₃ und weitere Einsteiniumverbindungen können nur in extrem kleinen Mengen untersucht werden.","Fm":"Fermiumverbindungen wurden nur atomar bzw. in Spuren untersucht; es gibt keine praktische Alltagsanwendung.","Md":"Mendelevium bildet in Spuren vor allem zwei- und dreiwertige Ionen; praktische Verbindungen gibt es nicht.","No":"Nobelium zeigt überwiegend die Oxidationsstufe +2; Verbindungen werden nur in extrem kleinen Mengen untersucht.","Lr":"Lawrenciumchemie ist auf einzelne Atome beschränkt; Halogenid- und Lösungskomplexe werden erforscht.","Rf":"Rutherfordium bildet flüchtige Halogenide wie RfCl₄; untersucht wird es nur atomweise.","Db":"Dubniumverbindungen wie Halogenide und Oxyhalogenide werden nur in wenigen Atomen untersucht.","Sg":"Seaborgium bildet in Tracerexperimenten sauerstoff- und halogenhaltige Spezies; praktische Verbindungen gibt es nicht.","Bh":"Bohriumchemie wurde nur mit wenigen Atomen untersucht; vermutet und untersucht werden vor allem Oxyhalogenide.","Hs":"Hassiumtetroxid HsO₄ wurde experimentell nachgewiesen und ähnelt Osmiumtetroxid.","Mt":"Meitnerium wurde nur atomweise untersucht; makroskopische Verbindungen sind nicht verfügbar.","Ds":"Darmstadtium ist extrem kurzlebig; praktisch nutzbare Verbindungen sind nicht bekannt.","Rg":"Roentgenium ist extrem kurzlebig; seine Chemie wird nur anhand einzelner Atome erforscht.","Cn":"Copernicium ist extrem kurzlebig; Oberflächen- und Gasphasenexperimente untersuchen seine chemischen Eigenschaften.","Nh":"Nihonium wurde nur in wenigen Atomen erzeugt; praktisch wichtige Verbindungen sind nicht bekannt.","Fl":"Flerovium wurde nur atomweise untersucht; makroskopische Verbindungen sind nicht verfügbar.","Mc":"Moscovium ist extrem kurzlebig; seine Verbindungen sind bislang nur Gegenstand theoretischer und atomarer Forschung.","Lv":"Livermorium ist extrem kurzlebig; praktisch nutzbare Verbindungen sind nicht bekannt.","Ts":"Tenness ist extrem kurzlebig; seine Halogenchemie kann bislang nur an wenigen Atomen untersucht werden.","Og":"Oganesson ist extrem kurzlebig; stabile, praktisch nutzbare Verbindungen sind nicht bekannt."};
 
-// ---------------- Elementfotos: nur Public Domain / CC0 ----------------
-// elementbilder.js sucht auf Wikimedia Commons nach einem passenden Elementfoto
-// und akzeptiert ausschliesslich Dateien, deren Lizenz-Metadaten Public Domain
-// oder CC0 ausweisen. CC BY, CC BY-SA, GFDL, FAL und unklare Lizenzen werden
-// nicht verwendet. Gibt es keinen passenden Treffer, zeigt das Spiel die
-// eigene Elementenpuzzle-Ersatzdarstellung.
+// ---------------- Kuratierte Elementfotos + Erzeugungswege ----------------
+// Bildauswahl wurde visuell geprüft. Wikimedia-Commons-Lizenz und Urheber
+// werden direkt aus den Metadaten der jeweils ausgewählten Datei geladen.
 
 const ELEMENT_CATEGORY_NAME = {
   ALK:"Alkalimetall", EAK:"Erdalkalimetall", UEB:"Übergangsmetall", MET:"Metall",
@@ -1724,13 +2033,24 @@ const ELEMENT_CATEGORY_NAME = {
   LAN:"Lanthanoid", ACT:"Actinoid"
 };
 
+const SYNTHESIS_INFO = {"Tc": {"art": "Teilchenbeschuss / Reaktor", "text": "Technetium wurde erstmals künstlich durch Beschuss von Molybdän erzeugt. Medizinisches ⁹⁹ᵐTc stammt heute meist aus ⁹⁹Mo, das als Spaltprodukt im Reaktor gewonnen wird.", "reaktion": "Beispiel: ⁹⁹Mo → β⁻ → ⁹⁹ᵐTc"}, "Pm": {"art": "Kernreaktor / Spaltprodukte", "text": "Promethium entsteht bei der Kernspaltung und kann auch durch Neutronenbestrahlung geeigneter Neodym-Isotope erzeugt werden.", "reaktion": "Beispiel: ¹⁴⁶Nd(n,γ)¹⁴⁷Nd → β⁻ → ¹⁴⁷Pm"}, "Np": {"art": "Neutroneneinfang im Reaktor", "text": "Neptunium entsteht typischerweise aus Uran-238 nach Neutroneneinfang und anschließendem β⁻-Zerfall.", "reaktion": "²³⁸U(n,γ)²³⁹U → β⁻ → ²³⁹Np"}, "Pu": {"art": "Neutroneneinfang im Reaktor", "text": "Plutonium-239 entsteht aus Uran-238 über zwei aufeinanderfolgende β⁻-Zerfälle.", "reaktion": "²³⁸U(n,γ)²³⁹U → β⁻ → ²³⁹Np → β⁻ → ²³⁹Pu"}, "Am": {"art": "Neutroneneinfang im Reaktor", "text": "Americium entsteht bei weiterer Neutronenbestrahlung von Plutonium; ²⁴¹Am entsteht unter anderem durch β⁻-Zerfall von ²⁴¹Pu.", "reaktion": "Beispiel: ²⁴¹Pu → β⁻ → ²⁴¹Am"}, "Cm": {"art": "Teilchenbeschleuniger", "text": "Curium wurde 1944 erstmals künstlich erzeugt, indem Plutonium-239 in einem Teilchenbeschleuniger mit Alpha-Teilchen beschossen wurde.", "reaktion": "²³⁹Pu + ⁴He → ²⁴²Cm + ¹n"}, "Bk": {"art": "Teilchenbeschuss / Reaktor", "text": "Berkelium wird durch Kernreaktionen mit schweren Actinoiden hergestellt.", "reaktion": "Beispiel: ²⁴¹Am(α,2n)²⁴³Bk"}, "Cf": {"art": "Teilchenbeschuss / Reaktor", "text": "Californium wird durch Beschuss bzw. intensive Neutronenbestrahlung schwerer Actinoide erzeugt.", "reaktion": "Beispiel: ²⁴²Cm(α,n)²⁴⁵Cf"}, "Es": {"art": "Intensive Neutronenbestrahlung", "text": "Einsteinium entsteht nur in sehr kleinen Mengen durch vielfache Neutroneneinfänge in schweren Actinoiden. Entdeckt wurde es ursprünglich in Produkten einer thermonuklearen Explosion.", "reaktion": "Heute: mehrfache (n,γ)-Reaktionen in Hochflussreaktoren"}, "Fm": {"art": "Intensive Neutronenbestrahlung", "text": "Fermium entsteht durch eine Kette mehrerer Neutroneneinfänge und β⁻-Zerfälle in schweren Actinoiden; es wurde ebenfalls zuerst in thermonuklearen Testprodukten nachgewiesen.", "reaktion": "Mehrfache (n,γ)-Reaktionen + β⁻-Zerfälle"}, "Md": {"art": "Teilchenbeschleuniger", "text": "Mendelevium wird durch Beschuss eines Einsteinium-Targets mit α-Teilchen erzeugt.", "reaktion": "Beispiel: ²⁵³Es(α,n)²⁵⁶Md"}, "No": {"art": "Teilchenbeschleuniger", "text": "Nobelium wird durch Schwerionenbeschuss von Curium-Targets erzeugt, beispielsweise mit Kohlenstoff- oder Neon-Ionen.", "reaktion": "Schwerionenfusion: Cm-Target + C/Ne-Ionen → No + Neutronen"}, "Lr": {"art": "Teilchenbeschleuniger", "text": "Lawrencium wird durch Beschuss von Californium mit Bor-Ionen erzeugt.", "reaktion": "Beispiel: ²⁴⁹Cf + ¹¹B → ²⁵⁷Lr + 3 n"}, "Rf": {"art": "Schwerionenfusion", "text": "Rutherfordium wird durch Beschuss schwerer Actinoid-Targets mit leichten Schwerionen erzeugt.", "reaktion": "Beispiel: ²⁴²Pu(²²Ne,4n)²⁶⁰Rf"}, "Db": {"art": "Schwerionenfusion", "text": "Dubnium entsteht durch Fusion eines schweren Targets mit beschleunigten Schwerionen.", "reaktion": "Beispiel: ²⁴³Am(²²Ne,4n)²⁶¹Db"}, "Sg": {"art": "Schwerionenfusion", "text": "Seaborgium wird durch Beschuss schwerer Actinoide mit Sauerstoff-Ionen erzeugt.", "reaktion": "Beispiel: ²⁴⁹Cf(¹⁸O,4n)²⁶³Sg"}, "Bh": {"art": "Schwerionenfusion", "text": "Bohrium wird in einem Teilchenbeschleuniger durch Fusion von Bismut mit Chrom-Ionen erzeugt.", "reaktion": "²⁰⁹Bi(⁵⁴Cr,n)²⁶²Bh"}, "Hs": {"art": "Schwerionenfusion", "text": "Hassium wird durch Fusion von Blei mit Eisen-Ionen erzeugt.", "reaktion": "²⁰⁸Pb(⁵⁸Fe,n)²⁶⁵Hs"}, "Mt": {"art": "Schwerionenfusion", "text": "Meitnerium entsteht durch Beschuss von Bismut mit Eisen-Ionen.", "reaktion": "²⁰⁹Bi(⁵⁸Fe,n)²⁶⁶Mt"}, "Ds": {"art": "Schwerionenfusion", "text": "Darmstadtium wird durch Fusion von Blei mit Nickel-Ionen erzeugt.", "reaktion": "²⁰⁸Pb(⁶²Ni,n)²⁶⁹Ds"}, "Rg": {"art": "Schwerionenfusion", "text": "Roentgenium entsteht durch Beschuss von Bismut mit Nickel-Ionen.", "reaktion": "²⁰⁹Bi(⁶⁴Ni,n)²⁷²Rg"}, "Cn": {"art": "Schwerionenfusion", "text": "Copernicium wird durch Fusion von Blei mit Zink-Ionen erzeugt.", "reaktion": "²⁰⁸Pb(⁷⁰Zn,n)²⁷⁷Cn"}, "Nh": {"art": "Schwerionenfusion", "text": "Nihonium wurde direkt durch Beschuss von Bismut mit Zink-70 erzeugt.", "reaktion": "²⁰⁹Bi(⁷⁰Zn,n)²⁷⁸Nh"}, "Fl": {"art": "Schwerionenfusion", "text": "Flerovium wird durch Beschuss eines Plutonium-Targets mit Calcium-48 erzeugt.", "reaktion": "²⁴⁴Pu(⁴⁸Ca,3n)²⁸⁹Fl"}, "Mc": {"art": "Schwerionenfusion", "text": "Moscovium wird durch Beschuss eines Americium-Targets mit Calcium-48 erzeugt.", "reaktion": "²⁴³Am(⁴⁸Ca,3n)²⁸⁸Mc"}, "Lv": {"art": "Schwerionenfusion", "text": "Livermorium wird durch Beschuss eines Curium-Targets mit Calcium-48 erzeugt.", "reaktion": "²⁴⁸Cm(⁴⁸Ca,3n)²⁹³Lv"}, "Ts": {"art": "Schwerionenfusion", "text": "Tenness wird durch Beschuss eines Berkelium-Targets mit Calcium-48 erzeugt.", "reaktion": "²⁴⁹Bk(⁴⁸Ca,3n)²⁹⁴Ts"}, "Og": {"art": "Schwerionenfusion", "text": "Oganesson wird durch Beschuss eines Californium-249-Targets mit Calcium-48 erzeugt.", "reaktion": "²⁴⁹Cf(⁴⁸Ca,3n)²⁹⁴Og"}, "At": {"art": "Teilchenbeschleuniger", "text": "Astat-211 wird gezielt hergestellt, indem Bismut-209 in einem Teilchenbeschleuniger mit Alpha-Teilchen beschossen wird.", "reaktion": "²⁰⁹Bi(α,2n)²¹¹At"}};
+
+function syntheseHtml(sym){
+  const x=SYNTHESIS_INFO[sym];
+  if(!x) return "";
+  return `<div class="synth-box">
+    <b>Erzeugung</b><br>
+    <span class="synth-type">${escapeHtml(x.art)}</span><br>
+    ${escapeHtml(x.text)}
+    <div class="synth-reaction">${escapeHtml(x.reaktion)}</div>
+  </div>`;
+}
+
 function elementIllustrationHtml(sym, grund){
   const e = BY_SYMBOL[sym] || [sym,sym,"?","","?"];
   const ordnung = e[2];
   const kategorie = ELEMENT_CATEGORY_NAME[e[4]] || "Chemisches Element";
-  const hinweis = grund || (sym === "Ti"
-    ? "Eigene Illustration – in der aktuellen Elementarium-Bilddatei fehlt Titan noch."
-    : "Eigene Illustration – Ersatzdarstellung, falls kein lokales Elementbild vorhanden ist.");
+  const hinweis = grund || "Eigene Elementenpuzzle-Darstellung – für dieses Element wird bewusst kein ungeeignetes Fremdbild verwendet.";
   return `
     <div class="element-photo-fallback" role="img" aria-label="Illustration von ${escapeHtml(e[1])}">
       <div class="element-illustration">
@@ -1741,56 +2061,61 @@ function elementIllustrationHtml(sym, grund){
         <div class="ei-badge">${escapeHtml(hinweis)}</div>
       </div>
     </div>
-    <div class="element-photo-source illustration-source">Eigene Elementenpuzzle-Illustration · kein externes Nachladen</div>`;
+    <div class="element-photo-source illustration-source">Eigene Elementenpuzzle-Illustration</div>`;
 }
 
 function fallbackElementPhoto(img, sym){
   const box = img && img.closest ? img.closest(".element-photo-box") : $("elementPhoto_"+sym);
   if(!box) return;
-  box.innerHTML = elementIllustrationHtml(sym, "Eigene Illustration – das externe PD/CC0-Bild konnte nicht dargestellt werden.");
+  box.classList.remove("gallery-photo-box");
+  box.innerHTML = elementIllustrationHtml(sym, "Eigene Darstellung – das externe Bild konnte nicht geladen werden.");
+}
+
+function commonsCreditHtml(b){
+  const artist=escapeHtml(b?.artist||"Urheber siehe Commons");
+  const lic=escapeHtml(b?.license||"freie Lizenz");
+  const page=b?.filePage ? `<a href="${escapeHtml(b.filePage)}" target="_blank" rel="noopener">Commons / Lizenz</a>` : "Wikimedia Commons";
+  return `${artist} · Wikimedia Commons · ${lic} · ${page}`;
 }
 
 async function ladeElementfotos(syms){
-  const service = (typeof window !== "undefined") ? window.ElementBilderPD : null;
-
-  if(!service || typeof service.getElementBild !== "function"){
-    for(const sym of syms){
-      const box=$("elementPhoto_"+sym);
-      if(box) box.innerHTML=elementIllustrationHtml(sym, "Eigene Illustration – PD/CC0-Bilddienst ist nicht verfügbar.");
-    }
-    return;
-  }
-
-  await Promise.all(syms.map(async sym=>{
+  const service=(typeof window!=="undefined") ? window.ELEMENT_BILD_SERVICE : null;
+  for(const sym of syms){
     const box=$("elementPhoto_"+sym);
-    if(!box) return;
+    if(!box) continue;
     const e=BY_SYMBOL[sym] || [sym,sym,0];
-
-    // Während der Commons-Prüfung bleibt die eigene Illustration sichtbar.
-    const badge=box.querySelector('.ei-badge');
-    if(badge) badge.textContent='Suche nach Public-Domain/CC0-Foto …';
-
-    try{
-      const bild=await service.getElementBild(sym);
-      if(!bild || !bild.imageUrl){
-        box.innerHTML=elementIllustrationHtml(sym, "Eigene Illustration – kein geeignetes Public-Domain/CC0-Foto gefunden.");
-        return;
-      }
-
-      const quelle=["Wikimedia Commons", bild.license, bild.artist].filter(Boolean).join(" · ");
-      const link=bild.filePage
-        ? ` · <a href="${escapeHtml(bild.filePage)}" target="_blank" rel="noopener">Dateiseite / Lizenz</a>`
-        : "";
-
-      box.innerHTML=
-        `<img class="element-photo" src="${escapeHtml(bild.imageUrl)}" alt="Elementbild von ${escapeHtml(e[1])}" `+
-        `loading="lazy" onerror="fallbackElementPhoto(this,'${sym}')">`+
-        `<div class="element-photo-source">${escapeHtml(quelle)}${link}</div>`;
-    }catch(err){
-      console.warn("PD/CC0-Elementbild konnte nicht geladen werden:", sym, err);
-      box.innerHTML=elementIllustrationHtml(sym, "Eigene Illustration – PD/CC0-Suche war nicht erreichbar.");
+    if(!service || typeof service.getElementBild!=="function"){
+      box.innerHTML=elementIllustrationHtml(sym,"Eigene Darstellung – Bilddienst ist nicht verfügbar.");
+      continue;
     }
-  }));
+    try{
+      const b=await service.getElementBild(sym);
+      if(b?.gallery?.length){
+        box.classList.add("gallery-photo-box");
+        box.innerHTML=`<div class="element-photo-gallery">${b.gallery.map(x=>`
+          <figure>
+            <img src="${escapeHtml(x.imageUrl)}" alt="${escapeHtml(x.label||e[1])}" loading="lazy">
+            <figcaption>${escapeHtml(x.label||e[1])}</figcaption>
+            <div class="gallery-license">${escapeHtml(x.license||"")} · <a href="${escapeHtml(x.filePage||"#")}" target="_blank" rel="noopener">Commons</a></div>
+          </figure>`).join("")}</div>
+          ${b.description?`<div class="element-photo-note">${escapeHtml(b.description)}</div>`:""}`;
+        continue;
+      }
+      if(b?.imageUrl){
+        box.classList.remove("gallery-photo-box");
+        box.innerHTML=`<img class="element-photo" src="${escapeHtml(b.imageUrl)}" alt="Elementbild von ${escapeHtml(e[1])}" loading="lazy" onerror="fallbackElementPhoto(this,'${sym}')">
+          <div class="element-photo-source">${commonsCreditHtml(b)}</div>
+          ${b.note?`<div class="element-photo-note">${escapeHtml(b.note)}</div>`:""}`;
+        continue;
+      }
+      box.classList.remove("gallery-photo-box");
+      box.innerHTML=elementIllustrationHtml(sym,b?.description||"Eigene Darstellung – kein sinnvolles reales Elementfoto verfügbar.");
+    }catch(err){
+      box.classList.remove("gallery-photo-box");
+      box.innerHTML=elementIllustrationHtml(sym,"Eigene Darstellung – das Bild konnte nicht geladen werden.");
+      console.warn("Elementbild",sym,err);
+    }
+  }
 }
 
 // ---------------- Sounds ohne externe Audiodateien ----------------
@@ -2533,17 +2858,18 @@ function renderInfo(syms){
     return `<article class="info-card">
       <div id="elementPhoto_${sym}" class="element-photo-box">
         ${elementIllustrationHtml(sym, Number(e[2]) >= 104
-          ? "Eigene Illustration – ein PD/CC0-Foto wird gesucht, falls verfügbar."
-          : "Elementdarstellung – Public-Domain/CC0-Foto wird geprüft.")}
+          ? "Eigene Illustration – lokales Elementarium-Bild wird verwendet, falls vorhanden."
+          : "Elementdarstellung – lokales Elementarium-Bild wird geladen.")}
       </div>
       <div class="info-head"><div class="info-symbol">${sym}</div><div><h3>${e[1]}</h3><div class="small">Ordnungszahl ${e[2]}</div></div></div>
       <p><b>Verwendung:</b> ${use}</p>
       <p><b>Wichtige Verbindungen:</b> ${COMPOUNDS[sym]||"Vor allem Forschung; keine verbreitete Alltagsverbindung."}</p>
       ${discovery?`<p class="small">${discovery}</p>`:""}
+      ${syntheseHtml(sym)}
     </article>`;
   }).join("");
 
-  // Fotos erst nach dem Aufbau der Karten laden.
+  // Kuratierte Fotos erst nach dem Aufbau der Karten laden.
   ladeElementfotos(unique);
 }
 
