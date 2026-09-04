@@ -1252,6 +1252,31 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
   .element-tile .ename{display:none!important}
 }
 
+
+
+/* ===== Nebenwort-Hilfe: sicher ausgeschlossene Elemente grau markieren ===== */
+.element-tile.excluded-target{
+  background:linear-gradient(145deg,#aeb8bf,#6f7c85)!important;
+  border-color:#87939b!important;
+  filter:grayscale(.82) saturate(.22) brightness(.92)!important;
+  opacity:.64!important;
+  box-shadow:0 9px 16px rgba(45,58,66,.18),inset 0 1px 0 rgba(255,255,255,.46)!important;
+}
+.element-tile.excluded-target:hover:not(:disabled){
+  transform:rotateX(4deg) rotateY(var(--tilt)) translateY(-4px) translateZ(8px) scale(1.015)!important;
+  filter:grayscale(.74) saturate(.28) brightness(.98)!important;
+  opacity:.78!important;
+  box-shadow:0 13px 22px rgba(45,58,66,.22),inset 0 1px 0 rgba(255,255,255,.52)!important;
+}
+.element-tile.excluded-target .sym,
+.element-tile.excluded-target .ename{color:#eef2f4!important;text-shadow:0 1px 4px rgba(0,0,0,.25)!important}
+.element-tile.excluded-target .target-badge{
+  display:block!important;
+  background:rgba(68,78,84,.96)!important;
+  border-color:rgba(229,235,238,.70)!important;
+  color:#f3f6f7!important;
+}
+.element-tile.excluded-target.used{opacity:.72!important}
 </style>
 
 </head>
@@ -2311,6 +2336,7 @@ let testStartedAt = null;
 let testSample = null;
 let testGuesses = 0;
 let confirmedShared = [];
+let confirmedExcluded = [];
 let guessHistory = [];
 
 function $(id){ return document.getElementById(id); }
@@ -2333,6 +2359,42 @@ function feedbackClass(value){
   const v=String(value||"").toLowerCase();
   return v==="green" || v==="yellow" ? v : "gray";
 }
+function mergeFeedbackKnowledge(symbols,feedback,refresh=true){
+  const syms=Array.isArray(symbols)?symbols:[];
+  const fb=Array.isArray(feedback)?feedback:[];
+  const present=new Set();
+  const absentCandidates=new Set();
+
+  syms.forEach((sym,i)=>{
+    const state=String(fb[i]||"").toLowerCase();
+    if(state==="green" || state==="yellow") present.add(sym);
+    else if(state==="gray" || state==="grey") absentCandidates.add(sym);
+  });
+
+  // Gruen/Gelb hat immer Vorrang: dieses Elementsymbol kommt im Zielwort vor.
+  if(present.size){
+    confirmedShared=[...new Set([...confirmedShared,...present])];
+    confirmedExcluded=confirmedExcluded.filter(sym=>!present.has(sym));
+  }
+
+  // Grau wird nur als "sicher nicht enthalten" uebernommen, wenn dasselbe
+  // Symbol in diesem Nebenwort nicht zugleich gruen/gelb ist und nicht schon
+  // aus einem frueheren Nebenwort als enthalten bestaetigt wurde.
+  for(const sym of absentCandidates){
+    if(!present.has(sym) && !confirmedShared.includes(sym) && !confirmedExcluded.includes(sym)){
+      confirmedExcluded.push(sym);
+    }
+  }
+
+  if(refresh) updateTileUsage();
+}
+function rebuildExcludedFromHistory(){
+  confirmedExcluded=[];
+  for(const item of guessHistory){
+    mergeFeedbackKnowledge(item?.symbols,item?.feedback,false);
+  }
+  updateTileUsage();
+}
 function renderGuessHistory(){
   const panel=$("guessHistoryPanel"), rows=$("guessHistoryRows");
   if(!panel || !rows) return;
@@ -2354,7 +2416,9 @@ function renderGuessHistory(){
   show("guessHistoryPanel",true);
 }
 function addGuessHistory(word,symbols,feedback,guessNo=null){
-  guessHistory.push({word, symbols:Array.isArray(symbols)?symbols.slice():[], feedback:Array.isArray(feedback)?feedback.slice():[], guessNo});
+  const item={word, symbols:Array.isArray(symbols)?symbols.slice():[], feedback:Array.isArray(feedback)?feedback.slice():[], guessNo};
+  guessHistory.push(item);
+  mergeFeedbackKnowledge(item.symbols,item.feedback);
   renderGuessHistory();
 }
 async function loadGuessHistory(){
@@ -2368,6 +2432,7 @@ async function loadGuessHistory(){
       feedback:r.feedback||[],
       guessNo:r.guess_no
     }));
+    rebuildExcludedFromHistory();
     renderGuessHistory();
   }catch(_e){}
 }
@@ -2453,6 +2518,7 @@ async function restartGuestPuzzle(){
   puzzle=null;
   selected=[];
   confirmedShared=[];
+  confirmedExcluded=[];
   guessHistory=[];
   testMode=false;
   longTestMode=false;
@@ -2672,6 +2738,7 @@ function renderGame(st, animateReveal=false){
   $("elementCount").textContent=st.element_count;
   selected=[];
   confirmedShared=[];
+  confirmedExcluded=[];
   guessHistory=[];
   renderGuessHistory();
 
@@ -2739,6 +2806,7 @@ async function startLocalTest(){
   testGuesses=0;
   testSample=null;
   confirmedShared=[];
+  confirmedExcluded=[];
   selected=[];
   const solution=puzzle.solved_symbols.slice();
   let testChoices=null;
@@ -2782,6 +2850,7 @@ async function startLongWordTest(){
   testGuesses=0;
   testSample=null;
   confirmedShared=[];
+  confirmedExcluded=[];
   selected=[];
 
   try{
@@ -2853,23 +2922,39 @@ function updateTileUsage(){
   const counts={};
   for(const sym of selected) counts[sym]=(counts[sym]||0)+1;
   const buttons=[...document.querySelectorAll("#tiles .element-tile")];
-  let unused=0;
+  let unused=0, excludedCount=0;
   for(const btn of buttons){
     const sym=btn.dataset.symbol;
     const count=counts[sym]||0;
     const confirmed=confirmedShared.includes(sym);
+    const excluded=!confirmed && confirmedExcluded.includes(sym);
     btn.classList.toggle("used",count>0);
     btn.classList.toggle("confirmed-target",confirmed);
+    btn.classList.toggle("excluded-target",excluded);
     const badge=btn.querySelector(".usage-badge");
     if(badge) badge.textContent=count>0 ? `${count}× benutzt` : "";
     const targetBadge=btn.querySelector(".target-badge");
-    if(targetBadge) targetBadge.textContent=confirmed ? "✓ im Tageswort" : "";
+    if(targetBadge){
+      targetBadge.textContent=confirmed ? "✓ im Tageswort" : (excluded ? "✕ nicht im Tageswort" : "");
+    }
     if(count===0) unused++;
+    if(excluded) excludedCount++;
     const baseTitle=count>0 ? `${sym}: bereits ${count}× benutzt – kann bei Bedarf erneut angeklickt werden` : `${sym}: noch ungenutzt`;
-    btn.title=confirmed ? `${baseTitle} · durch ein gültiges Nebenwort als Bestandteil des Tagesworts bestätigt` : baseTitle;
+    if(confirmed){
+      btn.title=`${baseTitle} · durch ein gültiges Nebenwort als Bestandteil des Tagesworts bestätigt`;
+    }else if(excluded){
+      btn.title=`${baseTitle} · durch ein gültiges Nebenwort sicher als nicht im Tageswort enthalten erkannt`;
+    }else{
+      btn.title=baseTitle;
+    }
   }
-  if($("unusedSummary")) $("unusedSummary").innerHTML=`<span class="unused-dot"></span> Noch ungenutzt: <b>${unused} von ${buttons.length}</b> <span class="used-dot"></span> bereits benutzt`;
-  if($("unusedTop")) $("unusedTop").textContent=`${unused} von ${buttons.length} Elementen noch ungenutzt`;
+  if($("unusedSummary")){
+    const excludedText=excludedCount ? ` · <b>${excludedCount}</b> grau ausgeschlossen` : "";
+    $("unusedSummary").innerHTML=`<span class="unused-dot"></span> Noch ungenutzt: <b>${unused} von ${buttons.length}</b>${excludedText} <span class="used-dot"></span> bereits benutzt`;
+  }
+  if($("unusedTop")){
+    $("unusedTop").textContent=`${unused} von ${buttons.length} Elementen noch ungenutzt${excludedCount ? ` · ${excludedCount} ausgeschlossen` : ""}`;
+  }
 }
 
 function renderSelection(){
