@@ -40,6 +40,8 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(23,107,135,.12)
 .primary:disabled{opacity:.45;cursor:not-allowed}
 .secondary{background:#e9f1f5;color:#17465a}
 .danger{background:#f8e7e5;color:#913a34}
+.weekly-panel{max-width:680px;margin:18px auto 0;padding:16px;border:1px solid #e7c977;border-radius:18px;background:linear-gradient(135deg,#fff8e8,#fffdf6);color:#493500}
+.weekly-panel h3{margin:0 0 6px;font-size:22px}.weekly-panel p{margin:0 0 12px;line-height:1.45}.weekly-badge{display:inline-flex;border-radius:999px;padding:5px 9px;margin-bottom:8px;background:#e4a11b;color:#312000;font-size:12px;font-weight:900}
 .notice{border-radius:14px;padding:11px 13px;margin-top:12px;background:#eef7fb;color:#225268;font-size:14px}
 .notice.bad{background:#faecea;color:#8b342e}
 .notice.good{background:#e9f7ef;color:#206c43}
@@ -1442,6 +1444,13 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
       <h2 style="font-size:30px;margin-bottom:6px">Tagesrätsel <span id="todayLabel"></span></h2>
       <p class="small" style="max-width:620px;margin:0 auto 16px">Nach dem Start erscheinen die Auswahl-Elemente langsam in 3D. Bis 5 gesuchte Elementsymbole gibt es 10 Auswahl-Elemente, bei 6–10 Symbolen 15 und bei 11–15 Symbolen 20. Die zusätzlichen Karten werden so gewählt, dass möglichst mehrere gültige Nebenwörter spielbar werden. Die Uhr startet erst, wenn alle Karten sichtbar sind; ein Neuladen setzt sie nicht zurück.</p>
       <button id="startBtn" class="primary" style="font-size:18px;padding:14px 22px" onclick="startPuzzle()">Tagesrätsel starten</button>
+      <div id="weeklyPanel" class="weekly-panel hidden">
+        <div class="weekly-badge">⭐ Nur sonntags · nur mit Anmeldung</div>
+        <h3>Zusätzliches Sonntagsrätsel</h3>
+        <p>Längeres Wort mit 7–10 Elementsymbolen und mindestens 8 spielbaren Nebenwörtern. Es besitzt eine eigene Sonntagsrangliste.</p>
+        <button id="weeklyStartBtn" class="primary" type="button" onclick="startWeeklyPuzzle()">Sonntagsrätsel starten</button>
+        <div id="weeklyStatusText" class="small" style="margin-top:9px"></div>
+      </div>
       <div id="solvedLobbyPanel" class="solved-lobby-panel hidden">
         <div class="solved-lobby-label">Heutiges Lösungswort</div>
         <div id="lobbySolvedWord" class="solved-lobby-word">–</div>
@@ -2324,6 +2333,8 @@ let guestMode = false;
 let guestPreview = null;
 let guestGuesses = 0;
 let puzzle = null;
+let activePuzzleMode = "daily";
+let weeklyStatusCache = null;
 let selected = [];
 let timerHandle = null;
 let revealHandle = null;
@@ -2575,7 +2586,7 @@ async function logout(){
   stopTimer();
   if(revealHandle){clearTimeout(revealHandle);revealHandle=null;}
   await supabaseClient.auth.signOut();
-  session=null; guestMode=false; guestPreview=null; guestGuesses=0; puzzle=null; selected=[]; testMode=false; longTestMode=false; longTestTargetWord=null; testStartedAt=null;
+  session=null; guestMode=false; guestPreview=null; guestGuesses=0; puzzle=null; selected=[]; testMode=false; longTestMode=false; longTestTargetWord=null; testStartedAt=null; activePuzzleMode="daily"; weeklyStatusCache=null;
   renderAuth();
 }
 
@@ -2597,12 +2608,14 @@ function renderAuth(){
   if($("guestResultCta")) show("guestResultCta",false);
 
   if(logged){
+    activePuzzleMode="daily";
     guestMode=false;
     guestPreview=null;
     if($("playerModeLabel")) $("playerModeLabel").textContent="Angemeldet als";
     $("userLabel").textContent=usernameFromSession();
     if($("sessionExitBtn")) $("sessionExitBtn").textContent="Abmelden";
     loadStatus();
+    loadWeeklyStatus();
     loadLeaderboard();
     loadMyStats();
     return;
@@ -2642,7 +2655,49 @@ async function loadStatus(){
   }
 }
 
+async function loadWeeklyStatus(){
+  if(!session){ show("weeklyPanel",false); return; }
+  const {data,error}=await supabaseClient.rpc("elementenpuzzle_weekly_status");
+  if(error){ show("weeklyPanel",false); return; }
+  const st=Array.isArray(data)?data[0]:data;
+  weeklyStatusCache=st||null;
+  show("weeklyPanel",!!st?.available);
+  if(!st?.available) return;
+  const btn=$("weeklyStartBtn");
+  const note=$("weeklyStatusText");
+  if(st.solved){
+    btn.textContent="Sonntagsrätsel ansehen";
+    note.textContent="Das zusätzliche Sonntagsrätsel ist bereits gelöst.";
+  }else if(st.started){
+    btn.textContent="Sonntagsrätsel fortsetzen";
+    note.textContent="Deine Zeit läuft seit dem ersten Start weiter.";
+  }else{
+    btn.textContent="Sonntagsrätsel starten";
+    note.textContent=`Gesucht werden ${st.element_count} Elementsymbole.`;
+  }
+}
+
+async function startWeeklyPuzzle(){
+  if(!session) return;
+  activePuzzleMode="weekly";
+  $("weeklyStartBtn").disabled=true;
+  let st=weeklyStatusCache;
+  let data,error;
+  if(st?.started){ data=[st]; }
+  else ({data,error}=await supabaseClient.rpc("elementenpuzzle_weekly_start"));
+  $("weeklyStartBtn").disabled=false;
+  if(error) return alert("Sonntagsrätsel konnte nicht gestartet werden: "+error.message);
+  puzzle=Array.isArray(data)?data[0]:data;
+  show("lobbyCard",false);
+  if(puzzle.solved) renderSolved(puzzle);
+  else{
+    renderGame(puzzle,!st?.started);
+    setTimeout(()=>showStartCountOverlay(puzzle.element_count),100);
+  }
+}
+
 async function startPuzzle(){
+  activePuzzleMode="daily";
   $("startBtn").disabled=true;
 
   if(guestMode && !session){
@@ -2714,7 +2769,7 @@ function showStartCountOverlay(count){
   if(!n) return;
   if($("startCountBig")) $("startCountBig").textContent=String(n);
   if($("startCountText")) {
-    const label=(testMode && longTestMode) ? "Das Testwort" : "Das heutige Wort";
+    const label=(testMode && longTestMode) ? "Das Testwort" : (activePuzzleMode==="weekly" ? "Das Sonntagswort" : "Das heutige Wort");
     $("startCountText").textContent=`${label} setzt sich aus ${n} Elementsymbolen zusammen.`;
   }
   const el=$("startCountOverlay");
@@ -2767,7 +2822,7 @@ function renderGame(st, animateReveal=false){
     setTilesInteractive(true);
   }
 
-  if(!testMode && !guestMode){
+  if(!testMode && !guestMode && activePuzzleMode==="daily"){
     loadConfirmedSymbols();
     loadGuessHistory();
   }
@@ -2972,7 +3027,7 @@ function renderSelection(){
   updateTileUsage();
 }
 async function loadConfirmedSymbols(){
-  if(testMode || guestMode || !puzzle) return;
+  if(testMode || guestMode || !puzzle || activePuzzleMode!=="daily") return;
   try{
     const {data,error}=await supabaseClient.rpc("elementenpuzzle_confirmed_symbols");
     if(error) return;
@@ -2985,7 +3040,7 @@ async function loadConfirmedSymbols(){
 
 async function checkAlternativeWord(guess, guessNo=null){
   try{
-    const rpcName=(testMode && longTestMode) ? "elementenpuzzle_check_test_word_feedback" : "elementenpuzzle_check_word_feedback";
+    const rpcName=(testMode && longTestMode) ? "elementenpuzzle_check_test_word_feedback" : (activePuzzleMode==="weekly" ? "elementenpuzzle_weekly_check_word_feedback" : "elementenpuzzle_check_word_feedback");
     const rpcArgs=(testMode && longTestMode)
       ? {p_target_word:longTestTargetWord,p_symbols:guess}
       : {p_symbols:guess};
@@ -3012,7 +3067,7 @@ async function checkAlternativeWord(guess, guessNo=null){
       playSound("valid");
       const word=(r.matched_word||guess.join("")).toLocaleUpperCase("de-DE");
       const isLongTest=(testMode && longTestMode);
-      const notTargetText=isLongTest ? "das gesuchte lange Testwort" : "das gesuchte Tageswort";
+      const notTargetText=isLongTest ? "das gesuchte lange Testwort" : (activePuzzleMode==="weekly" ? "das gesuchte Sonntagswort" : "das gesuchte Tageswort");
       const suffix=testMode ? " Testmodus – nichts wird gespeichert." : (guessNo!=null ? ` Versuch ${guessNo} – die Uhr läuft weiter.` : " Die Uhr läuft weiter.");
       msg("gameMsg",`✓ Gültiges Nebenwort: ${word} – aber nicht ${notTargetText}.${suffix}`,"valid");
       addGuessHistory(word,guess,feedback,guessNo);
@@ -3171,7 +3226,8 @@ async function submitGuess(){
     }
     return;
   }
-  const {data,error}=await supabaseClient.rpc("elementenpuzzle_submit",{p_symbols:guess});
+  const submitRpc=activePuzzleMode==="weekly" ? "elementenpuzzle_weekly_submit" : "elementenpuzzle_submit";
+  const {data,error}=await supabaseClient.rpc(submitRpc,{p_symbols:guess});
   if(error){
     $("submitBtn").disabled=false;
     playSound("error");
@@ -3183,7 +3239,7 @@ async function submitGuess(){
     playSound("success");
     celebrate();
     renderSolved(puzzle);
-    loadLeaderboard();
+    loadLeaderboard(activePuzzleMode);
   } else {
     await checkAlternativeWord(guess,r.guesses);
     $("selectionBox").classList.remove("shake"); void $("selectionBox").offsetWidth; $("selectionBox").classList.add("shake");
@@ -3233,11 +3289,12 @@ function animateLobbySolution(word){
 function returnToLobbyAfterSolve(){
   stopTimer();
   if(!puzzle) return;
+  const wasWeekly=activePuzzleMode==="weekly";
   const word=puzzle.solved_word||"";
   const syms=Array.isArray(puzzle.solved_symbols)?puzzle.solved_symbols:[];
   $("lobbySolvedSymbols").textContent=syms.join(" · ");
-  show("startBtn",false);
-  show("solvedLobbyPanel",true);
+  show("startBtn",wasWeekly);
+  show("solvedLobbyPanel",!wasWeekly);
   show("gameCard",false);
   show("resultCard",false);
   show("lobbyCard",true);
@@ -3247,6 +3304,12 @@ function returnToLobbyAfterSolve(){
   show("leaderCard",registered);
   show("statsCard",registered);
   if(registered) $("leaderCard").classList.add("solved-return-view");
+
+  if(wasWeekly){
+    show("weeklyPanel",true);
+    if($("weeklyStartBtn")) $("weeklyStartBtn").textContent="Sonntagsrätsel ansehen";
+    if($("weeklyStatusText")) $("weeklyStatusText").textContent="Das zusätzliche Sonntagsrätsel ist bereits gelöst.";
+  }
 
   if($("playerModeLabel")) $("playerModeLabel").textContent=guestMode ? "Spielmodus" : "Angemeldet als";
   if($("userLabel")) $("userLabel").textContent=guestMode ? "Gast" : usernameFromSession();
@@ -3279,7 +3342,8 @@ function renderSolved(st){
   if(guestMode && !session){
     $("rankBig").textContent="👤 Gastmodus – diese Zeit wird nicht gespeichert";
   }else{
-    $("rankBig").textContent=st.rank ? `🏁 Platz ${st.rank} in der heutigen Rangliste` : "🏁 Ergebnis gespeichert";
+    const rankLabel=activePuzzleMode==="weekly" ? "Sonntagsrangliste" : "heutigen Rangliste";
+    $("rankBig").textContent=st.rank ? `🏁 Platz ${st.rank} in der ${rankLabel}` : "🏁 Ergebnis gespeichert";
   }
 
   if($("lobbySolvedWord")) $("lobbySolvedWord").textContent=word || "–";
@@ -3350,11 +3414,14 @@ async function loadMyStats(){
   $("statAverage").textContent=st.average_time_ms==null ? "–" : fmtTime(st.average_time_ms);
 }
 
-async function loadLeaderboard(){
+async function loadLeaderboard(mode=activePuzzleMode){
   if(!session) return;
-  const {data,error}=await supabaseClient.rpc("elementenpuzzle_leaderboard");
+  const weekly=mode==="weekly";
+  const {data,error}=await supabaseClient.rpc(weekly ? "elementenpuzzle_weekly_leaderboard" : "elementenpuzzle_leaderboard");
+  const heading=document.querySelector("#leaderCard h2");
+  if(heading) heading.textContent=weekly ? "Sonntagsrangliste" : "Heutige Rangliste";
   if(error) return $("leaderWrap").innerHTML=`<div class="notice bad">${error.message}</div>`;
-  if(!data?.length) return $("leaderWrap").innerHTML='<div class="notice">Heute hat noch niemand das Rätsel gelöst.</div>';
+  if(!data?.length) return $("leaderWrap").innerHTML=`<div class="notice">${weekly ? "Das Sonntagsrätsel" : "Das heutige Rätsel"} hat noch niemand gelöst.</div>`;
   const medal=r=>r===1?"🥇":r===2?"🥈":r===3?"🥉":r;
   $("leaderWrap").innerHTML=`<table class="leaderboard">
     <thead><tr><th>Rang</th><th>Spieler</th><th>Zeit</th><th>Versuche</th></tr></thead>
