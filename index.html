@@ -90,6 +90,13 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(23,107,135,.12)
 .info-symbol{width:50px;height:50px;border-radius:13px;background:#176b87;color:white;display:grid;place-items:center;font-family:ui-monospace,monospace;font-size:22px;font-weight:900}
 .info-card h3{margin:0;font-size:18px}
 .info-card p{margin:7px 0;color:#455661;line-height:1.42;font-size:14px}
+.element-stories{margin:12px 0;border-top:1px solid var(--line);padding-top:10px}
+.element-stories summary{cursor:pointer;font-weight:700;line-height:1.5;padding:4px 0}
+.element-stories summary:focus-visible{outline:2px solid currentColor;outline-offset:4px;border-radius:3px}
+.element-stories h4{font-size:14px;margin:16px 0 5px}
+.info-card .story-text{white-space:pre-line;overflow-wrap:anywhere}
+.element-stories .story-sources{font-size:12px;line-height:1.6;padding-left:20px}
+.element-stories a{color:inherit;text-decoration:underline;overflow-wrap:anywhere}
 .element-photo-box{margin:-4px -4px 13px;border:1px solid #d8e2e7;border-radius:14px;overflow:hidden;background:#f1f5f7;min-height:176px;display:flex;flex-direction:column;justify-content:center}
 .element-photo{display:block;width:100%;height:190px;object-fit:contain;background:#f5f7f8}
 .element-photo-loading,.element-photo-missing{padding:28px 14px;text-align:center;color:var(--muted);font-size:13px;line-height:1.45}
@@ -1950,6 +1957,7 @@ global.ELEMENT_BILD_SERVICE = {
 
 })(window);
 </script>
+<script src="elementgeschichten.js?v=20260915-1"></script>
 <script>
 const SUPABASE_URL = "https://tcobolbwkmvlfjinelsu.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_DYpVDxbcOgYst7wkYL2sbQ_B1GWS735";
@@ -3354,10 +3362,26 @@ function renderSolved(st){
   renderInfo(syms);
 }
 
+function elementStoryHtml(sym){
+  const story=window.ELEMENT_STORIES?.[sym];
+  if(!story || !Array.isArray(story.sections) || !story.sections.length) return "";
+  const sections=story.sections.slice(1).map(section=>
+    `<section><h4>${escapeHtml(section.title)}</h4><p class="story-text">${escapeHtml(section.text)}</p></section>`
+  ).join("");
+  const sources=(story.sources||[]).filter(url=>/^https:\/\//.test(url)).map(url=>{
+    const label=new URL(url).hostname.replace(/^www\./,"");
+    return `<li><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a></li>`;
+  }).join("");
+  return `<details class="element-stories"><summary>Mehr über ${escapeHtml(story.name)} erfahren</summary>
+    ${sections}${sources?`<h4>Quellen</h4><ul class="story-sources">${sources}</ul>`:""}
+  </details>`;
+}
+
 function renderInfo(syms){
   const unique=[...new Set(syms)];
   $("infoGrid").innerHTML=unique.map(sym=>{
     const e=BY_SYMBOL[sym]||[sym,sym,"?"];
+    const story=window.ELEMENT_STORIES?.[sym];
     const base=INFO[sym]||"Für dieses Element liegt noch keine Kurzinfo vor.";
     const parts=base.split("·");
     const discovery=parts.length>1?parts[0].trim():"";
@@ -3369,9 +3393,9 @@ function renderInfo(syms){
           : "Elementdarstellung – lokales Elementarium-Bild wird geladen.")}
       </div>
       <div class="info-head"><div class="info-symbol">${sym}</div><div><h3>${e[1]}</h3><div class="small">Ordnungszahl ${e[2]}</div></div></div>
-      <p><b>Verwendung:</b> ${use}</p>
+      ${story?`<p class="story-text">${escapeHtml(story.sections[0].text)}</p>`:`<p><b>Verwendung:</b> ${use}</p>`}
       <p><b>Wichtige Verbindungen:</b> ${COMPOUNDS[sym]||"Vor allem Forschung; keine verbreitete Alltagsverbindung."}</p>
-      ${discovery?`<p class="small">${discovery}</p>`:""}
+      ${story?elementStoryHtml(sym):(discovery?`<p class="small">${discovery}</p>`:"")}
       ${syntheseHtml(sym)}
     </article>`;
   }).join("");
