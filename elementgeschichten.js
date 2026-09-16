@@ -183,3 +183,58 @@
     }
   });
 })();
+
+// Dauerhaft erreichbare Abmeldung – auch während eines laufenden oder gelösten Rätsels.
+(function(){
+  "use strict";
+
+  function ensureLogoutButton(){
+    if(document.getElementById("globalLogoutBtn")) return document.getElementById("globalLogoutBtn");
+    var button=document.createElement("button");
+    button.id="globalLogoutBtn";
+    button.type="button";
+    button.className="secondary";
+    button.style.position="fixed";
+    button.style.top="14px";
+    button.style.right="14px";
+    button.style.zIndex="10000";
+    button.style.padding="10px 14px";
+    button.style.boxShadow="0 6px 22px rgba(0,0,0,.28)";
+    button.style.display="none";
+    button.addEventListener("click",async function(){
+      button.disabled=true;
+      try{
+        if(typeof logout==="function"){
+          await logout();
+        }else if(typeof supabaseClient!=="undefined"){
+          await supabaseClient.auth.signOut();
+          location.reload();
+        }
+      }finally{
+        button.disabled=false;
+      }
+    });
+    document.body.appendChild(button);
+    return button;
+  }
+
+  function updateLogoutButton(currentSession){
+    var button=ensureLogoutButton();
+    if(!currentSession){
+      button.style.display="none";
+      return;
+    }
+    var name=currentSession.user && currentSession.user.user_metadata && currentSession.user.user_metadata.username;
+    button.textContent=name ? "Abmelden – "+name : "Abmelden";
+    button.style.display="block";
+  }
+
+  window.addEventListener("load",async function(){
+    if(typeof supabaseClient==="undefined") return;
+    var result=await supabaseClient.auth.getSession();
+    updateLogoutButton(result.data && result.data.session);
+    supabaseClient.auth.onAuthStateChange(function(_event,newSession){
+      updateLogoutButton(newSession);
+    });
+  });
+})();
