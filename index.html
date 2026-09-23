@@ -1458,6 +1458,16 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
         <button id="weeklyStartBtn" class="primary" type="button" onclick="startWeeklyPuzzle()">Sonntagsrätsel starten</button>
         <div id="weeklyStatusText" class="small" style="margin-top:9px"></div>
       </div>
+      <div id="practicePanel" class="weekly-panel">
+        <div class="weekly-badge">🧪 Übungsmodus · ohne Rangliste</div>
+        <h3>Vergangene Tagesrätsel spielen</h3>
+        <p>Wähle ein bereits veröffentlichtes Tagesrätsel aus der Vergangenheit. Übungszeiten und Versuche werden nicht gespeichert und verändern weder Rangliste noch Statistik.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center">
+          <select id="practiceDateSelect" style="min-width:210px;padding:11px 12px;border:1px solid #c9d6de;border-radius:12px;background:white"></select>
+          <button id="practiceStartBtn" class="secondary" type="button" onclick="startPracticePuzzle()">Zum Üben starten</button>
+        </div>
+        <div id="practiceStatusText" class="small" style="margin-top:9px"></div>
+      </div>
       <div id="solvedLobbyPanel" class="solved-lobby-panel hidden">
         <div class="solved-lobby-label">Heutiges Lösungswort</div>
         <div id="lobbySolvedWord" class="solved-lobby-word">–</div>
@@ -1516,6 +1526,7 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
   <section id="gameCard" class="card hidden">
     <div id="guestBanner" class="guest-banner hidden">👤 Gastmodus – deine Zeit und deine Versuche werden nicht gespeichert und erscheinen nicht in der Rangliste.</div>
     <div id="testBanner" class="test-banner hidden">🧪 Testmodus – dieses Ergebnis wird nicht gespeichert und verändert die Rangliste nicht.</div>
+    <div id="practiceBanner" class="test-banner hidden">🧪 Übungsmodus – vergangenes Tagesrätsel. Dieses Ergebnis wird nicht gespeichert und verändert weder Rangliste noch Statistik.</div>
     <div class="topbar">
       <span class="count-pill">🧩 Gesucht: <b id="elementCount">–</b> Elementsymbole</span>
       <span id="unusedTop" class="small">Auswahl wird vorbereitet …</span>
@@ -1635,6 +1646,13 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
       <div id="solvedBreakdown" class="breakdown"></div>
       <div id="finalTime" class="timer" style="font-size:36px"></div>
       <div id="rankBig" class="rank-big"></div>
+      <div id="resultGuessHistoryPanel" class="guess-history hidden" style="margin-top:18px;text-align:left">
+        <div class="guess-history-head">
+          <strong>Gefundene Nebenwörter</strong>
+          <span class="small">Deine gültigen Nebenwörter aus diesem Rätsel</span>
+        </div>
+        <div id="resultGuessHistoryRows" class="guess-history-rows"></div>
+      </div>
       <div id="guestResultCta" class="guest-result-cta hidden">
         <strong>Du hast als Gast gespielt.</strong><br>
         Deine heutige Zeit wird nicht gespeichert. Mit einem Konto werden deine Ergebnisse gespeichert und du kannst an der Tagesrangliste teilnehmen.
@@ -2354,6 +2372,8 @@ let longTestTargetWord = null;
 let testStartedAt = null;
 let testSample = null;
 let testGuesses = 0;
+let practiceDate = null;
+let practiceGuesses = 0;
 let confirmedShared = [];
 let confirmedExcluded = [];
 let guessHistory = [];
@@ -2414,15 +2434,8 @@ function rebuildExcludedFromHistory(){
   }
   updateTileUsage();
 }
-function renderGuessHistory(){
-  const panel=$("guessHistoryPanel"), rows=$("guessHistoryRows");
-  if(!panel || !rows) return;
-  if(!guessHistory.length){
-    rows.innerHTML="";
-    show("guessHistoryPanel",false);
-    return;
-  }
-  rows.innerHTML=guessHistory.map((item,idx)=>{
+function guessHistoryHtml(){
+  return guessHistory.map((item,idx)=>{
     const syms=Array.isArray(item.symbols)?item.symbols:[];
     const fb=Array.isArray(item.feedback)?item.feedback:[];
     const chips=syms.map((sym,i)=>`<span class="feedback-chip ${feedbackClass(fb[i])}" title="${feedbackClass(fb[i])}">${escapeHtml(sym)}</span>`).join("");
@@ -2432,6 +2445,27 @@ function renderGuessHistory(){
       <div class="feedback-chips">${chips}</div>
     </div>`;
   }).join("");
+}
+function renderResultGuessHistory(){
+  const panel=$("resultGuessHistoryPanel"), rows=$("resultGuessHistoryRows");
+  if(!panel || !rows) return;
+  if(!guessHistory.length){
+    rows.innerHTML="";
+    show("resultGuessHistoryPanel",false);
+    return;
+  }
+  rows.innerHTML=guessHistoryHtml();
+  show("resultGuessHistoryPanel",true);
+}
+function renderGuessHistory(){
+  const panel=$("guessHistoryPanel"), rows=$("guessHistoryRows");
+  if(!panel || !rows) return;
+  if(!guessHistory.length){
+    rows.innerHTML="";
+    show("guessHistoryPanel",false);
+    return;
+  }
+  rows.innerHTML=guessHistoryHtml();
   show("guessHistoryPanel",true);
 }
 function addGuessHistory(word,symbols,feedback,guessNo=null){
@@ -2624,6 +2658,7 @@ function renderAuth(){
     if($("sessionExitBtn")) $("sessionExitBtn").textContent="Abmelden";
     loadStatus();
     loadWeeklyStatus();
+    loadPracticeDates();
     loadLeaderboard();
     loadMyStats();
     return;
@@ -2639,7 +2674,61 @@ function renderAuth(){
     show("lobbyCard",true);
     show("leaderCard",false);
     show("statsCard",false);
+    loadPracticeDates();
   }
+}
+
+async function loadPracticeDates(){
+  const sel=$("practiceDateSelect"), note=$("practiceStatusText"), btn=$("practiceStartBtn");
+  if(!sel || !note || !btn) return;
+  btn.disabled=true;
+  const {data,error}=await supabaseClient.rpc("elementenpuzzle_practice_dates");
+  if(error){
+    sel.innerHTML="";
+    note.textContent="Vergangene Rätsel konnten nicht geladen werden.";
+    return;
+  }
+  const rows=Array.isArray(data)?data:[];
+  sel.innerHTML=rows.map(r=>`<option value="${escapeHtml(r.puzzle_date)}">${fmtDate(r.puzzle_date)} · ${Number(r.element_count||0)} Symbole</option>`).join("");
+  if(!rows.length){
+    note.textContent="Noch keine vergangenen freigegebenen Tagesrätsel vorhanden.";
+    return;
+  }
+  btn.disabled=false;
+  note.textContent=`${rows.length} vergangene Rätsel stehen zum Üben bereit.`;
+}
+
+async function startPracticePuzzle(){
+  const sel=$("practiceDateSelect");
+  const date=sel?.value;
+  if(!date) return;
+  const btn=$("practiceStartBtn");
+  if(btn) btn.disabled=true;
+  const {data,error}=await supabaseClient.rpc("elementenpuzzle_practice_start",{p_date:date});
+  if(btn) btn.disabled=false;
+  if(error) return alert("Übungsrätsel konnte nicht gestartet werden: "+error.message);
+  const st=Array.isArray(data)?data[0]:data;
+  if(!st) return;
+  activePuzzleMode="practice";
+  practiceDate=date;
+  practiceGuesses=0;
+  testMode=false;
+  longTestMode=false;
+  longTestTargetWord=null;
+  const choices=Array.isArray(st.choices)?st.choices:[];
+  const delay=revealDurationFor(choices);
+  puzzle={
+    puzzle_date:date,
+    element_count:st.element_count,
+    choices,
+    started_at:new Date(Date.now()+delay).toISOString(),
+    solved:false,
+    elapsed_ms:null,
+    guesses:0
+  };
+  show("lobbyCard",false);
+  renderGame(puzzle,true);
+  setTimeout(()=>showStartCountOverlay(puzzle.element_count),100);
 }
 
 async function loadStatus(){
@@ -2658,8 +2747,10 @@ async function loadStatus(){
   } else {
     puzzle=st;
     show("lobbyCard",false);
-    if(st.solved) renderSolved(st);
-    else renderGame(st);
+    if(st.solved){
+      await loadGuessHistory();
+      renderSolved(st);
+    } else renderGame(st);
   }
 }
 
@@ -2777,7 +2868,7 @@ function showStartCountOverlay(count){
   if(!n) return;
   if($("startCountBig")) $("startCountBig").textContent=String(n);
   if($("startCountText")) {
-    const label=(testMode && longTestMode) ? "Das Testwort" : (activePuzzleMode==="weekly" ? "Das Sonntagswort" : "Das heutige Wort");
+    const label=(testMode && longTestMode) ? "Das Testwort" : (activePuzzleMode==="weekly" ? "Das Sonntagswort" : (activePuzzleMode==="practice" ? "Das Übungswort" : "Das heutige Wort"));
     $("startCountText").textContent=`${label} setzt sich aus ${n} Elementsymbolen zusammen.`;
   }
   const el=$("startCountOverlay");
@@ -2794,8 +2885,9 @@ function renderGame(st, animateReveal=false){
   show("resultCard",false);
   show("leaderCard",!!session && !guestMode);
   show("statsCard",false);
-  show("guestBanner",guestMode && !session);
+  show("guestBanner",guestMode && !session && activePuzzleMode!=="practice");
   show("testBanner",testMode);
+  show("practiceBanner",activePuzzleMode==="practice");
   setFloatingTestButtonsVisible(!testMode && !!session);
 
   $("elementCount").textContent=st.element_count;
@@ -3206,6 +3298,43 @@ async function submitGuess(){
     return;
   }
 
+  if(activePuzzleMode==="practice"){
+    practiceGuesses++;
+    const {data,error}=await supabaseClient.rpc("elementenpuzzle_practice_guess",{p_date:practiceDate,p_symbols:guess});
+    if(error){
+      $("submitBtn").disabled=false;
+      playSound("error");
+      return msg("gameMsg","Übungsprüfung fehlgeschlagen: "+error.message,"bad");
+    }
+    const r=Array.isArray(data)?data[0]:data;
+    const feedback=Array.isArray(r?.feedback)?r.feedback:[];
+    if(r?.correct){
+      const elapsed=Date.now()-new Date(puzzle.started_at).getTime();
+      puzzle={...puzzle,solved:true,solved_word:r.solved_word,solved_symbols:r.solved_symbols,elapsed_ms:elapsed,rank:null};
+      playSound("success");
+      celebrate();
+      renderSolved(puzzle);
+      $("rankBig").textContent="🧪 Übungsrätsel gelöst – nicht gespeichert";
+      return;
+    }
+    if(r?.valid_word){
+      const word=(r.matched_word||guess.join("")).toLocaleUpperCase("de-DE");
+      playSound("valid");
+      addGuessHistory(word,guess,feedback,practiceGuesses);
+      msg("gameMsg",`✓ Gültiges Nebenwort: ${word} – aber nicht das gesuchte Übungswort.`,"valid");
+    }else{
+      playSound("wrong");
+      msg("gameMsg","Kein gültiges Referenzwort – versuche es weiter.","bad");
+    }
+    $("selectionBox").classList.remove("shake");
+    void $("selectionBox").offsetWidth;
+    $("selectionBox").classList.add("shake");
+    selected=[];
+    renderSelection();
+    $("submitBtn").disabled=false;
+    return;
+  }
+
   if(testMode){
     if(longTestMode){
       testGuesses++;
@@ -3298,21 +3427,26 @@ function returnToLobbyAfterSolve(){
   stopTimer();
   if(!puzzle) return;
   const wasWeekly=activePuzzleMode==="weekly";
+  const wasPractice=activePuzzleMode==="practice";
   const word=puzzle.solved_word||"";
   const syms=Array.isArray(puzzle.solved_symbols)?puzzle.solved_symbols:[];
   $("lobbySolvedSymbols").textContent=syms.join(" · ");
-  show("startBtn",wasWeekly);
-  show("solvedLobbyPanel",!wasWeekly);
+  show("startBtn",wasWeekly || wasPractice);
+  show("solvedLobbyPanel",!wasWeekly && !wasPractice);
   show("gameCard",false);
   show("resultCard",false);
   show("lobbyCard",true);
   $("lobbyCard").classList.add("solved-return-view");
 
-  const registered=!!session && !guestMode;
+  const registered=!!session && !guestMode && !wasPractice;
   show("leaderCard",registered);
   show("statsCard",registered);
   if(registered) $("leaderCard").classList.add("solved-return-view");
 
+  if(wasPractice){
+    if($("startBtn")) $("startBtn").textContent="Tagesrätsel starten";
+    loadPracticeDates();
+  }
   if(wasWeekly){
     show("weeklyPanel",true);
     if($("weeklyStartBtn")) $("weeklyStartBtn").textContent="Sonntagsrätsel ansehen";
@@ -3336,8 +3470,9 @@ function renderSolved(st){
   show("gameCard",false);
   show("lobbyCard",false);
   show("resultCard",true);
-  show("leaderCard",!!session && !guestMode);
-  show("statsCard",!!session && !guestMode);
+  const practice=activePuzzleMode==="practice";
+  show("leaderCard",!!session && !guestMode && !practice);
+  show("statsCard",!!session && !guestMode && !practice);
   if($("guestResultCta")) show("guestResultCta",guestMode && !session);
   if($("leaderCard")) $("leaderCard").classList.remove("solved-return-view");
 
@@ -3347,7 +3482,9 @@ function renderSolved(st){
   $("solvedBreakdown").textContent=syms.join(" · ");
   $("finalTime").textContent=fmtTime(st.elapsed_ms);
 
-  if(guestMode && !session){
+  if(activePuzzleMode==="practice"){
+    $("rankBig").textContent="🧪 Übungsrätsel gelöst – nicht gespeichert";
+  }else if(guestMode && !session){
     $("rankBig").textContent="👤 Gastmodus – diese Zeit wird nicht gespeichert";
   }else{
     const rankLabel=activePuzzleMode==="weekly" ? "Sonntagsrangliste" : "heutigen Rangliste";
@@ -3358,7 +3495,8 @@ function renderSolved(st){
   if($("lobbySolvedSymbols")) $("lobbySolvedSymbols").textContent=syms.join(" · ");
   const hero=document.querySelector("#resultCard .result-hero");
   if(hero){hero.classList.remove("success-pop"); void hero.offsetWidth; hero.classList.add("success-pop");}
-  if(session && !guestMode) loadMyStats();
+  if(session && !guestMode && activePuzzleMode!=="practice") loadMyStats();
+  renderResultGuessHistory();
   renderInfo(syms);
 }
 
