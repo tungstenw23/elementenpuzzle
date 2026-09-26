@@ -251,6 +251,22 @@ body.test-account button.test-only-control{display:inline-flex!important;}
 body.test-account div.test-actions.test-only-control{display:flex!important;}
 body.test-account #testBuildStamp.test-only-control{display:block!important;}
 
+/* Testbuttons fuer wolf kompakter und weiter links platzieren. */
+body.test-account .solved-lobby-panel .test-actions{
+  justify-content:flex-start!important;
+  gap:5px!important;
+  margin-top:6px!important;
+  margin-left:0!important;
+}
+body.test-account .solved-lobby-panel .test-actions .secondary{
+  font-size:10px!important;
+  line-height:1.15!important;
+  padding:5px 7px!important;
+  min-height:0!important;
+  border-radius:8px!important;
+  box-shadow:none!important;
+}
+
 @media(max-width:520px){.lab-stage{background-size:auto 138%;background-position:center top}.tiles{grid-template-columns:repeat(2,minmax(0,1fr));max-width:380px}.element-tile{min-height:96px}.hero h1{font-size:36px}.card{padding:16px}.game-rule-strip{gap:7px}.game-rule-chip{font-size:11px}}
 .tiles.choice-20{gap:16px 14px}
 .tiles.choice-20 .element-tile{min-height:98px;padding-top:10px;padding-bottom:10px}
