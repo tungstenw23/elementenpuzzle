@@ -1660,6 +1660,10 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
       <div class="small">Gelöst!</div>
       <h2 id="solvedWord" class="word">–</h2>
       <div id="solvedBreakdown" class="breakdown"></div>
+      <div class="test-actions test-only-control" style="margin-top:12px">
+        <button class="secondary" onclick="startLocalTest()">🧪 Heutiges Rätsel nochmals testen</button>
+        <button class="secondary" onclick="startLongWordTest()">🧪 Langes Wort testen</button>
+      </div>
       <div id="finalTime" class="timer" style="font-size:36px"></div>
       <div id="rankBig" class="rank-big"></div>
       <div id="resultGuessHistoryPanel" class="guess-history hidden" style="margin-top:18px;text-align:left">
@@ -1678,7 +1682,6 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
           <button class="secondary" type="button" onclick="leaveGuestToRegistration()">Jetzt anmelden oder registrieren</button>
         </div>
       </div>
-      <div class="test-actions test-only-control"><button class="secondary" onclick="startLocalTest()">🧪 Heutiges Rätsel nochmals testen</button><button class="secondary" onclick="startLongWordTest()">🧪 Langes Wort testen</button></div>
     </div>
     <h2 style="margin-top:24px">Chemie nebenbei</h2>
     <p class="small">Zu den Elementen, aus denen das heutige Wort besteht:</p>
@@ -2904,7 +2907,7 @@ function renderGame(st, animateReveal=false){
   show("guestBanner",guestMode && !session && activePuzzleMode!=="practice");
   show("testBanner",testMode);
   show("practiceBanner",activePuzzleMode==="practice");
-  setFloatingTestButtonsVisible(!testMode && !!session);
+  setFloatingTestButtonsVisible(false);
 
   $("elementCount").textContent=st.element_count;
   selected=[];
@@ -3480,7 +3483,7 @@ function returnToLobbyAfterSolve(){
 function renderSolved(st){
   puzzle={...puzzle,...st,solved:true};
   stopTimer();
-  setFloatingTestButtonsVisible(!guestMode && !!session);
+  setFloatingTestButtonsVisible(false);
   if(revealHandle){clearTimeout(revealHandle);revealHandle=null;}
 
   show("gameCard",false);
@@ -3626,9 +3629,6 @@ supabaseClient.auth.onAuthStateChange((_event,newSession)=>{
 })();
 </script>
 
-<button id="globalLongTestBtn" class="test-only-control" type="button" onclick="startLongWordTest()">🧪 TESTMODUS – langes Wort testen</button>
-<button id="globalTestBtn" class="test-only-control" type="button" onclick="startVisibleTest()">🧪 TESTMODUS – heutiges Rätsel nochmals testen</button>
-<div id="testBuildStamp" class="test-only-control">TESTBUTTON V6 NUR WOLF</div>
 
 
 <script id="global-test-button-script">
