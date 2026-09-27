@@ -1489,7 +1489,7 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
         <div id="lobbySolvedWord" class="solved-lobby-word">–</div>
         <div id="lobbySolvedSymbols" class="solved-lobby-symbols"></div>
         <div class="small" style="margin-top:8px;color:#55717f">Das heutige Rätsel ist bereits gelöst.</div>
-        <div id="lobbyTestActions" class="test-actions test-only-control" style="margin-top:10px">
+        <div id="lobbyTestActions" class="test-actions hidden" style="margin-top:10px">
           <button class="secondary" onclick="startLocalTest()">🧪 Heutiges Rätsel nochmals testen</button>
           <button class="secondary" onclick="startLongWordTest()">🧪 Langes Wort testen</button>
         </div>
@@ -1660,7 +1660,7 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
       <div class="small">Gelöst!</div>
       <h2 id="solvedWord" class="word">–</h2>
       <div id="solvedBreakdown" class="breakdown"></div>
-      <div id="resultTestActions" class="test-actions test-only-control" style="margin-top:12px">
+      <div id="resultTestActions" class="test-actions hidden" style="margin-top:12px">
         <button class="secondary" onclick="startLocalTest()">🧪 Heutiges Rätsel nochmals testen</button>
         <button class="secondary" onclick="startLongWordTest()">🧪 Langes Wort testen</button>
       </div>
@@ -2417,7 +2417,8 @@ function refreshWolfTestActions(){
   for(const id of ["lobbyTestActions","resultTestActions"]){
     const el=$(id);
     if(!el) continue;
-    el.style.setProperty("display",visible ? "flex" : "none","important");
+    el.classList.toggle("hidden",!visible);
+    el.style.removeProperty("display");
   }
 }
 
@@ -3495,6 +3496,7 @@ function returnToLobbyAfterSolve(){
   if($("userLabel")) $("userLabel").textContent=guestMode ? "Gast" : usernameFromSession();
   if($("sessionExitBtn")) $("sessionExitBtn").textContent=guestMode ? "Gastmodus beenden" : "Abmelden";
 
+  refreshWolfTestActions();
   animateLobbySolution(word);
   window.scrollTo({top:0,behavior:"smooth"});
 }
