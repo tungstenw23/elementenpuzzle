@@ -1489,7 +1489,7 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
         <div id="lobbySolvedWord" class="solved-lobby-word">–</div>
         <div id="lobbySolvedSymbols" class="solved-lobby-symbols"></div>
         <div class="small" style="margin-top:8px;color:#55717f">Das heutige Rätsel ist bereits gelöst.</div>
-        <div class="test-actions test-only-control" style="margin-top:10px">
+        <div id="lobbyTestActions" class="test-actions test-only-control" style="margin-top:10px">
           <button class="secondary" onclick="startLocalTest()">🧪 Heutiges Rätsel nochmals testen</button>
           <button class="secondary" onclick="startLongWordTest()">🧪 Langes Wort testen</button>
         </div>
@@ -1660,7 +1660,7 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
       <div class="small">Gelöst!</div>
       <h2 id="solvedWord" class="word">–</h2>
       <div id="solvedBreakdown" class="breakdown"></div>
-      <div class="test-actions test-only-control" style="margin-top:12px">
+      <div id="resultTestActions" class="test-actions test-only-control" style="margin-top:12px">
         <button class="secondary" onclick="startLocalTest()">🧪 Heutiges Rätsel nochmals testen</button>
         <button class="secondary" onclick="startLongWordTest()">🧪 Langes Wort testen</button>
       </div>
@@ -2412,6 +2412,14 @@ function setFloatingTestButtonsVisible(on){
     else el.style.setProperty("display","none","important");
   }
 }
+function refreshWolfTestActions(){
+  const visible=isTestAccount();
+  for(const id of ["lobbyTestActions","resultTestActions"]){
+    const el=$(id);
+    if(!el) continue;
+    el.style.setProperty("display",visible ? "flex" : "none","important");
+  }
+}
 
 function feedbackClass(value){
   const v=String(value||"").toLowerCase();
@@ -2496,7 +2504,10 @@ function addGuessHistory(word,symbols,feedback,guessNo=null){
 async function loadGuessHistory(){
   if(testMode || guestMode || !puzzle) return;
   try{
-    const {data,error}=await supabaseClient.rpc("elementenpuzzle_feedback_history");
+    const rpcName=activePuzzleMode==="weekly"
+      ? "elementenpuzzle_weekly_feedback_history"
+      : "elementenpuzzle_feedback_history";
+    const {data,error}=await supabaseClient.rpc(rpcName);
     if(error) return;
     guessHistory=(Array.isArray(data)?data:[]).map(r=>({
       word:r.matched_word,
@@ -2656,6 +2667,7 @@ function renderAuth(){
   const logged=!!session;
   const active=logged || guestMode;
   document.body.classList.toggle("test-account", logged && isTestAccount());
+  refreshWolfTestActions();
 
   show("authCard",!active);
   show("lobbyCard",active);
@@ -2769,7 +2781,11 @@ async function loadStatus(){
     if(st.solved){
       await loadGuessHistory();
       renderSolved(st);
-    } else renderGame(st);
+    } else {
+      renderGame(st);
+      await loadGuessHistory();
+      await loadConfirmedSymbols();
+    }
   }
 }
 
@@ -2807,9 +2823,12 @@ async function startWeeklyPuzzle(){
   if(error) return alert("Sonntagsrätsel konnte nicht gestartet werden: "+error.message);
   puzzle=Array.isArray(data)?data[0]:data;
   show("lobbyCard",false);
-  if(puzzle.solved) renderSolved(puzzle);
-  else{
+  if(puzzle.solved){
+    await loadGuessHistory();
+    renderSolved(puzzle);
+  }else{
     renderGame(puzzle,!st?.started);
+    if(st?.started) await loadGuessHistory();
     setTimeout(()=>showStartCountOverlay(puzzle.element_count),100);
   }
 }
@@ -3482,6 +3501,7 @@ function returnToLobbyAfterSolve(){
 
 function renderSolved(st){
   puzzle={...puzzle,...st,solved:true};
+  refreshWolfTestActions();
   stopTimer();
   setFloatingTestButtonsVisible(false);
   if(revealHandle){clearTimeout(revealHandle);revealHandle=null;}
