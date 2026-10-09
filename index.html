@@ -3266,7 +3266,7 @@ async function checkAlternativeWord(guess, guessNo=null){
     }
     playSound("wrong");
     const suffix=testMode ? " – Testversuch, nichts wird gespeichert." : (guessNo!=null ? ` Versuch ${guessNo} – die Uhr läuft weiter.` : " Die Uhr läuft weiter.");
-    msg("gameMsg","Kein gültiges Referenzwort"+suffix,"bad");
+    msg("gameMsg","Wort nicht im Wörterbuch"+suffix,"bad");
     return false;
   }catch(_e){
     playSound("wrong");
@@ -3289,7 +3289,7 @@ async function submitLongTestGuess(guess){
 
     if(!r?.valid_word){
       playSound("wrong");
-      msg("gameMsg",`Kein gültiges Referenzwort: ${guess.join("")} – Langwort-Test, nichts wird gespeichert.`,"bad");
+      msg("gameMsg",`Wort nicht im Wörterbuch: ${guess.join("")} – Langwort-Test, nichts wird gespeichert.`,"bad");
       return false;
     }
 
@@ -3367,7 +3367,7 @@ async function submitGuestGuess(guess){
     addGuessHistory(word,guess,feedback,guestGuesses);
   }else{
     playSound("wrong");
-    msg("gameMsg",`Kein gültiges Referenzwort – Gastversuch ${guestGuesses}. Die Uhr läuft weiter.`,"bad");
+    msg("gameMsg",`Wort nicht im Wörterbuch – Gastversuch ${guestGuesses}. Die Uhr läuft weiter.`,"bad");
   }
 
   $("selectionBox").classList.remove("shake");
@@ -3415,7 +3415,7 @@ async function submitGuess(){
       msg("gameMsg",`✓ Gültiges Nebenwort: ${word} – aber nicht das gesuchte Übungswort.`,"valid");
     }else{
       playSound("wrong");
-      msg("gameMsg","Kein gültiges Referenzwort – versuche es weiter.","bad");
+      msg("gameMsg","Wort nicht im Wörterbuch – versuche es weiter.","bad");
     }
     $("selectionBox").classList.remove("shake");
     void $("selectionBox").offsetWidth;
