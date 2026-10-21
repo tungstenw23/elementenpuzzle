@@ -1472,6 +1472,11 @@ body.test-account #testBuildStamp.test-only-control{display:block!important;}
       <h2 style="font-size:30px;margin-bottom:6px">Tagesrätsel <span id="todayLabel"></span></h2>
       <p class="small" style="max-width:620px;margin:0 auto 16px"><strong>Hinweis:</strong> Neben gewöhnlichen deutschen Wörtern können auch bekannte geografische Begriffe, berühmte Persönlichkeiten und gängige Vornamen vorkommen.<br><br>Nach dem Start erscheinen die Auswahl-Elemente langsam in 3D. Es werden mindestens 15 Auswahl-Elemente angezeigt. Bei längeren Wörtern steigt die Anzahl, bei Bedarf auf bis zu 30 Karten. Die zusätzlichen Elemente werden so ausgewählt, dass möglichst viele bekannte Nebenwörter und solche mit gemeinsamen Elementsymbolen entstehen. Die Uhr startet erst, wenn alle Karten sichtbar sind; ein Neuladen setzt sie nicht zurück.</p>
       <button id="startBtn" class="primary" style="font-size:18px;padding:14px 22px" onclick="startPuzzle()">Tagesrätsel starten</button>
+      <div id="weeklyReview" class="weekly-panel hidden" style="max-width:760px;margin:22px auto;border-color:#c5dde8;background:linear-gradient(140deg,#f2f9fd,#ffffff);color:#21495d;text-align:left">
+        <div class="weekly-badge" style="background:#d8eaf3;color:#24556b">📅 Sonntagsrückblick · nur für angemeldete Spieler</div>
+        <h3 style="margin:0 0 8px">Letztes abgeschlossenes Sonntagsrätsel <span id="weeklyReviewDate"></span></h3>
+        <div id="weeklyReviewContent" class="small" aria-live="polite">Der Rückblick wird geladen …</div>
+      </div>
       <div id="weeklyPanel" class="weekly-panel hidden">
         <div class="weekly-badge">⭐ Sonntag und Montag · nur mit Anmeldung</div>
         <h3>Zusätzliches Sonntagsrätsel</h3>
@@ -2683,6 +2688,7 @@ function renderAuth(){
   show("statsCard",logged);
 
   if($("yesterdayReview")) show("yesterdayReview",logged);
+  if($("weeklyReview")) show("weeklyReview",logged);
   if($("lobbyCard")) $("lobbyCard").classList.remove("solved-return-view");
   if($("solvedLobbyPanel")) show("solvedLobbyPanel",false);
   if($("guestResultCta")) show("guestResultCta",false);
@@ -2695,6 +2701,7 @@ function renderAuth(){
     $("userLabel").textContent=usernameFromSession();
     if($("sessionExitBtn")) $("sessionExitBtn").textContent="Abmelden";
     loadYesterdayReview();
+    loadWeeklyReview();
     loadStatus();
     loadWeeklyStatus();
     loadPracticeDates();
@@ -2757,6 +2764,51 @@ async function loadYesterdayReview(){
     </details>
     <details open style="margin:14px 0 5px">
       <summary style="font-size:16px;font-weight:850;cursor:pointer">Gestrige Rangliste</summary>
+      ${boardHtml}
+    </details>
+  `;
+}
+
+async function loadWeeklyReview(){
+  const panel=$("weeklyReview"), content=$("weeklyReviewContent"), dateEl=$("weeklyReviewDate");
+  if(!panel || !content || !dateEl) return;
+  if(!session || guestMode){show("weeklyReview",false);return;}
+  show("weeklyReview",true);
+  dateEl.textContent="";
+  content.textContent="Der Rückblick wird geladen …";
+  const {data,error}=await supabaseClient.rpc("elementenpuzzle_weekly_review");
+  if(!session || guestMode){show("weeklyReview",false);return;}
+  if(error){
+    content.textContent="Der Sonntagsrückblick konnte nicht geladen werden.";
+    return;
+  }
+  const review=Array.isArray(data)?data[0]:data;
+  if(!review?.available){
+    content.textContent="Noch kein abgeschlossenes Sonntagsrätsel vorhanden.";
+    return;
+  }
+  dateEl.textContent="("+fmtDate(review.puzzle_date)+")";
+  const syms=Array.isArray(review.symbols)?review.symbols:[];
+  const words=Array.isArray(review.sidewords)?review.sidewords:[];
+  const rankings=Array.isArray(review.leaderboard)?review.leaderboard:[];
+  const medal=r=>r===1?"🥇":r===2?"🥈":r===3?"🥉":r;
+  const sidewordHtml=words.length
+    ? words.map(w=>`<li style="margin:3px 8px 3px 0"><strong>${escapeHtml(w.word)}</strong> <span style="color:#547182">(${(Array.isArray(w.symbols)?w.symbols:[]).map(escapeHtml).join(" · ")})</span></li>`).join("")
+    : "<li>Keine Nebenwörter gefunden.</li>";
+  const boardHtml=rankings.length
+    ? `<div style="overflow-x:auto"><table class="leaderboard" style="width:100%"><thead><tr><th>Platz</th><th>Spieler</th><th>Zeit</th><th>Versuche</th></tr></thead><tbody>${rankings.map(r=>`<tr><td>${medal(Number(r.rank))}</td><td>${escapeHtml(r.username)}</td><td>${fmtTime(r.elapsed_ms)}</td><td>${Number(r.guesses)||0}</td></tr>`).join("")}</tbody></table></div>`
+    : "<p>Dieses Sonntagsrätsel hat niemand gelöst.</p>";
+  content.innerHTML=`
+    <div style="margin:8px 0 14px;text-align:center">
+      <div style="font-size:clamp(26px,5vw,38px);font-weight:900;color:#18506a">${escapeHtml(review.word)}</div>
+      <div style="font-size:16px;font-weight:800;letter-spacing:.04em">${syms.map(escapeHtml).join(" · ")}</div>
+    </div>
+    <details open style="margin:14px 0">
+      <summary style="font-size:16px;font-weight:850;cursor:pointer">Die 10 häufigsten Nebenwörter (von ${Number(review.sideword_total)||0})</summary>
+      <ol style="margin:10px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:4px 18px;padding-left:22px">${sidewordHtml}</ol>
+    </details>
+    <details open style="margin:14px 0 5px">
+      <summary style="font-size:16px;font-weight:850;cursor:pointer">Erfolgreiche Teilnehmer (${rankings.length})</summary>
       ${boardHtml}
     </details>
   `;
@@ -2876,6 +2928,7 @@ async function startWeeklyPuzzle(){
   if(error) return alert("Sonntagsrätsel konnte nicht gestartet werden: "+error.message);
   puzzle=Array.isArray(data)?data[0]:data;
   show("lobbyCard",false);
+  loadLeaderboard("weekly");
   if(puzzle.solved){
     await loadGuessHistory();
     renderSolved(puzzle);
