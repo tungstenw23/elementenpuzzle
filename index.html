@@ -2518,7 +2518,8 @@ async function loadGuessHistory(){
     const rpcName=activePuzzleMode==="weekly"
       ? "elementenpuzzle_weekly_feedback_history"
       : "elementenpuzzle_feedback_history";
-    const {data,error}=await supabaseClient.rpc(rpcName);
+    const args=activePuzzleMode==="daily" ? {p_date:puzzle.puzzle_date} : undefined;
+    const {data,error}=await supabaseClient.rpc(rpcName,args);
     if(error) return;
     guessHistory=(Array.isArray(data)?data:[]).map(r=>({
       word:r.matched_word,
@@ -3273,7 +3274,7 @@ function renderSelection(){
 async function loadConfirmedSymbols(){
   if(testMode || guestMode || !puzzle || activePuzzleMode!=="daily") return;
   try{
-    const {data,error}=await supabaseClient.rpc("elementenpuzzle_confirmed_symbols");
+    const {data,error}=await supabaseClient.rpc("elementenpuzzle_confirmed_symbols",{p_date:puzzle.puzzle_date});
     if(error) return;
     const r=Array.isArray(data)?data[0]:data;
     confirmedShared=Array.isArray(r?.confirmed_symbols)?r.confirmed_symbols:[];
@@ -3287,7 +3288,9 @@ async function checkAlternativeWord(guess, guessNo=null){
     const rpcName=(testMode && longTestMode) ? "elementenpuzzle_check_test_word_feedback" : (activePuzzleMode==="weekly" ? "elementenpuzzle_weekly_check_word_feedback" : "elementenpuzzle_check_word_feedback");
     const rpcArgs=(testMode && longTestMode)
       ? {p_target_word:longTestTargetWord,p_symbols:guess}
-      : {p_symbols:guess};
+      : activePuzzleMode==="daily"
+        ? {p_symbols:guess,p_date:puzzle.puzzle_date}
+        : {p_symbols:guess};
     const {data,error}=await supabaseClient.rpc(rpcName,rpcArgs);
     if(error){
       playSound("wrong");
@@ -3508,7 +3511,10 @@ async function submitGuess(){
     return;
   }
   const submitRpc=activePuzzleMode==="weekly" ? "elementenpuzzle_weekly_submit" : "elementenpuzzle_submit";
-  const {data,error}=await supabaseClient.rpc(submitRpc,{p_symbols:guess});
+  const submitArgs=activePuzzleMode==="daily"
+    ? {p_symbols:guess,p_date:puzzle.puzzle_date}
+    : {p_symbols:guess};
+  const {data,error}=await supabaseClient.rpc(submitRpc,submitArgs);
   if(error){
     $("submitBtn").disabled=false;
     playSound("error");
